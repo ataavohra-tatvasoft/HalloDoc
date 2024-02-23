@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-// import Admin from "../Models/admin";
 import statusCodes from "../public/statusCodes";
 import { Request, Response, NextFunction } from "express";
 import Admin from "../Models/admin";

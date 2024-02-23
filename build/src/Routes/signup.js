@@ -1,0 +1,12 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const adminSignupController_1 = require("../Controllers/adminSignupController");
+const router = express_1.default.Router();
+router.post('/adminSignup', (req, res, next) => {
+    (0, adminSignupController_1.adminSignup)(req, res, next);
+});
+exports.default = router;

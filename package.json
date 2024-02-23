@@ -2,12 +2,12 @@
   "name": "hallodoc",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "build/app.js",
   "scripts": {
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node dist/app.js",
-    "dev": "nodemon dist/app.js"
+    "start": "node build/app.js",
+    "dev": "npx tsc & nodemon build/app.js"
   },
   "keywords": [],
   "author": "",
@@ -19,10 +19,16 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.19",
+    "@types/nodemailer": "^6.4.14",
+    "@types/uuid": "^9.0.8",
+    "country-state-city": "^3.2.1",
+    "crypto": "^1.0.1",
+    "nodemailer": "^6.9.10",
+    "nodemailer-sparkpost-transport": "^2.2.0",
     "nodemon": "^3.0.3",
-    "sequelize": "^6.37.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.1"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -30,6 +36,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "joi": "^17.12.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.1",
+    "sequelize": "^6.37.1"
   }
 }

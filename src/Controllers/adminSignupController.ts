@@ -23,6 +23,7 @@ export const adminSignup = async (req: Request, res: Response, next: NextFunctio
           Address_2,
           City,
           State,
+          Country_Code,
         },
       } = req;
   const hashedPassword: string = await bcrypt.hash(Password, 10);
@@ -41,6 +42,7 @@ export const adminSignup = async (req: Request, res: Response, next: NextFunctio
         address_2:Address_2,
         city:City,
         state:State,
+        country_code:Country_Code,
     });
 
     if (!adminData) {

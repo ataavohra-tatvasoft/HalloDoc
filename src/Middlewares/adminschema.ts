@@ -1,28 +1,9 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
 import statusCodes from "../public/statusCodes";
+// import countryStateCity, { State } from "country-state-city";
 
-// interface AdminSchemaSignUpRequest {
-//   body: {
-//     Email: string;
-//     Confirm_Email: string;
-//     Password: string;
-//     Confirm_Password: string;
-//     Status: string;
-//     Role: string;
-//     FirstName: string;
-//     LastName: string;
-//     MobileNumber: string;
-//     Zip: string;
-//     Billing_MobileNumber: string;
-//     Address_1: string;
-//     Address_2: string;
-//     City: string;
-//     State: string;
-//   };
-// }
 export const adminSchemaSignUp = async (
-  //   req: AdminSchemaSignUpRequest,
   req: Request,
   res: Response,
   next: NextFunction
@@ -44,8 +25,26 @@ export const adminSchemaSignUp = async (
       Address_2,
       City,
       State,
+      Country_Code,
     },
   } = req;
+
+  //
+  // function validateCityState(
+  //   city: string,
+  //   state: string,
+  //   countryCode: string
+  // ): boolean {
+  //   const states: any = countryStateCity.getStatesOfCountry(countryCode);
+  //   const stateExists: boolean = states.some(
+  //     (currentState: any) => currentState.name === state
+  //   );
+  //   const cityExists: boolean = countryStateCity
+  //     .getCitiesOfState(countryCode, state)
+  //     .some((currentCity: any) => currentCity.name === city);
+
+  //   return stateExists && cityExists;
+  // }
   const adminSchema: Schema = Joi.object({
     Email: Joi.string().email({
       minDomainSegments: 2,
@@ -58,9 +57,15 @@ export const adminSchemaSignUp = async (
     Role: Joi.string().valid("Admin"),
     FirstName: Joi.string().max(8).min(3),
     LastName: Joi.string().max(8).min(3),
-    MobileNumber: Joi.number().max(10).min(10),
-    Zip: Joi.number().min(6).max(6),
-    Billing_MobileNumber: Joi.number().max(10).min(10),
+    MobileNumber: Joi.string()
+      .pattern(/^\d{10}$/)
+      .required(),
+    Zip: Joi.string()
+      .pattern(/^\d{6}$/)
+      .required(),
+    Billing_MobileNumber: Joi.string()
+      .pattern(/^\d{10}$/)
+      .required(),
     Address_1: Joi.string().max(15).min(10),
     Address_2: Joi.string().max(15).min(10),
     City: Joi.string().valid(
@@ -129,7 +134,9 @@ export const adminSchemaSignUp = async (
       "Lakshadweep",
       "Puducherry"
     ),
+    Country_Code: Joi.string().pattern(/^[a-zA-Z]{2}$/).required(),
   });
+
   try {
     await adminSchema.validateAsync(
       {
@@ -148,9 +155,11 @@ export const adminSchemaSignUp = async (
         Address_2: Address_2,
         City: City,
         State: State,
+        Country_Code: Country_Code,
       },
       { abortEarly: false, presence: "required" }
     );
+
     next();
   } catch (error: any) {
     // throw new Error(error.details.map((detail) => detail.message).join(", "));
