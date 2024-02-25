@@ -38,7 +38,7 @@ Admin.init({
     },
     // reset_token: { type: DataTypes.UUIDV4, allowNull:true},
     reset_token: { type: sequelize_1.DataTypes.STRING, allowNull: true },
-    reset_token_expiry: { type: sequelize_1.DataTypes.INTEGER, allowNull: true },
+    reset_token_expiry: { type: sequelize_1.DataTypes.BIGINT, allowNull: true },
 }, {
     sequelize: database_1.default,
     tableName: "admin",

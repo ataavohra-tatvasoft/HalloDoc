@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import Sequelize, { where } from "sequelize";
+import Sequelize from "sequelize";
 import Admin from "../Models/admin";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";
 dotenv.config();
+const Op = Sequelize.Op;
 // import SparkPostTransport from 'nodemailer-sparkpost-transport';
 // import uuid from 'uuid';
 
@@ -24,8 +25,8 @@ export const forgotPassword = async (
 
     // const resetToken = uuid();
     const resetToken = crypto.createHash("sha256").update(email).digest("hex");
-    const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
-    console.log(resetToken, expireTime, user.firstname);
+    const expireTime = Date.now() + 60*60*1000; // 1 hour
+    // console.log(resetToken, expireTime, user.firstname);
 
     // Update user with reset token and expiry
     await Admin.update(
@@ -53,11 +54,21 @@ export const forgotPassword = async (
       </html>
     `;
     // const transportOptions: SparkPostTransport.Options = {
-    //   apiKey: process.env.SPARKPOST_API_KEY, 
+    //   apiKey: process.env.SPARKPOST_API_KEY,
     // };
-    
+
     // const transporter = nodemailer.createTransport(SparkPostTransport(transportOptions));
     const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false, // Adjust based on your SMTP server
+      debug: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    console.log("Test", {
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
       secure: false, // Adjust based on your SMTP server
@@ -66,17 +77,8 @@ export const forgotPassword = async (
         pass: process.env.EMAIL_PASS,
       },
     });
-   console.log("Test", {
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    secure: false, // Adjust based on your SMTP server
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
     const info = await transporter.sendMail({
-      from: 'mohmmedataa.vohra@etatvasoft.com',
+      from: "vohraatta@gmail.com",
       to: email,
       subject: "Password Reset Request",
       html: mailContent,
@@ -98,18 +100,18 @@ export const resetPassword = async (
 ) => {
   try {
     const { ResetToken, Password } = req.body;
-
+    console.log(ResetToken, Password);
     // Validate reset token and expiry
     const user = await Admin.findOne({
       where: {
         reset_token: ResetToken,
-        reset_token_expiry: { [Sequelize.Op.gt]: Date.now() }, // Ensure token is not expired
+        reset_token_expiry: {[Op.gt]: Date.now() }, // Ensure token is not expired
       },
     });
     if (!user) {
       return res
         .status(400)
-        .json({ message: "Invalid or expired reset token" });
+        .json({ message: "Invalid or expired reset token", });
     }
 
     // Hash the new password securely (consider using bcryptjs v5 for updated algorithms)

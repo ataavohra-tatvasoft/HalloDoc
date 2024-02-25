@@ -43,6 +43,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto = __importStar(require("crypto"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+const Op = sequelize_1.default.Op;
 // import SparkPostTransport from 'nodemailer-sparkpost-transport';
 // import uuid from 'uuid';
 const forgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -78,13 +79,14 @@ const forgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
       </html>
     `;
         // const transportOptions: SparkPostTransport.Options = {
-        //   apiKey: process.env.SPARKPOST_API_KEY, 
+        //   apiKey: process.env.SPARKPOST_API_KEY,
         // };
         // const transporter = nodemailer.createTransport(SparkPostTransport(transportOptions));
         const transporter = nodemailer_1.default.createTransport({
             host: process.env.EMAIL_HOST,
             port: Number(process.env.EMAIL_PORT),
             secure: false, // Adjust based on your SMTP server
+            debug: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
@@ -100,7 +102,7 @@ const forgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             },
         });
         const info = yield transporter.sendMail({
-            from: 'mohmmedataa.vohra@etatvasoft.com',
+            from: "vohraatta@gmail.com",
             to: email,
             subject: "Password Reset Request",
             html: mailContent,
@@ -117,17 +119,18 @@ exports.forgotPassword = forgotPassword;
 const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ResetToken, Password } = req.body;
+        console.log(ResetToken, Password);
         // Validate reset token and expiry
         const user = yield admin_1.default.findOne({
             where: {
                 reset_token: ResetToken,
-                reset_token_expiry: { [sequelize_1.default.Op.gt]: Date.now() }, // Ensure token is not expired
+                reset_token_expiry: { [Op.gt]: Date.now() }, // Ensure token is not expired
             },
         });
         if (!user) {
             return res
                 .status(400)
-                .json({ message: "Invalid or expired reset token" });
+                .json({ message: "Invalid or expired reset token", });
         }
         // Hash the new password securely (consider using bcryptjs v5 for updated algorithms)
         const hashedPassword = yield bcrypt_1.default.hash(Password, 10); // Adjust cost factor as needed

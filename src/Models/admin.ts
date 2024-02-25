@@ -63,7 +63,7 @@ Admin.init(
     },
     // reset_token: { type: DataTypes.UUIDV4, allowNull:true},
     reset_token: { type: DataTypes.STRING, allowNull:true},
-    reset_token_expiry:{type: DataTypes.INTEGER, allowNull:true},
+    reset_token_expiry:{type: DataTypes.BIGINT, allowNull:true},
   },
   {
     sequelize,
