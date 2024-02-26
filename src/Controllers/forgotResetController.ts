@@ -28,13 +28,13 @@ export const forgotPassword = async (
     const expireTime = Date.now() + 60*60*1000; // 1 hour
     // console.log(resetToken, expireTime, user.firstname);
 
-    // Update user with reset token and expiry
+ 
     await Admin.update(
       { reset_token: resetToken, reset_token_expiry: expireTime },
       { where: { email } }
     );
 
-    // Create email content
+   
     const resetUrl = `http://localhost:7000/forgotresetpassword/resetpassword`;
     const mailContent = `
       <html>
@@ -61,7 +61,7 @@ export const forgotPassword = async (
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
-      secure: false, // Adjust based on your SMTP server
+      secure: false, 
       debug: true,
       auth: {
         user: process.env.EMAIL_USER,
@@ -71,7 +71,7 @@ export const forgotPassword = async (
     console.log("Test", {
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
-      secure: false, // Adjust based on your SMTP server
+      secure: false, 
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -105,7 +105,7 @@ export const resetPassword = async (
     const user = await Admin.findOne({
       where: {
         reset_token: ResetToken,
-        reset_token_expiry: {[Op.gt]: Date.now() }, // Ensure token is not expired
+        reset_token_expiry: {[Op.gt]: Date.now() }, 
       },
     });
     if (!user) {
@@ -114,10 +114,8 @@ export const resetPassword = async (
         .json({ message: "Invalid or expired reset token", });
     }
 
-    // Hash the new password securely (consider using bcryptjs v5 for updated algorithms)
-    const hashedPassword = await brcypt.hash(Password, 10); // Adjust cost factor as needed
+    const hashedPassword = await brcypt.hash(Password, 10); 
 
-    // Update user password and clear reset token
     await Admin.update(
       { password: hashedPassword, reset_token: null, reset_token_expiry: null },
       { where: { adminid: user.adminid } }

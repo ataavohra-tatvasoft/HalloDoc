@@ -7,7 +7,7 @@ import {
   Model,
   CreationOptional,
 } from "sequelize";
-// import { RandomUUIDOptions, UUID } from "crypto";
+
 
 class Admin extends Model<
   InferAttributes<Admin>,
