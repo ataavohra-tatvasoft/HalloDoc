@@ -11,8 +11,8 @@ class Concierge extends Model<
   InferAttributes<Concierge>,
   InferCreationAttributes<Concierge>
 > {
-    declare user_id: number; 
-    declare request_id: number;
+    declare user_id: CreationOptional<number>; 
+    // declare request_id: number;
     declare first_name: string;
     declare last_name: string;
     declare mobile_number: number;
@@ -32,14 +32,14 @@ Concierge.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    request_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Request', 
-        key: 'request_id',
-      },
-    },
+    // request_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: 'Request', 
+    //     key: 'request_id',
+    //   },
+    // },
     first_name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -49,7 +49,7 @@ Concierge.init(
       allowNull: false,
     },
     mobile_number: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: false,
       unique: true,
     },

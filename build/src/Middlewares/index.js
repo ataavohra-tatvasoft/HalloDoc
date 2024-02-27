@@ -14,11 +14,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./recoverPassword"), exports);
-__exportStar(require("./adminControllers/adminSignup"), exports);
-__exportStar(require("./loginControllers/adminLogin"), exports);
-__exportStar(require("./adminControllers/adminRequestByState"), exports);
-__exportStar(require("./adminControllers/adminRequestActions"), exports);
-__exportStar(require("./adminControllers/adminRequestsByRegion"), exports);
-__exportStar(require("./adminControllers/adminProfile"), exports);
-__exportStar(require("./adminControllers/adminRequestSupport"), exports);
+__exportStar(require("./adminauth"), exports);
+__exportStar(require("./adminschema"), exports);
+__exportStar(require("./requestschema"), exports);

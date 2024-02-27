@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
-import Admin from "../Models/admin";
+import Admin from "../../Models/admin";
 import { Request,Response,NextFunction } from "express";
 import bcrypt from "bcrypt";
-import statusCodes from "../public/statusCodes";
+import statusCodes from "../../public/statusCodes";
 dotenv.config({ path: `.env` });
 
 export const adminSignup = async (req: Request, res: Response, next: NextFunction) => {

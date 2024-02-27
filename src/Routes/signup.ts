@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import { Request, Response,NextFunction } from "express";
-import { adminSignup } from "../Controllers/adminSignupController";
+import { adminSignup } from "../Controllers";
 
 const router: Router = express.Router();
 

@@ -32,6 +32,10 @@ Order.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    businessName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     businessContact: {
       type: DataTypes.INTEGER,
       allowNull: false,
