@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import RequestModel from "../../models/request";
-import Patient from "../../models/patient";
+import RequestModel from "../../db/models/request";
+import Patient from "../../db/models/patient";
 
 export const requests_by_region = async (
   req: Request,

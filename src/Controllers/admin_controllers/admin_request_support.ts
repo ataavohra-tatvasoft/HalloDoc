@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 // import RequestModel from "../../models/request";
-import Provider from "../../models/provider";
+import Provider from "../../db/models/provider";
 
 export const request_support = async (
   req: Request,

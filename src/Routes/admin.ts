@@ -14,7 +14,8 @@ import {
   send_agreement,
   assign_request,
   assign_request_region,
-  request_support
+  request_support,
+  create_request
 } from "../controllers";
 import { admin_authmiddleware } from "../middlewares";
 
@@ -116,6 +117,13 @@ router.post(
   admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     request_support(req, res, next);
+  }
+);
+router.post(
+  "/dashboard/requests/:state/createrequest",
+  admin_authmiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    create_request(req, res, next);
   }
 );
 export default router;

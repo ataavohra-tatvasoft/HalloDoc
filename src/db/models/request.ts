@@ -1,4 +1,4 @@
-import sequelize from "../connections/database";
+import sequelize from "../../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -24,21 +24,21 @@ class Request extends Model<
   // declare state: string;
   // declare zip: number;
   declare requested_by: string;
-  declare requestor_id: number;
+  declare requestor_id:CreationOptional< number>;
   // declare requestor_name: string;
   declare requested_date: Date;
   // declare address: string;
-  declare notes_symptoms: string | null;
+  declare notes_symptoms:CreationOptional< string | null>;
   // declare region: string;
-  declare physician_id: number;
+  declare physician_id:CreationOptional< number>;
   // declare physician_name: string;
-  declare date_of_service: Date;
-  declare block_status: string;
-  declare cancellation_status: string;
-  declare close_case_status: string;
-  declare transfer_request_status: string;
-  declare agreement_status: string;
-  declare assign_req_description: string;
+  declare date_of_service:CreationOptional< Date>;
+  declare block_status: CreationOptional<string>;
+  declare cancellation_status: CreationOptional<string>;
+  declare close_case_status: CreationOptional<string>;
+  declare transfer_request_status: CreationOptional<string>;
+  declare agreement_status: CreationOptional<string>;
+  declare assign_req_description: CreationOptional<string>;
 }
 
 Request.init(

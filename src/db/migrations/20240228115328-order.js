@@ -1,0 +1,60 @@
+'use strict';
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up (queryInterface, Sequelize) {
+    await queryInterface.createTable('order', {
+      orderId: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      requestId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Request",
+          key: 'request_id',
+        },
+      },
+      profession: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      businessName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      businessContact: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      faxNumber: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      orderDetails: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      numberOfRefill: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+  });
+  },
+  async down (queryInterface, Sequelize) {
+    /**
+     * Add reverting commands here.
+     *
+     * Example:
+     * await queryInterface.dropTable('users');
+     */
+  }
+};

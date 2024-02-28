@@ -1,4 +1,4 @@
-import sequelize from "../connections/database";
+import sequelize from "../../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -7,9 +7,9 @@ import {
   CreationOptional,
 } from "sequelize";
 
-class Concierge extends Model<
-  InferAttributes<Concierge>,
-  InferCreationAttributes<Concierge>
+class Requestor extends Model<
+  InferAttributes<Requestor>,
+  InferCreationAttributes<Requestor>
 > {
     declare user_id: CreationOptional<number>; 
     // declare request_id: number;
@@ -25,7 +25,7 @@ class Concierge extends Model<
 }
 
 
-Concierge.init(
+Requestor.init(
   {
     user_id: {
       type: DataTypes.INTEGER,
@@ -81,8 +81,8 @@ Concierge.init(
   },
   {
     sequelize,
-    tableName: 'concierge',
+    tableName: 'requestor',
   }
 );
 
-export default Concierge;
+export default Requestor;

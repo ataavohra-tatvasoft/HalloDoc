@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
-import Admin from "../models/admin";
+import Admin from "../db/models/admin";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";

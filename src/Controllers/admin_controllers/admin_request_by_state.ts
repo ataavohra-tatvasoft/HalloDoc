@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import RequestModel from '../../models/request';
+import RequestModel from '../../db/models/request';
 
 export const requests_by_state = async (req: Request, res: Response, next: NextFunction) => {
     try {

@@ -1,14 +1,14 @@
 import { NextFunction, Request, Response } from "express";
-import Notes from "../../models/notes";
-import Order from "../../models/order";
-import Patient from "../../models/patient";
-import Transfer_Request from "../../models/transfer_request";
+import Notes from "../../db/models/notes";
+import Order from "../../db/models/order";
+import Patient from "../../db/models/patient";
+import Transfer_Request from "../../db/models/transfer_request";
 import statusCodes from "../../public/status_codes";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
-import RequestModel from "../../models/request";
-import Provider from "../../models/provider";
+import RequestModel from "../../db/models/request";
+import Provider from "../../db/models/provider";
 
 export const view_case_for_request = async (
   req: Request,

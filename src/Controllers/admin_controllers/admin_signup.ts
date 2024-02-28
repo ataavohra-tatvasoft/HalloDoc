@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import Admin from "../../models/admin";
+import Admin from "../../db/models/admin";
 import { Request,Response,NextFunction } from "express";
 import bcrypt from "bcrypt";
 import statusCodes from "../../public/status_codes";

@@ -8,3 +8,4 @@ export * from "./admin_controllers/admin_request_actions";
 export * from "./admin_controllers/admin_requests_by_region";
 export * from "./admin_controllers/admin_profile";
 export * from "./admin_controllers/admin_request_support";
+export * from "./admin_controllers/admin_create_request";

@@ -1,6 +1,6 @@
 import Patient from "./patient";
 import Request from "./request";
-import Concierge from "./concierge";
+import Concierge from "./requestor";
 import Admin from "./admin";
 
 /**Associations */

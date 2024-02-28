@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import Admin from "../../models/request";
+import Admin from "../../db/models/request";
 
 
 

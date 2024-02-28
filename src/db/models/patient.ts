@@ -1,4 +1,4 @@
-import sequelize from "../connections/database";
+import sequelize from "../../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -13,13 +13,13 @@ class Patient extends Model<
 > {
   declare patient_id: CreationOptional<number>;
   declare email: string;
-  declare password: string;
+  declare password:CreationOptional<string>;
   declare firstname: string;
   declare lastname: string;
   declare dob: Date;
   declare mobile_number: number;
-  declare region: string;
-  declare business_name: string;
+  declare region:CreationOptional< string>;
+  declare business_name: CreationOptional<string>;
   declare street: string;
   declare city: string;
   declare state: string;
@@ -37,7 +37,7 @@ Patient.init(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique:true,
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
@@ -58,7 +58,7 @@ Patient.init(
     mobile_number: {
       type: DataTypes.BIGINT,
       allowNull: false,
-      unique:true,
+      unique: true,
     },
     region: {
       type: DataTypes.STRING,

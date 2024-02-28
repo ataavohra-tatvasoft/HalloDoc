@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
-import {config} from 'dotenv'
-config()
+import { config } from "dotenv";
+config();
 
 const sequelize = new Sequelize(
   "hallodoc",
@@ -8,11 +8,11 @@ const sequelize = new Sequelize(
   process.env.DB_PASS,
   {
     dialect: "mysql",
-    host: 'localhost',
+    host: "localhost",
     define: {
       freezeTableName: true,
     },
-  },
+  }
 );
 
 const connection: Promise<void> = sequelize.authenticate();
@@ -25,5 +25,17 @@ connection
   .catch((error: Error) => {
     console.log("Error Occurred =>", error);
   });
+  
+async function connectToDatabase() {
+  try {
+    await sequelize.authenticate();
+    console.log("Database connection successful");
+  } catch (error) {
+    console.error("Error connecting to database:", error);
+    process.exit(1); // Exit the process on failure
+  }
+}
+
+connectToDatabase();
 
 export default sequelize;

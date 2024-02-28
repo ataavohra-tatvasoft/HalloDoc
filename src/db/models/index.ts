@@ -1,6 +1,6 @@
 
 export * from "./admin";
-export *from "./concierge";
+export *from "./requestor";
 export * from "./notes";
 export * from "./order";
 export * from "./request";

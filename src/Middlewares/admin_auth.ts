@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import Admin from '../models/admin';
+import Admin from '../db/models/admin';
 import statusCodes from '../public/status_codes';
 // import { error } from 'console';
 // import { stat } from 'fs';
