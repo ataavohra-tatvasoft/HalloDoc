@@ -5,16 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 // import { Sequelize } from "sequelize";
-require("./src/Models/associations");
+require("./src/models/associations");
 const body_parser_1 = __importDefault(require("body-parser"));
-const Routes_1 = __importDefault(require("./src/Routes"));
+const routes_1 = __importDefault(require("./src/routes"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const database_1 = __importDefault(require("./src/Connections/database"));
+const database_1 = __importDefault(require("./src/connections/database"));
 dotenv_1.default.config({ path: ".env" });
 const app = (0, express_1.default)();
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(body_parser_1.default.json());
-app.use(Routes_1.default);
+app.use(routes_1.default);
 database_1.default
     .sync({ alter: true })
     .then(() => {

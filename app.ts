@@ -1,10 +1,10 @@
 import express, {Express} from "express";
 // import { Sequelize } from "sequelize";
-import "./src/Models/associations";
+import "./src/models/associations";
 import bodyParser from "body-parser";
-import routes from "./src/Routes";
+import routes from "./src/routes";
 import dotenv from "dotenv";
-import sequelize from "./src/Connections/database"
+import sequelize from "./src/connections/database"
 
 dotenv.config({ path: ".env" });
 

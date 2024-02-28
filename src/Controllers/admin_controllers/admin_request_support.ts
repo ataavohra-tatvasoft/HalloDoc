@@ -1,17 +1,17 @@
 import { NextFunction, Request, Response } from "express";
-import RequestModel from "../../Models/request";
-import Provider from "../../Models/provider";
+// import RequestModel from "../../models/request";
+import Provider from "../../models/provider";
 
-export const postRequestSupport = async (
+export const request_support = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { support_message } = req.body;
-    const requests = await Provider.findAll({
-      where: { scheduled_status: "no" },
-    });
+    // const requests = await Provider.findAll({
+    //   where: { scheduled_status: "no" },
+    // });
     await Provider.update({
         support_message
     },

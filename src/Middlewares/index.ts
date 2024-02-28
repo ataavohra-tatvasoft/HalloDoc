@@ -1,3 +1,3 @@
-export * from "./adminauth";
-export * from "./adminschema";
-export * from "./requestschema";
+export * from "./admin_auth";
+export * from "./admin_schema";
+export * from "./request_schema";

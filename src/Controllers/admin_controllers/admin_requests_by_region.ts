@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import RequestModel from "../../Models/request";
+import RequestModel from "../../models/request";
+import Patient from "../../models/patient";
 
-export const getRequestsByRegion = async (
+export const requests_by_region = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -9,7 +10,14 @@ export const getRequestsByRegion = async (
   try {
     const { state, region } = req.params;
     const requests = await RequestModel.findAll({
-      where: { request_state: state, region: region },
+      where: { request_state: state },
+      include: {
+        model: Patient,
+        attributes: ["region"],
+        where:{
+          region:region
+        }
+      },
     });
     res.json(requests);
   } catch (error) {

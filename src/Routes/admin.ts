@@ -1,113 +1,121 @@
 import express, { Router } from "express";
 import { Request, Response, NextFunction } from "express";
-import { getRequestsByState } from "../Controllers";
 import {
-  getViewCaseForRequest,
-  getRequestsByRegion,
-  putBlockCaseForRequest,
-  deleteClearCaseForRequest,
-  getViewNotesForRequest,
-  putCancelCaseForRequest,
-  putCloseCaseForRequest,
-  postSendOrdersForRequest,
-  postTransferRequest,
-  postSendAgreement,
-  putAssignRequest,
-  postRequestSupport
-} from "../Controllers";
-import { adminauthmiddleware } from "../Middlewares";
+  requests_by_state,
+  view_case_for_request,
+  requests_by_region,
+  block_case_for_request,
+  clear_case_for_request,
+  view_notes_for_request,
+  cancel_case_for_request,
+  close_case_for_request,
+  send_orders_for_request,
+  transfer_request,
+  send_agreement,
+  assign_request,
+  assign_request_region,
+  request_support
+} from "../controllers";
+import { admin_authmiddleware } from "../middlewares";
 
 const router: Router = express.Router();
 
 router.get(
   "/dashboard/requests/:state",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    getRequestsByState(req, res, next);
+    requests_by_state(req, res, next);
   }
 );
 router.get(
   "/dashboard/requests/:state/:requestId/requestsbyregion",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    getRequestsByRegion(req, res, next);
+    requests_by_region(req, res, next);
   }
 );
 router.get(
   "/dashboard/requests/:state/:requestId/actions/viewcase",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    getViewCaseForRequest(req, res, next);
+    view_case_for_request(req, res, next);
   }
 );
 router.delete(
   "/dashboard/requests/:state/:requestId/actions/clearcase",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    deleteClearCaseForRequest(req, res, next);
+    clear_case_for_request(req, res, next);
   }
 );
 router.put(
   "/dashboard/requests/:state/:requestId/actions/blockcase",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    putBlockCaseForRequest(req, res, next);
+    block_case_for_request(req, res, next);
   }
 );
 router.put(
   "/dashboard/requests/:state/:requestId/actions/cancelcase",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    putCancelCaseForRequest(req, res, next);
+    cancel_case_for_request(req, res, next);
   }
 );
 router.put(
   "/dashboard/requests/:state/:requestId/actions/closecase",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    putCloseCaseForRequest(req, res, next);
+    close_case_for_request(req, res, next);
   }
 );
 router.get(
   "/dashboard/requests/:state/:requestId/actions/viewnotes",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    getViewNotesForRequest(req, res, next);
+    view_notes_for_request(req, res, next);
   }
 );
 router.post(
   "/dashboard/requests/:state/:requestId/actions/sendorders",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    postSendOrdersForRequest(req, res, next);
+    send_orders_for_request(req, res, next);
   }
 );
 router.post(
   "/dashboard/requests/:state/:requestId/actions/transferrequest",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    postTransferRequest(req, res, next);
+    transfer_request(req, res, next);
   }
 );
 router.post(
   "/dashboard/requests/:state/:requestId/actions/sendagreement",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    postSendAgreement(req, res, next);
+    send_agreement(req, res, next);
+  }
+);
+router.get(
+  "/dashboard/requests/:state/:requestId/actions/assignrequest/:region",
+  admin_authmiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    assign_request_region(req, res, next);
   }
 );
 router.put(
   "/dashboard/requests/:state/:requestId/actions/assignrequest",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    putAssignRequest(req, res, next);
+    assign_request(req, res, next);
   }
 );
 router.post(
   "/dashboard/requests/:state/requestsupport",
-  adminauthmiddleware,
+  admin_authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    postRequestSupport(req, res, next);
+    request_support(req, res, next);
   }
 );
 export default router;

@@ -1,4 +1,4 @@
-import sequelize from "../Connections/database";
+import sequelize from "../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,

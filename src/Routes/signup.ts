@@ -1,11 +1,11 @@
 import express, { Router } from "express";
 import { Request, Response,NextFunction } from "express";
-import { adminSignup } from "../Controllers";
+import { admin_signup } from "../controllers";
 
 const router: Router = express.Router();
 
-router.post('/adminSignup', (req: Request, res: Response, next:NextFunction) => {
-  adminSignup(req, res, next);
+router.post('/adminsignup', (req: Request, res: Response, next:NextFunction) => {
+  admin_signup(req, res, next);
 });
 
 export default router;

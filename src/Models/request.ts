@@ -1,4 +1,4 @@
-import sequelize from "../Connections/database";
+import sequelize from "../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -14,23 +14,24 @@ class Request extends Model<
   declare confirmation_no: CreationOptional<number>;
   declare request_state: string;
   declare patient_id: number;
-  declare firstname: string;
-  declare lastname: string;
-  declare dob: Date;
-  declare mobile_number: number;
-  declare email: string;
-  declare street: string;
-  declare city: string;
-  declare state: string;
-  declare zip: number;
+  // declare firstname: string;
+  // declare lastname: string;
+  // declare dob: Date;
+  // declare mobile_number: number;
+  // declare email: string;
+  // declare street: string;
+  // declare city: string;
+  // declare state: string;
+  // declare zip: number;
   declare requested_by: string;
   declare requestor_id: number;
-  declare requestor_name: string;
+  // declare requestor_name: string;
   declare requested_date: Date;
-  declare address: string;
+  // declare address: string;
   declare notes_symptoms: string | null;
-  declare region: string;
-  declare physician_name: string;
+  // declare region: string;
+  declare physician_id: number;
+  // declare physician_name: string;
   declare date_of_service: Date;
   declare block_status: string;
   declare cancellation_status: string;
@@ -71,51 +72,7 @@ Request.init(
         key: "patient_id",
       },
       unique:false,
-    },
-    firstname: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    lastname: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    dob: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    mobile_number: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Patient',
-        key: "mobile_number",
-      },
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: 'Patient',
-        key: "email",
-      },
-    },
-    street: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    city: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    state: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    zip: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+    },  
     requested_by: {
       type: DataTypes.ENUM("family_friend", "concierge", "business_partner"),
       allowNull: false,
@@ -128,29 +85,21 @@ Request.init(
         key: "user_id",
       },
     },
-    requestor_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     requested_date: {
       type: DataTypes.DATE,
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING,
       allowNull: false,
     },
     notes_symptoms: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    region: {
-      type: DataTypes.STRING,
+    physician_id:{
+      type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    physician_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      references: {
+        model: 'Provider',
+        key: "provider_id",
+      },
     },
     date_of_service: {
       type: DataTypes.DATE,
@@ -173,12 +122,12 @@ Request.init(
     },
     transfer_request_status:{
       type: DataTypes.ENUM("undefined","pending","accepted","rejected"),
-      defaultValue: "no",
+      defaultValue: "undefined",
       allowNull: false,
     },
     agreement_status:{
       type: DataTypes.ENUM("undefined","pending","accepted","rejected"),
-      defaultValue: "no",
+      defaultValue: "undefined",
       allowNull: false,
     },
     assign_req_description: {

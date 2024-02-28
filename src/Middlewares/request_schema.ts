@@ -1,8 +1,8 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/statusCodes";
+import statusCodes from "../public/status_codes";
 
-export const requestSchema = async (
+export const request_schema = async (
   req: Request,
   res: Response,
   next: NextFunction

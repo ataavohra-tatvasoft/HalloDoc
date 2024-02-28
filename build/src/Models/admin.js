@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = __importDefault(require("../Connections/database"));
+const database_1 = __importDefault(require("../connections/database"));
 const sequelize_1 = require("sequelize");
 class Admin extends sequelize_1.Model {
 }
@@ -11,7 +11,6 @@ Admin.init({
     adminid: {
         type: sequelize_1.DataTypes.INTEGER,
         autoIncrement: true,
-        // allowNull: false,
         primaryKey: true,
     },
     status: { type: sequelize_1.DataTypes.STRING, allowNull: false },

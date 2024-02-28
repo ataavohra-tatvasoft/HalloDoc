@@ -1,10 +1,10 @@
-export * from './recoverPassword';
-export * from './adminControllers/adminSignup';
-export * from './loginControllers/adminLogin';
-export * from "./adminControllers/adminRequestByState";
-export * from "./adminControllers/adminRequestActions";
-export * from "./adminControllers/adminRequestsByRegion";
-export * from "./adminControllers/adminProfile";
-export * from "./adminControllers/adminRequestSupport";
-
-
+export * from "./recover_password";
+export * from "./admin_controllers/admin_signup";
+export * from "./login_controllers/admin_login";
+export * from "./login_controllers/patient_login";
+export * from "./login_controllers/provider_login";
+export * from "./admin_controllers/admin_request_by_state";
+export * from "./admin_controllers/admin_request_actions";
+export * from "./admin_controllers/admin_requests_by_region";
+export * from "./admin_controllers/admin_profile";
+export * from "./admin_controllers/admin_request_support";

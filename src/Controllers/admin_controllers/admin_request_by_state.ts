@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import RequestModel from '../../Models/request';
+import RequestModel from '../../models/request';
 
-export const getRequestsByState = async (req: Request, res: Response, next: NextFunction) => {
+export const requests_by_state = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { state } = req.params;     
         const requests = await RequestModel.findAll({ where: { request_state:state } });

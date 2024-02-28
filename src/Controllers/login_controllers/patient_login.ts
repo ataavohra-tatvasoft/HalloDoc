@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import statusCodes from "../../public/statusCodes";
+import statusCodes from "../../public/status_codes";
 import { Request, Response, NextFunction } from "express";
-import Admin from "../../Models/admin";
+import Patient from "../../models/patient";
 
 import dotenv from "dotenv";
 dotenv.config();
 
-export const adminLogin = async (
+export const patient_login = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -16,8 +16,8 @@ export const adminLogin = async (
     const {
       body: { email, password },
     } = req;
-    var adminData;
-    const hash = await Admin.findOne({
+    var patientdata;
+    const hash = await Patient.findOne({
       where: {
         email,
       },
@@ -34,7 +34,7 @@ export const adminLogin = async (
     const boolean = await bcrypt.compare(password, hashpassword);
 
     if (boolean) {
-      adminData = await Admin.findOne({
+      patientdata = await Patient.findOne({
         where: {
           email,
           password: hashpassword,
@@ -42,7 +42,7 @@ export const adminLogin = async (
       });
     }
 
-    if (!adminData) {
+    if (!patientdata) {
       return res.status(401).json({
         status: false,
         message: statusCodes[401],

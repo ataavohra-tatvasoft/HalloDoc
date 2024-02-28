@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import Admin from '../Models/admin';
-import statusCodes from '../public/statusCodes';
+import Admin from '../models/admin';
+import statusCodes from '../public/status_codes';
 // import { error } from 'console';
 // import { stat } from 'fs';
 
-export const adminauthmiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const admin_authmiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers as { authorization: string };
 
   try {
@@ -41,4 +41,4 @@ export const adminauthmiddleware = async (req: Request, res: Response, next: Nex
   }
 };
 
-export default adminauthmiddleware;
+export default admin_authmiddleware;

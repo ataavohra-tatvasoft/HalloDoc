@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
-import sequelize from '../Connections/database';
+import sequelize from '../connections/database';
 import Request from './request'; 
 
 class Note extends Model {

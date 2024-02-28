@@ -1,19 +1,19 @@
 import express, { Router } from "express";
 import { Request, Response, NextFunction } from "express";
-import { forgotPassword, resetPassword }  from "../Controllers"
+import { forgot_password ,  reset_password }  from "../controllers"
 const router: Router = express.Router();
 
 router.post(
   "/forgotpassword",
   (req: Request, res: Response, next: NextFunction) => {
-    forgotPassword(req, res, next);
+    forgot_password (req, res, next);
   }
 );
 
 router.post(
   "/resetpassword",
   (req: Request, res: Response, next: NextFunction) => {
-    resetPassword(req, res, next);
+    reset_password(req, res, next);
   }
 );
 export default router;

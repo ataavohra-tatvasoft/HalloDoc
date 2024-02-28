@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import Admin from "../../Models/request";
+import Admin from "../../models/request";
 
 
 
-export const getadminProfile = async (
+export const admin_profile = async (
     req: Request,
     res: Response,
     next: NextFunction

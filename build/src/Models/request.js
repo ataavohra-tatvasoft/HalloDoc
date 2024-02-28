@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = __importDefault(require("../Connections/database"));
+const database_1 = __importDefault(require("../connections/database"));
 const sequelize_1 = require("sequelize");
 class Request extends sequelize_1.Model {
 }
@@ -31,50 +31,6 @@ Request.init({
         },
         unique: false,
     },
-    firstname: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    lastname: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    dob: {
-        type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
-    },
-    mobile_number: {
-        type: sequelize_1.DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: 'Patient',
-            key: "mobile_number",
-        },
-    },
-    email: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-        references: {
-            model: 'Patient',
-            key: "email",
-        },
-    },
-    street: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    city: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    state: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    zip: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-    },
     requested_by: {
         type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner"),
         allowNull: false,
@@ -87,29 +43,21 @@ Request.init({
             key: "user_id",
         },
     },
-    requestor_name: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
     requested_date: {
         type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
-    },
-    address: {
-        type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
     notes_symptoms: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
-    region: {
-        type: sequelize_1.DataTypes.STRING,
+    physician_id: {
+        type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
-    },
-    physician_name: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
+        references: {
+            model: 'Provider',
+            key: "provider_id",
+        },
     },
     date_of_service: {
         type: sequelize_1.DataTypes.DATE,
@@ -132,12 +80,12 @@ Request.init({
     },
     transfer_request_status: {
         type: sequelize_1.DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "no",
+        defaultValue: "undefined",
         allowNull: false,
     },
     agreement_status: {
         type: sequelize_1.DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "no",
+        defaultValue: "undefined",
         allowNull: false,
     },
     assign_req_description: {

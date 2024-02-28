@@ -1,9 +1,9 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/statusCodes";
+import statusCodes from "../public/status_codes";
 // import countryStateCity, { State } from "country-state-city";
 
-export const adminSchemaSignUp = async (
+export const admin_schema_signup = async (
   req: Request,
   res: Response,
   next: NextFunction

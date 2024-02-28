@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
-import Admin from "../Models/admin";
+import Admin from "../models/admin";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";
-import statusCodes from "../public/statusCodes";
+import statusCodes from "../public/status_codes";
 
 dotenv.config();
 const Op = Sequelize.Op;
 // import SparkPostTransport from 'nodemailer-sparkpost-transport';
 // import uuid from 'uuid';
 
-export const forgotPassword = async (
+export const forgot_password = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -108,7 +108,7 @@ export const forgotPassword = async (
   }
 };
 
-export const resetPassword = async (
+export const reset_password = async (
   req: Request,
   res: Response,
   next: NextFunction

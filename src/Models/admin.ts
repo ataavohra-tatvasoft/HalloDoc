@@ -1,5 +1,5 @@
 
-import sequelize from "../Connections/database";
+import sequelize from "../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -38,7 +38,6 @@ Admin.init(
     adminid: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      // allowNull: false,
       primaryKey: true,
     },
     status: { type: DataTypes.STRING, allowNull: false },
