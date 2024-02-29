@@ -1,16 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
-import Admin from "../db/models/admin";
+import Admin from "../../db/models/admin";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";
-import statusCodes from "../public/status_codes";
+import statusCodes from "../../public/status_codes";
+import Provider from "../../db/models/provider";
 
 dotenv.config();
 const Op = Sequelize.Op;
-// import SparkPostTransport from 'nodemailer-sparkpost-transport';
-// import uuid from 'uuid';
 
 export const forgot_password = async (
   req: Request,
@@ -20,27 +19,33 @@ export const forgot_password = async (
   try {
     const { email } = req.body;
 
-    const user = await Admin.findOne({ where: { email } });
-    if (!user) {
-      return res
-        .status(400)
-        .json({
-          message: "Invalid email address",
-          errormessage: statusCodes[400],
-        });
+    const admin_user = await Admin.findOne({ where: { email } });
+    const provider_user = await Provider.findOne({ where: { email } });
+
+    if (!admin_user && provider_user) {
+      return res.status(400).json({
+        message: "Invalid email address",
+        errormessage: statusCodes[400],
+      });
     }
 
-    // const resetToken = uuid();
     const resetToken = crypto.createHash("sha256").update(email).digest("hex");
     const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
-    // console.log(resetToken, expireTime, user.firstname);
 
-    await Admin.update(
-      { reset_token: resetToken, reset_token_expiry: expireTime },
-      { where: { email } }
-    );
+    if (admin_user) {
+      await Admin.update(
+        { reset_token: resetToken, reset_token_expiry: expireTime },
+        { where: { email } }
+      );
+    }
+    if (provider_user) {
+      await Provider.update(
+        { reset_token: resetToken, reset_token_expiry: expireTime },
+        { where: { email } }
+      );
+    }
 
-    const resetUrl = `http://localhost:7000/forgotresetpassword/resetpassword`;
+    const resetUrl = `http://localhost:7000/recoverpassword//admin_provider/resetpassword`;
     const mailContent = `
       <html>
       <form action = "${resetUrl}" method="POST"> 
@@ -58,11 +63,7 @@ export const forgot_password = async (
       </form>
       </html>
     `;
-    // const transportOptions: SparkPostTransport.Options = {
-    //   apiKey: process.env.SPARKPOST_API_KEY,
-    // };
 
-    // const transporter = nodemailer.createTransport(SparkPostTransport(transportOptions));
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
@@ -73,15 +74,7 @@ export const forgot_password = async (
         pass: process.env.EMAIL_PASS,
       },
     });
-    console.log("Test", {
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+
     const info = await transporter.sendMail({
       from: "vohraatta@gmail.com",
       to: email,
@@ -91,20 +84,16 @@ export const forgot_password = async (
 
     console.log("Email sent: %s", info.messageId);
 
-    res
-      .status(200)
-      .json({
-        message: "Reset password link sent to your email",
-        errormessage: statusCodes[200],
-      });
+    res.status(200).json({
+      message: "Reset password link sent to your email",
+      errormessage: statusCodes[200],
+    });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Error sending reset password link",
-        errormessage: statusCodes[500],
-      });
+    res.status(500).json({
+      message: "Error sending reset password link",
+      errormessage: statusCodes[500],
+    });
   }
 };
 
@@ -117,41 +106,61 @@ export const reset_password = async (
     const { ResetToken, Password } = req.body;
     console.log(ResetToken, Password);
     // Validate reset token and expiry
-    const user = await Admin.findOne({
+    const admin_user = await Admin.findOne({
       where: {
         reset_token: ResetToken,
         reset_token_expiry: { [Op.gt]: Date.now() },
       },
     });
-    if (!user) {
-      return res
-        .status(400)
-        .json({
-          message: "Invalid or expired reset token",
-          errormessage: statusCodes[400],
-        });
+    const provider_user = await Provider.findOne({
+      where: {
+        reset_token: ResetToken,
+        reset_token_expiry: { [Op.gt]: Date.now() },
+      },
+    });
+    if (!admin_user && provider_user) {
+      return res.status(400).json({
+        message: "Invalid or expired reset token",
+        errormessage: statusCodes[400],
+      });
     }
 
     const hashedPassword = await brcypt.hash(Password, 10);
+    if (admin_user) {
+      await Admin.update(
+        {
+          password: hashedPassword,
+          reset_token: null,
+          reset_token_expiry: null,
+        },
+        { where: { adminid: admin_user.adminid } }
+      );
 
-    await Admin.update(
-      { password: hashedPassword, reset_token: null, reset_token_expiry: null },
-      { where: { adminid: user.adminid } }
-    );
-
-    res
-      .status(200)
-      .json({
+      res.status(200).json({
         message: "Password reset successfully",
         errormessage: statusCodes[200],
       });
+    }
+    if (provider_user) {
+      await Provider.update(
+        {
+          password: hashedPassword,
+          reset_token: null,
+          reset_token_expiry: null,
+        },
+        { where: { provider_id: provider_user.provider_id } }
+      );
+
+      res.status(200).json({
+        message: "Password reset successfully",
+        errormessage: statusCodes[200],
+      });
+    }
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Error resetting password",
-        errormessage: statusCodes[500],
-      });
+    res.status(500).json({
+      message: "Error resetting password",
+      errormessage: statusCodes[500],
+    });
   }
 };

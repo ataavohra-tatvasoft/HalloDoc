@@ -17,6 +17,10 @@ module.exports = {
           key: 'request_id',
         },
       },
+      request_state:{
+        type: Sequelize.ENUM("active", "conclude", "toclose"),
+        allowNull: false,
+      },
       profession: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -26,7 +30,7 @@ module.exports = {
         allowNull: false,
       },
       businessContact: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
       email: {

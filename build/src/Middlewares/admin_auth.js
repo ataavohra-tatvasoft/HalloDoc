@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.admin_authmiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const admin_1 = __importDefault(require("../models/admin"));
+const admin_1 = __importDefault(require("../db/models/admin"));
 const status_codes_1 = __importDefault(require("../public/status_codes"));
 // import { error } from 'console';
 // import { stat } from 'fs';

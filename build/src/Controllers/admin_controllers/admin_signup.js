@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.admin_signup = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
-const admin_1 = __importDefault(require("../../models/admin"));
+const admin_1 = __importDefault(require("../../db/models/admin"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
 dotenv_1.default.config({ path: `.env` });

@@ -1,7 +1,7 @@
 import express, { Router } from "express";
-import login_routes from "./login";
+import login_routes from "./login_recover";
 import signup_routes from "./signup";
-import recover_password_routes from "./recover_password";
+import recover_password_routes from "./login_recover";
 import {admin_schema_signup} from "../middlewares";
 import admin_routes from "./admin";
 import {admin_authmiddleware} from "../middlewares";

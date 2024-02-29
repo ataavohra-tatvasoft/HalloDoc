@@ -13,10 +13,10 @@ export const patient_login = async (
   next: NextFunction
 ) => {
   try {
+    var patientdata;
     const {
       body: { email, password },
     } = req;
-    var patientdata;
     const hash = await Patient.findOne({
       where: {
         email,
@@ -52,6 +52,7 @@ export const patient_login = async (
     const data = {
       email: email,
       password: password,
+
     };
     const jwtToken = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
 

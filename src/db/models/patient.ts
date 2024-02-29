@@ -13,18 +13,20 @@ class Patient extends Model<
 > {
   declare patient_id: CreationOptional<number>;
   declare email: string;
-  declare password:CreationOptional<string>;
+  declare password: CreationOptional<string>;
   declare firstname: string;
   declare lastname: string;
   declare dob: Date;
   declare mobile_number: number;
-  declare region:CreationOptional< string>;
+  declare region: CreationOptional<string>;
   declare business_name: CreationOptional<string>;
-  declare street: string;
-  declare city: string;
-  declare state: string;
-  declare zip: number;
-  declare address: string;
+  declare street:CreationOptional <string>;
+  declare city:CreationOptional <string>;
+  declare state:CreationOptional <string>;
+  declare zip:CreationOptional <string>;
+  declare address:CreationOptional <string>;
+  declare reset_token: CreationOptional<string | null>;
+  declare reset_token_expiry: CreationOptional<number | null>;
 }
 
 Patient.init(
@@ -88,6 +90,8 @@ Patient.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    reset_token: { type: DataTypes.STRING, allowNull: true },
+    reset_token_expiry: { type: DataTypes.BIGINT, allowNull: true },
   },
   {
     sequelize,

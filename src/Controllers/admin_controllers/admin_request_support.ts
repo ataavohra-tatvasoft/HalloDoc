@@ -9,9 +9,6 @@ export const request_support = async (
 ) => {
   try {
     const { support_message } = req.body;
-    // const requests = await Provider.findAll({
-    //   where: { scheduled_status: "no" },
-    // });
     await Provider.update({
         support_message
     },

@@ -5,7 +5,9 @@ import Request from './request';
 class Order extends Model {
   declare orderId: number; 
   declare requestId: number; 
+  declare request_state: string;
   declare profession: string;
+  declare businessName: string;
   declare businessContact: number;
   declare email: string;
   declare faxNumber: number;
@@ -24,9 +26,13 @@ Order.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Request,
+        model: "Request",
         key: 'request_id',
       },
+    },
+    request_state:{
+      type: DataTypes.ENUM("active", "conclude", "toclose"),
+      allowNull: false,
     },
     profession: {
       type: DataTypes.STRING,

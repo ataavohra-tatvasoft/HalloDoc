@@ -14,13 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.request_support = void 0;
 // import RequestModel from "../../models/request";
-const provider_1 = __importDefault(require("../../models/provider"));
+const provider_1 = __importDefault(require("../../db/models/provider"));
 const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { support_message } = req.body;
-        // const requests = await Provider.findAll({
-        //   where: { scheduled_status: "no" },
-        // });
         yield provider_1.default.update({
             support_message
         }, {

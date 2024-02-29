@@ -12,43 +12,71 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.patient_login = void 0;
+exports.login = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
-const patient_1 = __importDefault(require("../../db/models/patient"));
+const admin_1 = __importDefault(require("../../db/models/admin"));
+const provider_1 = __importDefault(require("../../db/models/provider"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const patient_1 = __importDefault(require("../../db/models/patient"));
 dotenv_1.default.config();
-const patient_login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        var patientdata;
+        var admin_data;
+        var provider_data;
         const { body: { email, password }, } = req;
-        const hash = yield patient_1.default.findOne({
+        const admin_hash = yield admin_1.default.findOne({
             where: {
                 email,
             },
         });
-        if (!hash) {
+        const provider_hash = yield provider_1.default.findOne({
+            where: {
+                email,
+            },
+        });
+        if (!admin_hash && !provider_hash) {
             return res.status(404).json({
                 status: false,
                 message: "USER " + status_codes_1.default[404],
             });
         }
-        const hashpassword = hash.password;
-        const boolean = yield bcrypt_1.default.compare(password, hashpassword);
-        if (boolean) {
-            patientdata = yield patient_1.default.findOne({
-                where: {
-                    email,
-                    password: hashpassword,
-                },
-            });
+        if (admin_hash) {
+            const hashpassword = admin_hash.password;
+            const admin_boolean = yield bcrypt_1.default.compare(password, hashpassword);
+            if (admin_boolean) {
+                admin_data = yield admin_1.default.findOne({
+                    where: {
+                        email,
+                        password: hashpassword,
+                    },
+                });
+            }
+            if (!admin_data) {
+                return res.status(401).json({
+                    status: false,
+                    message: status_codes_1.default[401],
+                });
+            }
         }
-        if (!patientdata) {
-            return res.status(401).json({
-                status: false,
-                message: status_codes_1.default[401],
-            });
+        if (provider_hash) {
+            const hashpassword = provider_hash.password;
+            const provider_boolean = yield bcrypt_1.default.compare(password, hashpassword);
+            if (provider_boolean) {
+                provider_data = yield patient_1.default.findOne({
+                    where: {
+                        email,
+                        password: hashpassword,
+                    },
+                });
+            }
+            if (!provider_data) {
+                return res.status(401).json({
+                    status: false,
+                    message: status_codes_1.default[401],
+                });
+            }
         }
         const data = {
             email: email,
@@ -69,4 +97,4 @@ const patient_login = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         });
     }
 });
-exports.patient_login = patient_login;
+exports.login = login;

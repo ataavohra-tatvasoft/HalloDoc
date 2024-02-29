@@ -80,6 +80,7 @@ Provider.init(
   {
     sequelize,
     tableName: "provider",
+    modelName: "Provider"
   }
 );
 

@@ -12,7 +12,7 @@ module.exports = {
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique:true,
+        unique: true,
       },
       password: {
         type: Sequelize.STRING,
@@ -33,14 +33,14 @@ module.exports = {
       mobile_number: {
         type: Sequelize.BIGINT,
         allowNull: false,
-        unique:true,
+        unique: true,
       },
       region: {
         type: Sequelize.STRING,
         allowNull: false,
       },
       business_name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       street: {
@@ -63,6 +63,8 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      reset_token: { type: Sequelize.STRING, allowNull: true },
+      reset_token_expiry: { type: Sequelize.BIGINT, allowNull: true },
     });
   },
 

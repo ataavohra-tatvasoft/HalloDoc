@@ -11,27 +11,14 @@ class Request extends Model<
   InferCreationAttributes<Request>
 > {
   declare request_id: CreationOptional<number>;
-  declare confirmation_no: CreationOptional<number>;
+  declare confirmation_no: CreationOptional<string>;
   declare request_state: string;
   declare patient_id: number;
-  // declare firstname: string;
-  // declare lastname: string;
-  // declare dob: Date;
-  // declare mobile_number: number;
-  // declare email: string;
-  // declare street: string;
-  // declare city: string;
-  // declare state: string;
-  // declare zip: number;
   declare requested_by: string;
   declare requestor_id:CreationOptional< number>;
-  // declare requestor_name: string;
   declare requested_date: Date;
-  // declare address: string;
   declare notes_symptoms:CreationOptional< string | null>;
-  // declare region: string;
   declare physician_id:CreationOptional< number>;
-  // declare physician_name: string;
   declare date_of_service:CreationOptional< Date>;
   declare block_status: CreationOptional<string>;
   declare cancellation_status: CreationOptional<string>;
@@ -39,6 +26,7 @@ class Request extends Model<
   declare transfer_request_status: CreationOptional<string>;
   declare agreement_status: CreationOptional<string>;
   declare assign_req_description: CreationOptional<string>;
+  declare createdAt:CreationOptional <Date>;
 }
 
 Request.init(
@@ -49,7 +37,7 @@ Request.init(
       primaryKey: true,
     },
     confirmation_no: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
@@ -81,7 +69,7 @@ Request.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Concierge',
+        model: 'Requestor',
         key: "user_id",
       },
     },
@@ -133,6 +121,11 @@ Request.init(
     assign_req_description: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     
   },

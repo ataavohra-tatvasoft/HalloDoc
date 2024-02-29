@@ -9,14 +9,7 @@ module.exports = {
       autoIncrement: true,
       primaryKey: true,
     },
-    // request_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    //   references: {
-    //     model: 'Request', 
-    //     key: 'request_id',
-    //   },
-    // },
+
     first_name: {
       type: Sequelize.STRING,
       allowNull: false,
