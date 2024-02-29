@@ -54,7 +54,7 @@ const admin_signup = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     catch (error) {
         res.status(500).json({
             status: false,
-            errormessage: "Internal server error" + error.message,
+            errormessage: "Internal server error  " + error.message,
             message: status_codes_1.default[500],
         });
     }

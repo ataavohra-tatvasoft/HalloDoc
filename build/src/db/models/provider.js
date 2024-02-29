@@ -45,7 +45,7 @@ Provider.init({
     reset_token_expiry: { type: sequelize_1.DataTypes.BIGINT, allowNull: true },
     scheduled_status: { type: sequelize_1.DataTypes.ENUM("yes", "no"), defaultValue: "no" },
     support_message: { type: sequelize_1.DataTypes.STRING, allowNull: true },
-}, {
+}, { timestamps: false,
     sequelize: database_1.default,
     tableName: "provider",
     modelName: "Provider"

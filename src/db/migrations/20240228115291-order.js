@@ -30,7 +30,7 @@ module.exports = {
         allowNull: false,
       },
       businessContact: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       email: {

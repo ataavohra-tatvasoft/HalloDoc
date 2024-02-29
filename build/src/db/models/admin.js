@@ -38,6 +38,7 @@ Admin.init({
     reset_token: { type: sequelize_1.DataTypes.STRING, allowNull: true },
     reset_token_expiry: { type: sequelize_1.DataTypes.BIGINT, allowNull: true },
 }, {
+    timestamps: false,
     sequelize: database_1.default,
     tableName: "admin",
 });

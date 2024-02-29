@@ -29,7 +29,6 @@ Request.init({
             model: "Patient",
             key: "patient_id",
         },
-        unique: false,
     },
     requested_by: {
         type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner"),
@@ -97,7 +96,7 @@ Request.init({
         allowNull: false,
         defaultValue: sequelize_1.DataTypes.NOW,
     },
-}, {
+}, { timestamps: false,
     sequelize: database_1.default,
     tableName: "request",
 });

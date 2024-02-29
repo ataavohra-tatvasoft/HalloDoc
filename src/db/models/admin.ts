@@ -66,6 +66,7 @@ Admin.init(
     reset_token_expiry:{type: DataTypes.BIGINT, allowNull:true},
   },
   {     
+    timestamps:false,
     sequelize,
     tableName: "admin",
   }

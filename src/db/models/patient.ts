@@ -43,7 +43,7 @@ Patient.init(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     firstname: {
       type: DataTypes.STRING,
@@ -64,36 +64,36 @@ Patient.init(
     },
     region: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     business_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     street: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     city: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     state: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     zip: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     address: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     reset_token: { type: DataTypes.STRING, allowNull: true },
     reset_token_expiry: { type: DataTypes.BIGINT, allowNull: true },
   },
-  {
+  {  timestamps:false,
     sequelize,
     modelName: "Patient",
     tableName: "patient",

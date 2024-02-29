@@ -40,7 +40,7 @@ module.exports = {
         allowNull: false,
       },
       business_name: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       street: {

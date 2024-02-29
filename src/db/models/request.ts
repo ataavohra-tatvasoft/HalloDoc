@@ -59,7 +59,6 @@ Request.init(
         model: "Patient",
         key: "patient_id",
       },
-      unique:false,
     },  
     requested_by: {
       type: DataTypes.ENUM("family_friend", "concierge", "business_partner"),
@@ -129,7 +128,7 @@ Request.init(
     },
     
   },
-  {
+  {  timestamps:false,
     sequelize,
     tableName: "request",
   }

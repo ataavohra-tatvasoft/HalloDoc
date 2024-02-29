@@ -61,7 +61,7 @@ export const admin_signup = async (req: Request, res: Response, next: NextFuncti
   } catch (error:any) {
     res.status(500).json({
       status: false,
-      errormessage: "Internal server error" + error.message,
+      errormessage: "Internal server error  " + error.message,
       message: statusCodes[500],
     });
   }

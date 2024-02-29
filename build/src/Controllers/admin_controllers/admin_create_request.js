@@ -22,11 +22,13 @@ const sequelize_1 = require("sequelize");
 dotenv_1.default.config({ path: `.env` });
 const create_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { body: { FirstName, LastName, DOB, PhoneNumber, Email, Street, City, State, Zip, Room, PhysicianNotes, AdminNotes, }, } = req;
+        const { body: { FirstName, LastName, DOB, PhoneNumber, Email, AdminNotes, }, } = req;
+        // const today = new Date();
+        // console.log(today,today.getFullYear(),today.getFullYear().toString(),today.getFullYear().toString().slice(-2));
         const patient_data = yield patient_1.default.create({
             firstname: FirstName,
             lastname: LastName,
-            dob: DOB,
+            dob: new Date(DOB),
             mobile_number: PhoneNumber,
             email: Email,
         });
@@ -50,12 +52,6 @@ const create_request = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             requested_date: new Date(),
             confirmation_no: confirmation_no,
         });
-        // const physician_note = await Note.create({
-        //   requestId: request_data.request_id,
-        //   //  requested_by: "physician",
-        //   description: PhysicianNotes,
-        //   typeOfNote: "physician",
-        // });
         const admin_note = yield notes_1.default.create({
             requestId: request_data.request_id,
             //  requested_by: "Admin",

@@ -77,7 +77,7 @@ Provider.init(
     scheduled_status: { type: DataTypes.ENUM("yes", "no"), defaultValue: "no" },
     support_message: { type: DataTypes.STRING, allowNull: true },
   },
-  {
+  {  timestamps:false,
     sequelize,
     tableName: "provider",
     modelName: "Provider"

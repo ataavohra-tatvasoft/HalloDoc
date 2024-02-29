@@ -20,19 +20,15 @@ export const create_request = async (
         DOB,
         PhoneNumber,
         Email,
-        Street,
-        City,
-        State,
-        Zip,
-        Room,
-        PhysicianNotes,
         AdminNotes,
       },
     } = req;
+    // const today = new Date();
+    // console.log(today,today.getFullYear(),today.getFullYear().toString(),today.getFullYear().toString().slice(-2));
     const patient_data = await Patient.create({
       firstname: FirstName,
       lastname: LastName,
-      dob: DOB,
+      dob: new Date(DOB),
       mobile_number: PhoneNumber,
       email: Email,
     });
@@ -58,7 +54,6 @@ export const create_request = async (
       0,
       2
     )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
-
     const request_data = await RequestModel.create({
       request_state: "new",
       patient_id: patient_data.patient_id,
@@ -66,13 +61,6 @@ export const create_request = async (
       requested_date: new Date(),
       confirmation_no: confirmation_no,
     });
-    // const physician_note = await Note.create({
-    //   requestId: request_data.request_id,
-    //   //  requested_by: "physician",
-    //   description: PhysicianNotes,
-    //   typeOfNote: "physician",
-    // });
-
     const admin_note = await Note.create({
       requestId: request_data.request_id,
       //  requested_by: "Admin",

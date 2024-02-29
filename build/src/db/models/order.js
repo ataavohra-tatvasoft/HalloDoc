@@ -55,7 +55,7 @@ Order.init({
         allowNull: false,
         defaultValue: 0,
     },
-}, {
+}, { timestamps: false,
     sequelize: database_1.default,
     tableName: 'orders',
 });
