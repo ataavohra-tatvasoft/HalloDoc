@@ -22,13 +22,13 @@ Request.init({
         type: sequelize_1.DataTypes.ENUM("new", "active", "pending", "conclude", "toclose", "unpaid"),
         allowNull: false,
     },
-    patient_id: {
+    user_id: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: "Patient",
-            key: "patient_id",
-        },
+        // references: {
+        //   model: "User",
+        //   key: "user_id",
+        // },
     },
     requested_by: {
         type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner"),
@@ -36,31 +36,23 @@ Request.init({
     },
     requestor_id: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Requestor',
-            key: "user_id",
-        },
+        allowNull: true,
+        // references: {
+        //   model: 'Requestor',
+        //   key: "user_id",
+        // },
     },
     requested_date: {
         type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
     },
     notes_symptoms: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
-    physician_id: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Provider',
-            key: "provider_id",
-        },
-    },
     date_of_service: {
         type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
     },
     block_status: {
         type: sequelize_1.DataTypes.ENUM("yes", "no"),
@@ -96,7 +88,12 @@ Request.init({
         allowNull: false,
         defaultValue: sequelize_1.DataTypes.NOW,
     },
-}, { timestamps: false,
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+    },
+}, { timestamps: true,
     sequelize: database_1.default,
     tableName: "request",
 });

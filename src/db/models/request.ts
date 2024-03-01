@@ -13,12 +13,11 @@ class Request extends Model<
   declare request_id: CreationOptional<number>;
   declare confirmation_no: CreationOptional<string>;
   declare request_state: string;
-  declare patient_id: number;
+  declare user_id: number;
   declare requested_by: string;
   declare requestor_id:CreationOptional< number>;
   declare requested_date: Date;
   declare notes_symptoms:CreationOptional< string | null>;
-  declare physician_id:CreationOptional< number>;
   declare date_of_service:CreationOptional< Date>;
   declare block_status: CreationOptional<string>;
   declare cancellation_status: CreationOptional<string>;
@@ -27,6 +26,7 @@ class Request extends Model<
   declare agreement_status: CreationOptional<string>;
   declare assign_req_description: CreationOptional<string>;
   declare createdAt:CreationOptional <Date>;
+  declare updatedAt:CreationOptional <Date>;
 }
 
 Request.init(
@@ -52,13 +52,13 @@ Request.init(
       ),
       allowNull: false,
     },
-    patient_id: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: "Patient",
-        key: "patient_id",
-      },
+      // references: {
+      //   model: "User",
+      //   key: "user_id",
+      // },
     },  
     requested_by: {
       type: DataTypes.ENUM("family_friend", "concierge", "business_partner"),
@@ -66,31 +66,23 @@ Request.init(
     },
     requestor_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Requestor',
-        key: "user_id",
-      },
+      allowNull: true,
+      // references: {
+      //   model: 'Requestor',
+      //   key: "user_id",
+      // },
     },
     requested_date: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     notes_symptoms: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    physician_id:{
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Provider',
-        key: "provider_id",
-      },
-    },
     date_of_service: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     block_status: {
       type: DataTypes.ENUM("yes", "no"),
@@ -126,9 +118,14 @@ Request.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
+    },
     
   },
-  {  timestamps:false,
+  {  timestamps:true,
     sequelize,
     tableName: "request",
   }

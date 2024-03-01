@@ -14,5 +14,5 @@ const router = express_1.default.Router();
 router.use("/login", login_recover_1.default);
 router.use("/signup", middlewares_1.admin_schema_signup, signup_1.default);
 router.use("/recoverpassword", login_recover_2.default);
-router.use('/admin', middlewares_2.admin_authmiddleware, admin_1.default);
+router.use('/admin', middlewares_2.authmiddleware, admin_1.default);
 exports.default = router;

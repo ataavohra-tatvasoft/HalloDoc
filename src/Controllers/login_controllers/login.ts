@@ -2,11 +2,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import statusCodes from "../../public/status_codes";
 import { Request, Response, NextFunction } from "express";
-import Admin from "../../db/models/admin";
-import Provider from "../../db/models/provider";
-
+import User from "../../db/models/user";
 import dotenv from "dotenv";
-import Patient from "../../db/models/patient";
 dotenv.config();
 
 export const login = async (
@@ -15,64 +12,39 @@ export const login = async (
   next: NextFunction
 ) => {
   try {
-    var admin_data;
-    var provider_data;
+    var user_data;
     const {
       body: { email, password },
     } = req;
-    const admin_hash = await Admin.findOne({
+    const user_hash = await User.findOne({
       where: {
         email,
       },
     });
-    const provider_hash = await Provider.findOne({
-      where: {
-        email,
-      },
-    });
-    if (!admin_hash && !provider_hash) {
+    if (!user_hash) {
       return res.status(404).json({
         status: false,
         message: "USER " + statusCodes[404],
       });
     }
-    if (admin_hash) {
-      const hashpassword = admin_hash.password;
-      const admin_boolean = await bcrypt.compare(password, hashpassword);
-      if (admin_boolean) {
-        admin_data = await Admin.findOne({
+    if (user_hash) {
+      const hashpassword = user_hash.password;
+      const user_boolean = await bcrypt.compare(password, hashpassword);
+      if (user_boolean) {
+        user_data = await User.findOne({
           where: {
             email,
             password: hashpassword,
           },
         });
       }
-      if (!admin_data) {
+      if (!user_data) {
         return res.status(401).json({
           status: false,
           message: statusCodes[401],
         });
       }
     }
-    if (provider_hash) {
-      const hashpassword = provider_hash.password;
-      const provider_boolean = await bcrypt.compare(password, hashpassword);
-      if (provider_boolean) {
-        provider_data = await Patient.findOne({
-          where: {
-            email,
-            password: hashpassword,
-          },
-        });
-      }
-      if (!provider_data) {
-        return res.status(401).json({
-          status: false,
-          message: statusCodes[401],
-        });
-      }
-    }
-
     const data = {
       email: email,
       password: password,

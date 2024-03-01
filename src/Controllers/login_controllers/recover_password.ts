@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
-import Admin from "../../db/models/admin";
+import User from "../../db/models/user";
 import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";
 import statusCodes from "../../public/status_codes";
-import Provider from "../../db/models/provider";
 
 dotenv.config();
 const Op = Sequelize.Op;
@@ -19,10 +18,9 @@ export const forgot_password = async (
   try {
     const { email } = req.body;
 
-    const admin_user = await Admin.findOne({ where: { email } });
-    const provider_user = await Provider.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email } });
 
-    if (!admin_user && provider_user) {
+    if (!user) {
       return res.status(400).json({
         message: "Invalid email address",
         errormessage: statusCodes[400],
@@ -32,20 +30,14 @@ export const forgot_password = async (
     const resetToken = crypto.createHash("sha256").update(email).digest("hex");
     const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
 
-    if (admin_user) {
-      await Admin.update(
-        { reset_token: resetToken, reset_token_expiry: expireTime },
-        { where: { email } }
-      );
-    }
-    if (provider_user) {
-      await Provider.update(
+    if (user) {
+      await User.update(
         { reset_token: resetToken, reset_token_expiry: expireTime },
         { where: { email } }
       );
     }
 
-    const resetUrl = `http://localhost:7000/recoverpassword//admin_provider/resetpassword`;
+    const resetUrl = `http://localhost:7000/recoverpassword/user_resetpassword`;
     const mailContent = `
       <html>
       <form action = "${resetUrl}" method="POST"> 
@@ -106,19 +98,14 @@ export const reset_password = async (
     const { ResetToken, Password } = req.body;
     console.log(ResetToken, Password);
     // Validate reset token and expiry
-    const admin_user = await Admin.findOne({
+    const user = await User.findOne({
       where: {
         reset_token: ResetToken,
         reset_token_expiry: { [Op.gt]: Date.now() },
       },
     });
-    const provider_user = await Provider.findOne({
-      where: {
-        reset_token: ResetToken,
-        reset_token_expiry: { [Op.gt]: Date.now() },
-      },
-    });
-    if (!admin_user && provider_user) {
+
+    if (!user ) {
       return res.status(400).json({
         message: "Invalid or expired reset token",
         errormessage: statusCodes[400],
@@ -126,14 +113,14 @@ export const reset_password = async (
     }
 
     const hashedPassword = await brcypt.hash(Password, 10);
-    if (admin_user) {
-      await Admin.update(
+    if (user) {
+      await User.update(
         {
           password: hashedPassword,
           reset_token: null,
           reset_token_expiry: null,
         },
-        { where: { adminid: admin_user.adminid } }
+        { where: { user_id: user.user_id } }
       );
 
       res.status(200).json({
@@ -141,21 +128,7 @@ export const reset_password = async (
         errormessage: statusCodes[200],
       });
     }
-    if (provider_user) {
-      await Provider.update(
-        {
-          password: hashedPassword,
-          reset_token: null,
-          reset_token_expiry: null,
-        },
-        { where: { provider_id: provider_user.provider_id } }
-      );
-
-      res.status(200).json({
-        message: "Password reset successfully",
-        errormessage: statusCodes[200],
-      });
-    }
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({

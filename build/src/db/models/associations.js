@@ -3,26 +3,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const patient_1 = __importDefault(require("./patient"));
+const user_1 = __importDefault(require("./user"));
 const request_1 = __importDefault(require("./request"));
 const requestor_1 = __importDefault(require("./requestor"));
-const admin_1 = __importDefault(require("./admin"));
+const notes_1 = __importDefault(require("./notes"));
+const order_1 = __importDefault(require("./order"));
 /**Associations */
-admin_1.default.hasMany(request_1.default);
-request_1.default.belongsTo(admin_1.default, {
+user_1.default.hasMany(request_1.default, { foreignKey: 'user_id' });
+request_1.default.belongsTo(user_1.default, {
     constraints: true,
     onDelete: "NULL",
     onUpdate: "CASCADE",
+    foreignKey: "user_id",
+    targetKey: "user_id",
 });
-patient_1.default.hasMany(request_1.default);
-request_1.default.belongsTo(patient_1.default, {
-    constraints: true,
-    onDelete: "NULL",
-    onUpdate: "CASCADE",
-});
-requestor_1.default.hasMany(request_1.default);
+requestor_1.default.hasMany(request_1.default, { foreignKey: 'user_id' });
 request_1.default.belongsTo(requestor_1.default, {
     constraints: true,
     onDelete: "NULL",
     onUpdate: "CASCADE",
+    foreignKey: "requestor_id",
+    targetKey: "user_id",
+});
+request_1.default.hasMany(notes_1.default);
+notes_1.default.belongsTo(request_1.default, {
+    constraints: true,
+    onDelete: "NULL",
+    onUpdate: "CASCADE",
+    foreignKey: "requestId",
+    targetKey: "request_id",
+});
+request_1.default.hasMany(order_1.default);
+order_1.default.belongsTo(request_1.default, {
+    constraints: true,
+    onDelete: "NULL",
+    onUpdate: "CASCADE",
+    foreignKey: "requestId",
+    targetKey: "request_id",
 });

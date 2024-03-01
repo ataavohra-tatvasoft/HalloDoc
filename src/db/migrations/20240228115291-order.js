@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-    await queryInterface.createTable('order', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("order", {
       orderId: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -14,10 +14,10 @@ module.exports = {
         allowNull: false,
         references: {
           model: "Request",
-          key: 'request_id',
+          key: "request_id",
         },
       },
-      request_state:{
+      request_state: {
         type: Sequelize.ENUM("active", "conclude", "toclose"),
         allowNull: false,
       },
@@ -51,14 +51,23 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
-  });
+      createdAt: {
+        type: Sequelize.DATE,
+        default: Sequelize.NOW,
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+      },
+    });
   },
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     /**
      * Add reverting commands here.
      *
      * Example:
      * await queryInterface.dropTable('users');
      */
-  }
+  },
 };

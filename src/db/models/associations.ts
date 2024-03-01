@@ -1,29 +1,42 @@
-import Patient from "./patient";
+import User from "./user";
 import Request from "./request";
-import Concierge from "./requestor";
-import Admin from "./admin";
-
+import Requestor from "./requestor";
+import Notes from "./notes";
+import Order from "./order";
 /**Associations */
 
-Admin.hasMany(Request);
-Request.belongsTo(Admin, {
+User.hasMany(Request,{ foreignKey : 'user_id'});
+Request.belongsTo(User, {
   constraints: true,
   onDelete: "NULL",
   onUpdate: "CASCADE",
+  foreignKey: "user_id",
+  targetKey: "user_id",
 });
 
-Patient.hasMany(Request);
-Request.belongsTo(Patient, {
+Requestor.hasMany(Request, { foreignKey : 'user_id'});
+Request.belongsTo(Requestor, {
   constraints: true,
   onDelete: "NULL",
   onUpdate: "CASCADE",
+  foreignKey: "requestor_id",
+  targetKey: "user_id",
 });
 
-Concierge.hasMany(Request);
-Request.belongsTo(Concierge, {
+Request.hasMany(Notes);
+Notes.belongsTo(Request, {
   constraints: true,
   onDelete: "NULL",
   onUpdate: "CASCADE",
+  foreignKey: "requestId",
+  targetKey: "request_id",
 });
 
-
+Request.hasMany(Order);
+Order.belongsTo(Request, {
+  constraints: true,
+  onDelete: "NULL",
+  onUpdate: "CASCADE",
+  foreignKey: "requestId",
+  targetKey: "request_id",
+});

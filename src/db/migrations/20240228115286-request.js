@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('request', {
+    await queryInterface.createTable("request", {
       request_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -26,23 +26,23 @@ module.exports = {
         ),
         allowNull: false,
       },
-      patient_id: {
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Patient",
-          key: "patient_id",
+          model: "User",
+          key: "user_id",
         },
-      },  
+      },
       requested_by: {
         type: Sequelize.ENUM("family_friend", "concierge", "business_partner"),
         allowNull: false,
       },
       requestor_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
-          model: 'Requestor',
+          model: "Requestor",
           key: "user_id",
         },
       },
@@ -54,40 +54,32 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      physician_id:{
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Provider',
-          key: "provider_id",
-        },
-      },
       date_of_service: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       block_status: {
         type: Sequelize.ENUM("yes", "no"),
         defaultValue: "no",
         allowNull: false,
       },
-      cancellation_status:{
+      cancellation_status: {
         type: Sequelize.ENUM("yes", "no"),
         defaultValue: "no",
         allowNull: false,
       },
-      close_case_status:{
+      close_case_status: {
         type: Sequelize.ENUM("yes", "no"),
         defaultValue: "no",
         allowNull: false,
       },
-      transfer_request_status:{
-        type: Sequelize.ENUM("undefined","pending","accepted","rejected"),
+      transfer_request_status: {
+        type: Sequelize.ENUM("undefined", "pending", "accepted", "rejected"),
         defaultValue: "undefined",
         allowNull: false,
       },
-      agreement_status:{
-        type: Sequelize.ENUM("undefined","pending","accepted","rejected"),
+      agreement_status: {
+        type: Sequelize.ENUM("undefined", "pending", "accepted", "rejected"),
         defaultValue: "undefined",
         allowNull: false,
       },
@@ -97,12 +89,13 @@ module.exports = {
       },
       createdAt: {
         type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW,
+        default: Sequelize.NOW,
       },
-      
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+      },
     });
-
-  
   },
 };

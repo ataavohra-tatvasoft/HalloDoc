@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import Admin from '../db/models/admin';
+import User from '../db/models/user';
 import statusCodes from '../public/status_codes';
-// import { error } from 'console';
-// import { stat } from 'fs';
 
-export const admin_authmiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const authmiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers as { authorization: string };
 
   try {
@@ -16,7 +14,7 @@ export const admin_authmiddleware = async (req: Request, res: Response, next: Ne
     const token:string = authorization.split(" ")[1];
     const verifiedToken: any = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
 
-    const validUser  = await Admin.findOne({
+    const validUser  = await User.findOne({
       where: {
         email: verifiedToken.email,
       },
@@ -41,4 +39,4 @@ export const admin_authmiddleware = async (req: Request, res: Response, next: Ne
   }
 };
 
-export default admin_authmiddleware;
+export default authmiddleware;

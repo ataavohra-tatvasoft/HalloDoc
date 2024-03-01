@@ -1,11 +1,4 @@
-export * from "./login_controllers/admin_provider_login";
-export * from "./login_controllers/patient_login";
-export * from "./login_controllers/admin_provider_rec_pass";
-export * from "./login_controllers/patient_rec_pass";
-export * from "./admin_controllers/admin_signup";
-export * from "./admin_controllers/admin_request_by_state";
-export * from "./admin_controllers/admin_request_actions";
-export * from "./admin_controllers/admin_requests_by_region";
-export * from "./admin_controllers/admin_profile";
-export * from "./admin_controllers/admin_request_support";
-export * from "./admin_controllers/admin_create_request";
+export * from "./login_controllers/login";
+export * from "./login_controllers/recover_password";
+export * from "./admin_controllers/admin.controllers"
+
