@@ -606,10 +606,8 @@ exports.request_support = request_support;
 const admin_profile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { authorization } = req.headers;
-        console.log(authorization);
         const token = authorization.split(" ")[1];
         const verifiedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
-        console.log(verifiedToken);
         const admin_id = verifiedToken.user_id;
         const profile = yield user_1.default.findOne({
             where: {

@@ -24,6 +24,7 @@ const authmiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         }
         const token = authorization.split(" ")[1];
         const verifiedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
+        console.log(verifiedToken);
         const validUser = yield user_1.default.findOne({
             where: {
                 email: verifiedToken.email,
@@ -43,10 +44,14 @@ const authmiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (err) {
         if (err instanceof jsonwebtoken_1.default.JsonWebTokenError) {
-            return res.status(401).json({ message: "Invalid token", errormessage: status_codes_1.default[401] });
+            return res
+                .status(401)
+                .json({ message: "Invalid token", errormessage: status_codes_1.default[401] });
         }
         else {
-            return res.status(500).json({ message: "Server error", errormessage: status_codes_1.default[500] });
+            return res
+                .status(500)
+                .json({ message: "Server error", errormessage: status_codes_1.default[500] });
         }
     }
 });

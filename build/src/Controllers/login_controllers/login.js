@@ -27,6 +27,13 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             where: {
                 email,
             },
+            include: [
+                "user_id",
+                "firstname",
+                "lastname",
+                "email",
+                "type_of_user"
+            ]
         });
         if (!user) {
             return res.status(404).json({
@@ -43,6 +50,13 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                         email,
                         password: hashpassword,
                     },
+                    include: [
+                        "user_id",
+                        "firstname",
+                        "lastname",
+                        "email",
+                        "type_of_user"
+                    ]
                 });
             }
             if (!user_data) {
@@ -52,6 +66,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                 });
             }
         }
+        console.log(user_data);
         const data = {
             user_id: user.user_id,
             firstname: user.firstname,

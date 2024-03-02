@@ -20,6 +20,13 @@ export const login = async (
       where: {
         email,
       },
+      include:[
+        "user_id",
+        "firstname",
+        "lastname",
+        "email",
+        "type_of_user"
+      ]
     });
     if (!user) {
       return res.status(404).json({
@@ -36,7 +43,15 @@ export const login = async (
             email,
             password: hashpassword,
           },
-        });
+          include:[
+            "user_id",
+            "firstname",
+            "lastname",
+            "email",
+            "type_of_user"
+          ]
+        }
+        );
       }
       if (!user_data) {
         return res.status(401).json({
@@ -45,6 +60,7 @@ export const login = async (
         });
       }
     }
+    console.log(user_data);
     const data = {
       user_id: user.user_id,
       firstname: user.firstname,
