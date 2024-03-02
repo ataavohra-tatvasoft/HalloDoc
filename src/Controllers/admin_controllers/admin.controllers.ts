@@ -8,6 +8,7 @@ import * as crypto from "crypto";
 import bcrypt from "bcrypt";
 import statusCodes from "../../public/status_codes";
 import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 dotenv.config({ path: `.env` });
@@ -633,9 +634,15 @@ export const admin_profile = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { admin_id } = req.params;
-
   try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+    const verifiedToken: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    );
+
+    const admin_id = verifiedToken.user_id;
     const profile = await User.findOne({
       where: {
         user_id: admin_id,
@@ -738,9 +745,7 @@ export const clear_case_for_request = async (
         });
       }
     } catch {
-      res
-        .status(404)
-        .json({ error: "Invalid State !!!" });
+      res.status(404).json({ error: "Invalid State !!!" });
     }
   } catch (error) {
     console.error("Error fetching request:", error);

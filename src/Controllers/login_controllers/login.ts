@@ -16,19 +16,19 @@ export const login = async (
     const {
       body: { email, password },
     } = req;
-    const user_hash = await User.findOne({
+    const user = await User.findOne({
       where: {
         email,
       },
     });
-    if (!user_hash) {
+    if (!user) {
       return res.status(404).json({
         status: false,
         message: "USER " + statusCodes[404],
       });
     }
-    if (user_hash) {
-      const hashpassword = user_hash.password;
+    if (user) {
+      const hashpassword = user.password;
       const user_boolean = await bcrypt.compare(password, hashpassword);
       if (user_boolean) {
         user_data = await User.findOne({
@@ -46,8 +46,11 @@ export const login = async (
       }
     }
     const data = {
-      email: email,
-      password: password,
+      user_id: user.user_id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      type_of_user: user.type_of_user,
     };
     const jwtToken = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
 

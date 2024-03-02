@@ -19,7 +19,7 @@ router.get("/dashboard/requests/:state/:region/requestsbyregion", middlewares_1.
 router.put("/dashboard/requests/requestsupport", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.request_support)(req, res, next);
 });
-router.get("/dashboard/requests/:admin_id/admin_profile", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/admin_profile", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.admin_profile)(req, res, next);
 });
 router.get("/dashboard/requests/:state/:confirmation_no/actions/viewcase", middlewares_1.authmiddleware, (req, res, next) => {

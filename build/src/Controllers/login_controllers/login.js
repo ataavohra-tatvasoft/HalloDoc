@@ -23,19 +23,19 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         var user_data;
         const { body: { email, password }, } = req;
-        const user_hash = yield user_1.default.findOne({
+        const user = yield user_1.default.findOne({
             where: {
                 email,
             },
         });
-        if (!user_hash) {
+        if (!user) {
             return res.status(404).json({
                 status: false,
                 message: "USER " + status_codes_1.default[404],
             });
         }
-        if (user_hash) {
-            const hashpassword = user_hash.password;
+        if (user) {
+            const hashpassword = user.password;
             const user_boolean = yield bcrypt_1.default.compare(password, hashpassword);
             if (user_boolean) {
                 user_data = yield user_1.default.findOne({
@@ -53,8 +53,11 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             }
         }
         const data = {
-            email: email,
-            password: password,
+            user_id: user.user_id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            type_of_user: user.type_of_user,
         };
         const jwtToken = jsonwebtoken_1.default.sign(data, process.env.JWT_SECRET_KEY);
         return res.status(200).json({

@@ -54,7 +54,7 @@ router.put(
   }
 );
 router.get(
-  "/dashboard/requests/:admin_id/admin_profile",
+  "/dashboard/requests/admin_profile",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     admin_profile(req, res, next);

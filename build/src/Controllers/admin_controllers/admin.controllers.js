@@ -45,6 +45,7 @@ const crypto = __importStar(require("crypto"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const sequelize_1 = require("sequelize");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: `.env` });
@@ -603,8 +604,13 @@ const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.request_support = request_support;
 /**Admin Profile */
 const admin_profile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { admin_id } = req.params;
     try {
+        const { authorization } = req.headers;
+        console.log(authorization);
+        const token = authorization.split(" ")[1];
+        const verifiedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
+        console.log(verifiedToken);
+        const admin_id = verifiedToken.user_id;
         const profile = yield user_1.default.findOne({
             where: {
                 user_id: admin_id,
@@ -700,9 +706,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             }
         }
         catch (_a) {
-            res
-                .status(404)
-                .json({ error: "Invalid State !!!" });
+            res.status(404).json({ error: "Invalid State !!!" });
         }
     }
     catch (error) {
