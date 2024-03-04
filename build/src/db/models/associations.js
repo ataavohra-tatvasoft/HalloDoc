@@ -9,34 +9,37 @@ const requestor_1 = __importDefault(require("./requestor"));
 const notes_1 = __importDefault(require("./notes"));
 const order_1 = __importDefault(require("./order"));
 /**Associations */
-user_1.default.hasMany(request_1.default, { foreignKey: 'user_id' });
+// User.hasMany(Request,{ foreignKey : 'user_id'});
 request_1.default.belongsTo(user_1.default, {
-    constraints: true,
-    onDelete: "NULL",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
-    foreignKey: "user_id",
+    foreignKey: "provider_id",
     targetKey: "user_id",
 });
-requestor_1.default.hasMany(request_1.default, { foreignKey: 'user_id' });
+// User.hasMany(Request,{ foreignKey : 'user_id'});
+request_1.default.belongsTo(user_1.default, {
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
+    foreignKey: "patient_id",
+    targetKey: "user_id",
+});
+// Requestor.hasMany(Request, { foreignKey : 'user_id'});
 request_1.default.belongsTo(requestor_1.default, {
-    constraints: true,
-    onDelete: "NULL",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
     foreignKey: "requestor_id",
     targetKey: "user_id",
 });
-request_1.default.hasMany(notes_1.default);
+// Request.hasMany(Notes,  { foreignKey : 'request_id'});
 notes_1.default.belongsTo(request_1.default, {
-    constraints: true,
-    onDelete: "NULL",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
     foreignKey: "requestId",
     targetKey: "request_id",
 });
-request_1.default.hasMany(order_1.default);
+// Request.hasMany(Order);
 order_1.default.belongsTo(request_1.default, {
-    constraints: true,
-    onDelete: "NULL",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
     foreignKey: "requestId",
     targetKey: "request_id",

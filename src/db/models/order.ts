@@ -67,7 +67,7 @@ Order.init(
   },
   {  timestamps:false,
     sequelize,
-    tableName: 'orders',
+    tableName: 'order',
   }
 );
 

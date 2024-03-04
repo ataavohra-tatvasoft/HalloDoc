@@ -13,7 +13,8 @@ class Request extends Model<
   declare request_id: CreationOptional<number>;
   declare confirmation_no: CreationOptional<string>;
   declare request_state: string;
-  declare user_id: number;
+  declare provider_id: CreationOptional<number>;
+  declare patient_id: number;
   declare requested_by: string;
   declare requestor_id:CreationOptional< number>;
   declare requested_date: Date;
@@ -52,16 +53,16 @@ Request.init(
       ),
       allowNull: false,
     },
-    user_id: {
+    patient_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      // references: {
-      //   model: "User",
-      //   key: "user_id",
-      // },
-    },  
+    },     
+    provider_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     requested_by: {
-      type: DataTypes.ENUM("family_friend", "concierge", "business_partner"),
+      type: DataTypes.ENUM("family_friend", "concierge", "business_partner","admin", "patient","provider"),
       allowNull: false,
     },
     requestor_id: {

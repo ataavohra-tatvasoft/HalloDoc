@@ -17,16 +17,17 @@ export const login = async (
       body: { email, password },
     } = req;
     const user = await User.findOne({
-      where: {
-        email,
-      },
-      include:[
+      attributes:[
         "user_id",
+        "password",
         "firstname",
         "lastname",
         "email",
         "type_of_user"
-      ]
+      ],
+      where: {
+        email,
+      },
     });
     if (!user) {
       return res.status(404).json({
@@ -43,7 +44,7 @@ export const login = async (
             email,
             password: hashpassword,
           },
-          include:[
+          attributes:[
             "user_id",
             "firstname",
             "lastname",

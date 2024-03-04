@@ -26,7 +26,7 @@ module.exports = {
         ),
         allowNull: false,
       },
-      user_id: {
+      patient_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -34,8 +34,16 @@ module.exports = {
           key: "user_id",
         },
       },
+      provider_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: "User",
+          key: "user_id",
+        },
+      },
       requested_by: {
-        type: Sequelize.ENUM("family_friend", "concierge", "business_partner"),
+        type: Sequelize.ENUM("family_friend", "concierge", "business_partner","admin", "patient","provider"),
         allowNull: false,
       },
       requestor_id: {

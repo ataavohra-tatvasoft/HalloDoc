@@ -57,6 +57,6 @@ Order.init({
     },
 }, { timestamps: false,
     sequelize: database_1.default,
-    tableName: 'orders',
+    tableName: 'order',
 });
 exports.default = Order;

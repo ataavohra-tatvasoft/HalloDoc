@@ -13,15 +13,15 @@ class Requestor extends Model<
 > {
     declare user_id: CreationOptional<number>; 
     // declare request_id: number;
-    declare first_name: string;
-    declare last_name: string;
-    declare mobile_number: number;
-    declare email: string;
-    declare house_name: string;
-    declare street: string;
-    declare city: string;
-    declare state: string;
-    declare zip: number;
+    declare first_name: CreationOptional<string>;
+    declare last_name: CreationOptional<string>;
+    declare mobile_number: CreationOptional<number>;
+    declare email: CreationOptional<string>;
+    declare house_name: CreationOptional<string>;
+    declare street: CreationOptional<string>;
+    declare city: CreationOptional<string>;
+    declare state: CreationOptional<string>;
+    declare zip: CreationOptional<number>;
 }
 
 

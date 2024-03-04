@@ -5,37 +5,41 @@ import Notes from "./notes";
 import Order from "./order";
 /**Associations */
 
-User.hasMany(Request,{ foreignKey : 'user_id'});
+// User.hasMany(Request,{ foreignKey : 'user_id'});
 Request.belongsTo(User, {
-  constraints: true,
-  onDelete: "NULL",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
-  foreignKey: "user_id",
+  foreignKey: "provider_id",
+  targetKey: "user_id",
+});
+// User.hasMany(Request,{ foreignKey : 'user_id'});
+Request.belongsTo(User, {
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+  foreignKey: "patient_id",
   targetKey: "user_id",
 });
 
-Requestor.hasMany(Request, { foreignKey : 'user_id'});
+
+// Requestor.hasMany(Request, { foreignKey : 'user_id'});
 Request.belongsTo(Requestor, {
-  constraints: true,
-  onDelete: "NULL",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "requestor_id",
   targetKey: "user_id",
 });
 
-Request.hasMany(Notes);
+// Request.hasMany(Notes,  { foreignKey : 'request_id'});
 Notes.belongsTo(Request, {
-  constraints: true,
-  onDelete: "NULL",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "requestId",
   targetKey: "request_id",
 });
 
-Request.hasMany(Order);
+// Request.hasMany(Order);
 Order.belongsTo(Request, {
-  constraints: true,
-  onDelete: "NULL",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "requestId",
   targetKey: "request_id",

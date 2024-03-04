@@ -22,16 +22,16 @@ Request.init({
         type: sequelize_1.DataTypes.ENUM("new", "active", "pending", "conclude", "toclose", "unpaid"),
         allowNull: false,
     },
-    user_id: {
+    patient_id: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
-        // references: {
-        //   model: "User",
-        //   key: "user_id",
-        // },
+    },
+    provider_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
     },
     requested_by: {
-        type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner"),
+        type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner", "admin", "patient", "provider"),
         allowNull: false,
     },
     requestor_id: {

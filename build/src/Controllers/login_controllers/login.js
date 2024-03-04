@@ -24,16 +24,17 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         var user_data;
         const { body: { email, password }, } = req;
         const user = yield user_1.default.findOne({
-            where: {
-                email,
-            },
-            include: [
+            attributes: [
                 "user_id",
+                "password",
                 "firstname",
                 "lastname",
                 "email",
                 "type_of_user"
-            ]
+            ],
+            where: {
+                email,
+            },
         });
         if (!user) {
             return res.status(404).json({
@@ -50,7 +51,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                         email,
                         password: hashpassword,
                     },
-                    include: [
+                    attributes: [
                         "user_id",
                         "firstname",
                         "lastname",

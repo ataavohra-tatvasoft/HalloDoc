@@ -10,6 +10,8 @@ module.exports = {
         references: {
           model: "Request",
           key: "request_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
         },
       },
       noteId: {
