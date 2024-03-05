@@ -8,6 +8,7 @@ const request_1 = __importDefault(require("./request"));
 const requestor_1 = __importDefault(require("./requestor"));
 const notes_1 = __importDefault(require("./notes"));
 const order_1 = __importDefault(require("./order"));
+const documents_1 = __importDefault(require("./documents"));
 /**Associations */
 // User.hasMany(Request,{ foreignKey : 'user_id'});
 request_1.default.belongsTo(user_1.default, {
@@ -42,5 +43,11 @@ order_1.default.belongsTo(request_1.default, {
     onDelete: "SET NULL",
     onUpdate: "CASCADE",
     foreignKey: "requestId",
+    targetKey: "request_id",
+});
+documents_1.default.belongsTo(request_1.default, {
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
+    foreignKey: "request_id",
     targetKey: "request_id",
 });

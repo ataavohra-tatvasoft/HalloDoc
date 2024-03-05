@@ -16,18 +16,19 @@ class Request extends Model<
   declare provider_id: CreationOptional<number>;
   declare patient_id: number;
   declare requested_by: string;
-  declare requestor_id:CreationOptional< number>;
+  declare requestor_id: CreationOptional<number>;
   declare requested_date: Date;
-  declare notes_symptoms:CreationOptional< string | null>;
-  declare date_of_service:CreationOptional< Date>;
+  declare notes_symptoms: CreationOptional<string | null>;
+  declare date_of_service: CreationOptional<Date>;
   declare block_status: CreationOptional<string>;
+  declare block_status_reason: CreationOptional<string>;
   declare cancellation_status: CreationOptional<string>;
   declare close_case_status: CreationOptional<string>;
   declare transfer_request_status: CreationOptional<string>;
   declare agreement_status: CreationOptional<string>;
   declare assign_req_description: CreationOptional<string>;
-  declare createdAt:CreationOptional <Date>;
-  declare updatedAt:CreationOptional <Date>;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 Request.init(
@@ -56,22 +57,25 @@ Request.init(
     patient_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    },     
+    },
     provider_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
     requested_by: {
-      type: DataTypes.ENUM("family_friend", "concierge", "business_partner","admin", "patient","provider"),
+      type: DataTypes.ENUM(
+        "family_friend",
+        "concierge",
+        "business_partner",
+        "admin",
+        "patient",
+        "provider"
+      ),
       allowNull: false,
     },
     requestor_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      // references: {
-      //   model: 'Requestor',
-      //   key: "user_id",
-      // },
     },
     requested_date: {
       type: DataTypes.DATE,
@@ -88,25 +92,29 @@ Request.init(
     block_status: {
       type: DataTypes.ENUM("yes", "no"),
       defaultValue: "no",
-      allowNull: false,
+      allowNull: false, 
     },
-    cancellation_status:{
+    block_status_reason: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    cancellation_status: {
       type: DataTypes.ENUM("yes", "no"),
       defaultValue: "no",
       allowNull: false,
     },
-    close_case_status:{
+    close_case_status: {
       type: DataTypes.ENUM("yes", "no"),
       defaultValue: "no",
       allowNull: false,
     },
-    transfer_request_status:{
-      type: DataTypes.ENUM("undefined","pending","accepted","rejected"),
+    transfer_request_status: {
+      type: DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
       defaultValue: "undefined",
       allowNull: false,
     },
-    agreement_status:{
-      type: DataTypes.ENUM("undefined","pending","accepted","rejected"),
+    agreement_status: {
+      type: DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
       defaultValue: "undefined",
       allowNull: false,
     },
@@ -124,12 +132,8 @@ Request.init(
       allowNull: false,
       onUpdate: "CASCADE",
     },
-    
   },
-  {  timestamps:true,
-    sequelize,
-    tableName: "request",
-  }
+  { timestamps: true, sequelize, tableName: "request" }
 );
 
 export default Request;

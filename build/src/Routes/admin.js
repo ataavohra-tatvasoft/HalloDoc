@@ -10,10 +10,17 @@ const router = express_1.default.Router();
 /**                              Admin in Dashboard                                       */
 /**Admin Create Request */
 router.post("/dashboard/requests/createrequest", middlewares_1.authmiddleware, (req, res, next) => {
-    (0, controllers_1.create_request)(req, res, next);
+    (0, controllers_1.admin_create_request)(req, res, next);
 });
 /**Admin request by request_state and region */
-router.get("/dashboard/requests/:state", middlewares_1.authmiddleware, (req, res, next) => {
+// router.get(
+//   "/dashboard/requests/:state",
+//   authmiddleware,
+//   (req: Request, res: Response, next: NextFunction) => {
+//     requests_by_request_state_regions(req, res, next);
+//   }
+// );
+router.get("/dashboard/requests/:state/:region", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.requests_by_request_state)(req, res, next);
 });
 /**Admin Request Support */
@@ -33,6 +40,9 @@ router.delete("/dashboard/requests/:state/:confirmation_no/actions/clearcase", m
 });
 router.put("/dashboard/requests/:state/:confirmation_no/actions/blockcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.block_case_for_request)(req, res, next);
+});
+router.get("/dashboard/requests/:state/:confirmation_no/actions/cancelcaseview", middlewares_1.authmiddleware, (req, res, next) => {
+    (0, controllers_1.cancel_case_for_request_view)(req, res, next);
 });
 router.put("/dashboard/requests/:state/:confirmation_no/actions/cancelcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.cancel_case_for_request)(req, res, next);
@@ -64,9 +74,13 @@ router.post("/dashboard/requests/:state/:confirmation_no/actions/transferrequest
 router.post("/dashboard/requests/:state/:confirmation_no/actions/sendagreement", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.send_agreement)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/assignrequestregion", middlewares_1.authmiddleware, (req, res, next) => {
-    (0, controllers_1.assign_request_regions)(req, res, next);
-});
+// router.get(
+//   "/dashboard/requests/:state/:confirmation_no/actions/assignrequestregion",
+//   authmiddleware,
+//   (req: Request, res: Response, next: NextFunction) => {
+//     assign_request_regions(req, res, next);
+//   }
+// );
 router.get("/dashboard/requests/:state/:confirmation_no/actions/assignrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.assign_request_region_physician)(req, res, next);
 });

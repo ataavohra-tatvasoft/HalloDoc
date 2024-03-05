@@ -94,10 +94,6 @@ User.init({
         type: sequelize_1.DataTypes.DATE,
         allowNull: true,
     },
-    region: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
     // Provider-specific fields
     medical_licence: {
         type: sequelize_1.DataTypes.STRING,

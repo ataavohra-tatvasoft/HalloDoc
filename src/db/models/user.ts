@@ -11,29 +11,28 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare user_id: CreationOptional<number>;
   declare email: string;
   declare password:CreationOptional <string>;
-  declare type_of_user: CreationOptional<string>;
+  declare type_of_user: string;
 
   // Common fields for all user types
   declare firstname: string;
   declare lastname: string;
   declare mobile_no: number;
+  declare address_1:  string;
+  declare address_2: CreationOptional<string> | null;
+  declare city: string ;
+  declare state: string ;
+  declare country_code: CreationOptional<string> | null;
+  declare zip: number ;
   declare reset_token: CreationOptional<string> | null;
   declare reset_token_expiry: CreationOptional<number> | null;
-  declare address_1:  CreationOptional<string> | null;
-  declare address_2: CreationOptional<string> | null;
-  declare city: string | null;
-  declare state: string | null;
-  declare country_code: string | null;
-  declare zip: number | null;
 
   // Admin-specific fields
-  declare billing_mobile_no: number | null;;
-  declare status: string | null;;
-  declare role: string | null;; // Removed redundant "admin" role field
+  declare billing_mobile_no: CreationOptional<number> | null;;
+  declare status: CreationOptional<string> | null;;
+  declare role: CreationOptional<string> | null;; // Removed redundant "admin" role field
 
   // Patient-specific fields
   declare dob: CreationOptional<Date> | null;
-  declare region: CreationOptional<string>;
 
   // Provider-specific fields
   declare medical_licence: CreationOptional<string> | null;
@@ -44,7 +43,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare street: CreationOptional<string> | null;
   declare business_name: CreationOptional<string> | null;
 
-  //> Additional attributes
+  // Additional attributes
   declare tax_id: CreationOptional<string> | null;
   declare profile_picture: CreationOptional<string> | null;
   //   declare business_name: string;
@@ -140,10 +139,6 @@ User.init(
     // Patient-specific fields
     dob: {
       type: DataTypes.DATE,
-      allowNull: true,
-    },
-    region: {
-      type: DataTypes.STRING,
       allowNull: true,
     },
 

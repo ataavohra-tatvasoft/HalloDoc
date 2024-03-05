@@ -1,18 +1,25 @@
+/** Imports */
 import { Request, Response, NextFunction } from "express";
 import RequestModel from "../../db/models/request";
 import Requestor from "../../db/models/requestor";
 import User from "../../db/models/user";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
+import Region from "../../db/models/region";
+import Profession from "../../db/models/profession";
+import statusCodes from "../../public/status_codes";
 import * as crypto from "crypto";
 import bcrypt from "bcrypt";
-import statusCodes from "../../public/status_codes";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import { Op, where } from "sequelize";
+import { Op, Sequelize, where } from "sequelize";
+import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
-import { any, string } from "joi";
+import path from "path";
+
+/** Configs */
 dotenv.config({ path: `.env` });
+
 
 /**                              Admin in Dashboard                                       */
 /**Admin SignUp */
@@ -83,8 +90,9 @@ export const admin_signup = async (
   }
 };
 
+
 /**Admin Create Request */
-export const create_request = async (
+export const admin_create_request = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -97,8 +105,12 @@ export const create_request = async (
         DOB,
         PhoneNumber,
         Email,
+        Street,
+        City,
+        State,
+        Zip,
+        Room,
         AdminNotes,
-        Region,
       },
     } = req;
     // const today = new Date();
@@ -107,10 +119,14 @@ export const create_request = async (
       type_of_user: "patient",
       firstname: FirstName,
       lastname: LastName,
-      dob: new Date(DOB),
       mobile_no: PhoneNumber,
       email: Email,
-      region: Region,
+      dob: new Date(DOB),
+      street: Street,
+      city: City,
+      state: State,
+      zip: Zip,
+      address_1: Room,
     });
     if (!patient_data) {
       return res.status(400).json({
@@ -133,7 +149,7 @@ export const create_request = async (
       },
     });
 
-    const confirmation_no = `${patient_data.region.slice(
+    const confirmation_no = `${patient_data.state.slice(
       0,
       2
     )}${year}${month}${day}${LastName.slice(0, 2)}${FirstName.slice(
@@ -177,59 +193,106 @@ export const create_request = async (
 };
 
 /**Admin request by request_state and region */
-export const requests_by_request_state_regions = async (
+// export const requests_by_request_state_regions = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { state } = req.params;
+
+//     if (state) {
+//       // Use distinct query to get unique regions
+//       const requests = await RequestModel.findAll({
+//         where: {
+//          request_state:state,
+//         },
+//         attributes: ["region", "firstname", "lastname"],
+//       });
+
+//       if (!requests) {
+//         return res.status(200).json({
+//           status: true,
+//           message: "No Requests found.", // Include an empty regions array
+//         });
+//       }
+//       const patients = await User.findAll({
+//         where: {
+//          user_id: requests[0].patient_id,
+//         },
+//         attributes: ["region", "firstname", "lastname"],
+//       });
+
+//       if (!patients) {
+//         return res.status(200).json({
+//           status: true,
+//           message: "No Requests found.", // Include an empty regions array
+//         });
+//       }
+
+//       // Extract unique regions from physicians
+//       const uniqueRegions = Array.from(new Set(patients.map((p) => p.region)));
+
+//       return res.status(200).json({
+//         status: true,
+//         message: "Successfull !!!",
+//         regions: uniqueRegions, // Include the unique regions array
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error in fetching Physicians:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+export const region_without_thirdparty_API = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { state } = req.params;
-
-    if (state) {
-      // Use distinct query to get unique regions
-      const requests = await RequestModel.findAll({
-        where: {
-         request_state:state,
-        },
-        attributes: ["region", "firstname", "lastname"],
-      });
-
-      if (!requests) {
-        return res.status(200).json({
-          status: true,
-          message: "No Requests found.", // Include an empty regions array
-        });
-      }
-      const patients = await User.findAll({
-        where: {
-         user_id: requests[0].patient_id,
-        },
-        attributes: ["region", "firstname", "lastname"],
-      });
-
-      if (!patients) {
-        return res.status(200).json({
-          status: true,
-          message: "No Requests found.", // Include an empty regions array
-        });
-      }
-
-      // Extract unique regions from physicians
-      const uniqueRegions = Array.from(new Set(patients.map((p) => p.region)));
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        regions: uniqueRegions, // Include the unique regions array
-      });
+    const regions = Region.findAll();
+    if (!regions) {
+      res.status(500).json({ error: "Error fetching region data" });
     }
+    res.status(200).json({ status: "Successfull", regions });
   } catch (error) {
-    console.error("Error in fetching Physicians:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const region_with_thirdparty_API = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    var headers = new Headers();
+    headers.append("X-CSCAPI-KEY", "API_KEY");
 
+    // var requestOptions = {
+    //   method: "GET",
+    //   headers: headers,
+    //   redirect: "follow",
+    // };
 
+    fetch("https://api.countrystatecity.in/v1/states", {
+      method: "GET",
+      headers: headers,
+      redirect: "follow",
+    })
+      .then((response) => response.text())
+      .then((result) => {
+        const states = result;
+        res.status(200).json({
+          status: "Successful",
+          data: states,
+        });
+      })
+      .catch((error) => console.log("error", error));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export const requests_by_request_state = async (
   req: Request,
   res: Response,
@@ -237,7 +300,7 @@ export const requests_by_request_state = async (
 ) => {
   try {
     const { state, region } = req.params;
-    const { firstname, lastname} = req.query; // Get search parameters from query string
+    const { firstname, lastname } = req.query; // Get search parameters from query string
     const whereClause: { [key: string]: any } = {};
     if (firstname) {
       whereClause.firstname = {
@@ -248,7 +311,7 @@ export const requests_by_request_state = async (
       whereClause.lastname = {
         [Op.like]: `%${lastname}%`,
       };
-      whereClause.region = region
+      whereClause.state = region;
     }
     switch (state) {
       case "new": {
@@ -270,11 +333,15 @@ export const requests_by_request_state = async (
                 // where: {
                 //   type_of_user: "patient",
                 // },
-                where: whereClause
+                where: whereClause,
               },
               {
                 model: Requestor,
                 attributes: ["user_id", "first_name", "last_name"],
+              },
+              {
+                model: Notes,
+                attributes: ["requestId", "description", "typeOfNote"],
               },
             ],
           });
@@ -300,7 +367,7 @@ export const requests_by_request_state = async (
                   "mobile_no",
                   "address_1",
                 ],
-                where: whereClause
+                where: whereClause,
               },
               {
                 model: Requestor,
@@ -309,7 +376,17 @@ export const requests_by_request_state = async (
               {
                 model: User,
                 where: { role: "physician", type_of_user: "provider" },
-                attributes: ["user_id", "firstname", "lastname"],
+                attributes: [
+                  "user_id",
+                  "firstname",
+                  "lastname",
+                  "role",
+                  "type_of_user",
+                ],
+              },
+              {
+                model: Notes,
+                attributes: ["requestId", "description", "typeOfNote"],
               },
             ],
           });
@@ -335,7 +412,7 @@ export const requests_by_request_state = async (
                 "mobile_no",
                 "address_1",
               ],
-              where: whereClause
+              where: whereClause,
             },
             {
               model: Requestor,
@@ -345,6 +422,10 @@ export const requests_by_request_state = async (
               model: User,
               where: { role: "physician", type_of_user: "provider" },
               attributes: ["user_id", "firstname", "lastname"],
+            },
+            {
+              model: Notes,
+              attributes: ["requestId", "description", "typeOfNote"],
             },
           ],
         });
@@ -366,12 +447,16 @@ export const requests_by_request_state = async (
                 "mobile_no",
                 "address_1",
               ],
-              where: whereClause
+              where: whereClause,
             },
             {
               model: User,
               where: { role: "physician", type_of_user: "provider" },
               attributes: ["user_id", "firstname", "lastname"],
+            },
+            {
+              model: Notes,
+              attributes: ["requestId", "description", "typeOfNote"],
             },
           ],
         });
@@ -393,12 +478,16 @@ export const requests_by_request_state = async (
                 "address_1",
                 "region",
               ],
-              where: whereClause
+              where: whereClause,
             },
             {
               model: User,
               where: { role: "physician", type_of_user: "provider" },
               attributes: ["user_id", "firstname", "lastname"],
+            },
+            {
+              model: Notes,
+              attributes: ["requestId", "description", "typeOfNote"],
             },
           ],
         });
@@ -419,12 +508,16 @@ export const requests_by_request_state = async (
                 "mobile_no",
                 "address_1",
               ],
-              where: whereClause
+              where: whereClause,
             },
             {
               model: User,
               where: { role: "physician", type_of_user: "provider" },
               attributes: ["provider_id", "firstname", "lastname"],
+            },
+            {
+              model: Notes,
+              attributes: ["requestId", "description", "typeOfNote"],
             },
           ],
         });
@@ -438,66 +531,6 @@ export const requests_by_request_state = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-
-/**Admin Request Support */
-export const request_support = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { support_message } = req.body;
-    await User.update(
-      {
-        support_message,
-      },
-      {
-        where: {
-          scheduled_status: "no" || null,
-          type_of_user: "provider",
-        },
-      }
-    );
-    return res.status(200).json({
-      status: true,
-      message: "Successfull !!!",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-/**Admin Profile */
-export const admin_profile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { authorization } = req.headers as { authorization: string };
-    const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY as string
-    );
-
-    const admin_id = verifiedToken.user_id;
-    const profile = await User.findOne({
-      where: {
-        user_id: admin_id,
-      },
-    });
-    if (!profile) {
-      return res.status(404).json({ error: "Request not found" });
-    }
-    res.json({ profile });
-  } catch (error) {
-    console.error("Error fetching Admin Profile:", error);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -521,280 +554,38 @@ export const view_case_for_request = async (
         where: {
           confirmation_no: confirmation_no,
           block_status: "no",
-          cancellation_status: "no",
-          close_case_status: "no",
         },
-        attributes: [
-          "request_id",
-          "request_state",
-          "confirmation_no",
-          "notes_symptoms",
-        ],
-        include: {
-          model: User,
-          attributes: [
-            "firstname",
-            "lastname",
-            "dob",
-            "mobile_no",
-            "business_name",
-            "address_1",
-            "region",
-            "street",
-            "city",
-            "state",
-            "zip",
-          ],
-          where: {
-            type_of_user: "patient",
+        attributes: ["request_id", "request_state", "confirmation_no"],
+        include: [
+          {
+            model: User,
+            attributes: [
+              "firstname",
+              "lastname",
+              "dob",
+              "mobile_no",
+              "email",
+              "state",
+              "business_name",
+              "address_1",
+            ],
+            where: {
+              type_of_user: "patient",
+            },
           },
-        },
+          {
+            model: Notes,
+            attributes: ["requestId", "noteId", "description"],
+            where: {
+              typeOfNote: "patient_notes",
+            },
+          },
+        ],
       });
       if (!request) {
         return res.status(404).json({ error: "Request not found" });
       }
       res.json({ request });
-    }
-  } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const clear_case_for_request = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { state, confirmation_no } = req.params;
-    try {
-      if (state === "pending" || "toclose") {
-        const request = await RequestModel.findOne({
-          where: { confirmation_no },
-          attributes: ["confirmation_no"],
-        });
-        if (!request) {
-          return res.status(404).json({ error: "Request not found" });
-        }
-        await Notes.destroy({
-          where: {
-            requestId: request.request_id,
-          },
-        });
-        await Order.destroy({
-          where: {
-            requestId: request.request_id,
-          },
-        });
-        await RequestModel.destroy({
-          where: {
-            confirmation_no: confirmation_no,
-          },
-        });
-        return res.status(200).json({
-          status: true,
-          message: "Successfull !!!",
-        });
-      }
-    } catch {
-      res.status(404).json({ error: "Invalid State !!!" });
-    }
-  } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const block_case_for_request = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { confirmation_no, state } = req.params;
-    if (state === "new") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      await RequestModel.update(
-        {
-          block_status: "yes",
-        },
-        {
-          where: {
-            confirmation_no: confirmation_no,
-            request_state: state,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const cancel_case_for_request = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { confirmation_no, state } = req.params;
-    const { reason, additional_notes } = req.body;
-    if (state === "new") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          cancellation_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      await RequestModel.update(
-        {
-          cancellation_status: "yes",
-        },
-        {
-          where: {
-            request_id: request.request_id,
-            request_state: state,
-          },
-        }
-      );
-      const find_note = await Notes.findOne({
-        where: {
-          requestId: request.request_id,
-          typeOfNote: "admin_cancellation_notes",
-        },
-      });
-      if (find_note) {
-        Notes.update(
-          {
-            description: additional_notes,
-            reason: reason,
-          },
-          {
-            where: {
-              requestId: request.request_id,
-              typeOfNote: "admin_cancellation_notes",
-            },
-          }
-        );
-      } else {
-        Notes.create({
-          requestId: request.request_id,
-          typeOfNote: "admin_cancellation_notes",
-          description: additional_notes,
-          reason: reason,
-        });
-      }
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const close_case_for_request = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { confirmation_no, state } = req.params;
-
-    if (state === "toclose") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          close_case_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      await RequestModel.update(
-        {
-          close_case_status: "yes",
-        },
-        {
-          where: {
-            confirmation_no: confirmation_no,
-            request_state: state,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const close_case_for_request_edit = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { confirmation_no, state } = req.params;
-    const { firstname, lastname, dob, mobile_no, email } = req.body;
-    if (state === "toclose") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          close_case_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      const patient_data = await User.findOne({
-        where: { user_id: request.patient_id },
-      });
-      if (!patient_data) {
-        return res.status(404).json({ error: "Patient not found" });
-      }
-      await User.update(
-        {
-          firstname,
-          lastname,
-          dob,
-          mobile_no,
-          email,
-        },
-        {
-          where: {
-            user_id: request.patient_id,
-            type_of_user: "patient",
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
     }
   } catch (error) {
     console.error("Error fetching request:", error);
@@ -888,7 +679,564 @@ export const save_view_notes_for_request = async (
       });
     }
   } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const cancel_case_for_request_view_data = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    if (state === "new") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          block_status: "no",
+          cancellation_status: "no",
+        },
+
+        include: [
+          {
+            model: User,
+            attributes: ["firstname", "lastname"],
+            where: {
+              type_of_user: "patient",
+            },
+          },
+        ],
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+        request,
+      });
+    }
+  } catch (error) {
     console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const cancel_case_for_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    const { reason, additional_notes } = req.body;
+    if (state === "new") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          block_status: "no",
+          cancellation_status: "no",
+        },
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      await RequestModel.update(
+        {
+          cancellation_status: "yes",
+        },
+        {
+          where: {
+            request_id: request.request_id,
+            request_state: state,
+          },
+        }
+      );
+      const find_note = await Notes.findOne({
+        where: {
+          requestId: request.request_id,
+          typeOfNote: "admin_cancellation_notes",
+        },
+      });
+      if (find_note) {
+        Notes.update(
+          {
+            description: additional_notes,
+            reason: reason,
+          },
+          {
+            where: {
+              requestId: request.request_id,
+              typeOfNote: "admin_cancellation_notes",
+            },
+          }
+        );
+      } else {
+        Notes.create({
+          requestId: request.request_id,
+          typeOfNote: "admin_cancellation_notes",
+          description: additional_notes,
+          reason: reason,
+        });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+// export const assign_request_regions = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { state } = req.params;
+
+//     if (state === "new") {
+//       // Use distinct query to get unique regions
+//       const physicians = await User.findAll({
+//         where: {
+//           type_of_user: "provider",
+//           role: "physician",
+//         },
+//         attributes: ["state", "firstname", "lastname"],
+//       });
+
+//       if (!physicians) {
+//         return res.status(200).json({
+//           status: true,
+//           message: "No physicians found.", // Include an empty regions array
+//         });
+//       }
+
+//       // Extract unique regions from physicians
+//       const uniqueRegions = Array.from(
+//         new Set(physicians.map((p) => p.state))
+//       );
+
+//       return res.status(200).json({
+//         status: true,
+//         message: "Successfull !!!",
+//         regions: uniqueRegions, // Include the unique regions array
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error in fetching Physicians:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+export const assign_request_region_physician = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { region, state } = req.params;
+    if (state === "new") {
+      const physicians = await User.findAll({
+        where: {
+          type_of_user: "provider",
+          role: "physician",
+          state: region,
+          scheduled_status: "no",
+        },
+        include: ["region", " firstname", "lastname"],
+      });
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+        physicians,
+      });
+    }
+  } catch (error) {
+    console.error("Error in fetching Physicians:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const assign_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    const { firstname, lastname, assign_req_description } = req.body;
+    if (state === "new") {
+      const provider = await User.findOne({
+        where: {
+          type_of_user: "provider",
+          firstname,
+          lastname,
+          role: "physician",
+        },
+      });
+      if (!provider) {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      const physician_id = provider.user_id;
+      await RequestModel.update(
+        {
+          provider_id: physician_id,
+          assign_req_description,
+        },
+        {
+          where: {
+            confirmation_no: confirmation_no,
+          },
+        }
+      );
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error in Assigning Request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const block_case_for_request_view = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    if (state === "new") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          block_status: "no",
+          cancellation_status: "no",
+        },
+
+        include: [
+          {
+            model: User,
+            attributes: ["firstname", "lastname"],
+            where: {
+              type_of_user: "patient",
+            },
+          },
+        ],
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+        request,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const block_case_for_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    const { reason_for_block } = req.body;
+    if (state === "new") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          block_status: "no",
+          cancellation_status: "no",
+        },
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      await RequestModel.update(
+        {
+          block_status: "yes",
+          block_status_reason: reason_for_block,
+        },
+        {
+          where: {
+            confirmation_no: confirmation_no,
+            request_state: state,
+          },
+        }
+      );
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+// Send Mail and Download All remaining in View Uploads
+export const view_uploads_view_data = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no } = req.params;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+
+      include: [
+        {
+          model: User,
+          attributes: ["firstname", "lastname"],
+          where: {
+            type_of_user: "patient",
+          },
+        },
+        {
+          model: Documents,
+          attributes: [
+            "request_id",
+            "document_id",
+            "document_path",
+            "upload_date",
+          ],
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+      request,
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const view_uploads_upload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no } = req.params;
+    const file: any = req.file;
+    const fileURL = file.path;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const upload_status = await Documents.create({
+      request_id: request.request_id,
+      document_path: fileURL,
+    });
+    if (!upload_status) {
+      return res.status(404).json({ error: "Error while uploading" });
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const view_uploads_actions_delete = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no, document_id } = req.params;
+    const file: any = req.file;
+    // const fileURL = file.path;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          model: Documents,
+          attributes: [
+            "request_id",
+            "document_id",
+            "document_path",
+            "upload_date",
+          ],
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const delete_status = await Documents.destroy({
+      where: {
+        request_id: request.request_id,
+        document_id,
+      },
+    });
+    if (!delete_status) {
+      return res.status(404).json({ error: "Error while deleting" });
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const view_uploads_actions_download = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no, document_id } = req.params;
+
+    // Find the request and associated document
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          model: Documents,
+          attributes: ["request_id", "document_id", "document_path"],
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    const document = await Documents.findOne({
+      where: {
+        request_id: request.request_id,
+        document_id: document_id,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Handle potential file path issues:
+    var filePath = document.document_path; // Assuming the path is stored correctly
+    if (!path.isAbsolute(filePath)) {
+      // If path is relative, prepend a base path (replace with appropriate logic)
+      filePath = path.join(__dirname, "uploads", filePath); // Example base path
+    }
+
+    if (!filePath) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${document.document_id || "document.ext"}`
+    );
+    res.sendFile(filePath, (error) => {
+      if (error) {
+        console.error("Error sending file:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      } else {
+        console.log("File downloaded successfully");
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const view_uploads_delete_all = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no } = req.params;
+    const file: any = req.file;
+    // const fileURL = file.path;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const status = await Documents.findAll({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    if (!status) {
+      return res.status(404).json({ error: "Error while deleting" });
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const professions_for_send_orders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const professions = Profession.findAll();
+    if (!professions) {
+      res.status(500).json({ error: "Error fetching region data" });
+    }
+    res.status(200).json({ status: "Successfull", professions });
+  } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -941,45 +1289,47 @@ export const send_orders_for_request = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-export const transfer_request_regions = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { state } = req.params;
+// export const transfer_request_regions = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { state } = req.params;
 
-    if (state === "pending") {
-      // Use distinct query to get unique regions
-      const physicians = await User.findAll({
-        where: {
-          type_of_user: "provider",
-          role: "physician",
-        },
-        attributes: ["region", "firstname", "lastname"],
-      });
+//     if (state === "pending") {
+//       // Use distinct query to get unique regions
+//       const physicians = await User.findAll({
+//         where: {
+//           type_of_user: "provider",
+//           role: "physician",
+//         },
+//         attributes: ["region", "firstname", "lastname"],
+//       });
 
-      if (!physicians) {
-        return res.status(200).json({
-          status: true,
-          message: "No physicians found.", // Include an empty regions array
-        });
-      }
+//       if (!physicians) {
+//         return res.status(200).json({
+//           status: true,
+//           message: "No physicians found.", // Include an empty regions array
+//         });
+//       }
 
-      // Extract unique regions from physicians
-      const uniqueRegions = Array.from(new Set(physicians.map((p) => p.region)));
+//       // Extract unique regions from physicians
+//       const uniqueRegions = Array.from(
+//         new Set(physicians.map((p) => p.state))
+//       );
 
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        regions: uniqueRegions, // Include the unique regions array
-      });
-    }
-  } catch (error) {
-    console.error("Error in fetching Physicians:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+//       return res.status(200).json({
+//         status: true,
+//         message: "Successfull !!!",
+//         regions: uniqueRegions, // Include the unique regions array
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error in fetching Physicians:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 export const transfer_request_region_physician = async (
   req: Request,
   res: Response,
@@ -991,8 +1341,9 @@ export const transfer_request_region_physician = async (
       const physicians = await User.findAll({
         where: {
           type_of_user: "provider",
-          region: region,
+          state: region,
           role: "physician",
+          scheduled_status: "no",
         },
         include: ["region", " firstname", "lastname"],
       });
@@ -1055,6 +1406,50 @@ export const transfer_request = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const clear_case_for_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no } = req.params;
+    try {
+      if (state === "pending" || "toclose") {
+        const request = await RequestModel.findOne({
+          where: { confirmation_no },
+          attributes: ["confirmation_no"],
+        });
+        if (!request) {
+          return res.status(404).json({ error: "Request not found" });
+        }
+        await Notes.destroy({
+          where: {
+            requestId: request.request_id,
+          },
+        });
+        await Order.destroy({
+          where: {
+            requestId: request.request_id,
+          },
+        });
+        await RequestModel.destroy({
+          where: {
+            confirmation_no: confirmation_no,
+          },
+        });
+        return res.status(200).json({
+          status: true,
+          message: "Successfull !!!",
+        });
+      }
+    } catch {
+      res.status(404).json({ error: "Invalid State !!!" });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export const send_agreement = async (
   req: Request,
   res: Response,
@@ -1101,29 +1496,29 @@ export const send_agreement = async (
         .update(email)
         .digest("hex");
 
-      const resetUrl = `http://localhost:7000/admin/dashboard/requests/:state/:requestId/actions/updateagreement`;
+      const resetUrl = `http://localhost:7000/admin/dashboard/requests/:state/:confirmation_no/actions/updateagreement`;
       const mailContent = `
-      <html>
-      <form action = "${resetUrl}" method="POST"> 
-      <p>Tell us that you accept the agreement or not:</p>
-      <p>Your token is: ${resetToken}</p>
+        <html>
+        <form action = "${resetUrl}" method="POST"> 
+        <p>Tell us that you accept the agreement or not:</p>
+        <p>Your token is: ${resetToken}</p>
+        <br>
+        <br>
+        <label for="ResetToken">Token:</label>
+        <input type="text" id="ResetToken" name="ResetToken" required>
+        <br>
+        <br>
+        <label for="agreement_status">Agreement_Status:</label>
+        <select id="agreement_status">
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+      </select>
       <br>
       <br>
-      <label for="ResetToken">Token:</label>
-      <input type="text" id="ResetToken" name="ResetToken" required>
-      <br>
-      <br>
-      <label for="agreement_status">Agreement_Status:</label>
-      <select id="agreement_status">
-      <option value="accepted">Accepted</option>
-      <option value="rejected">Rejected</option>
-    </select>
-    <br>
-    <br>
-      <button type = "submit">Submit Response</button>
-      </form>
-      </html>
-    `;
+        <button type = "submit">Submit Response</button>
+        </form>
+        </html>
+      `;
 
       const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
@@ -1155,102 +1550,124 @@ export const send_agreement = async (
     });
   }
 };
-export const assign_request_regions = async (
+export const update_agreement = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { state } = req.params;
+    const { state, confirmation_no } = req.params;
+    const { agreement_status } = req.body;
 
-    if (state === "new") {
-      // Use distinct query to get unique regions
-      const physicians = await User.findAll({
+    const request = await RequestModel.findOne({
+      where: {
+        request_state: state,
+        confirmation_no,
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const update_status = await RequestModel.update(
+      { agreement_status },
+      {
         where: {
-          type_of_user: "provider",
-          role: "physician",
+          request_state: state,
+          confirmation_no,
         },
-        attributes: ["region", "firstname", "lastname"],
-      });
-
-      if (!physicians) {
-        return res.status(200).json({
-          status: true,
-          message: "No physicians found.", // Include an empty regions array
-        });
       }
-
-      // Extract unique regions from physicians
-      const uniqueRegions = Array.from(new Set(physicians.map((p) => p.region)));
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        regions: uniqueRegions, // Include the unique regions array
-      });
-    }
+    );
+    res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
-    console.error("Error in fetching Physicians:", error);
+    console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-export const assign_request_region_physician = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { region, state } = req.params;
-    if (state === "new") {
-      const physicians = await User.findAll({
-        where: {
-          type_of_user: "provider",
-          role: "physician",
-          region: region,
-        },
-        include: ["region", " firstname", "lastname"],
-      });
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        physicians,
-      });
-    }
-  } catch (error) {
-    console.error("Error in fetching Physicians:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const assign_request = async (
+export const close_case_for_request_view_details = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { confirmation_no, state } = req.params;
-    const { firstname, lastname, assign_req_description } = req.body;
-    if (state === "new") {
-      const provider = await User.findOne({
+
+    if (state === "toclose") {
+      const request = await RequestModel.findOne({
         where: {
-          type_of_user: "provider",
-          firstname,
-          lastname,
-          role: "physician",
+          confirmation_no: confirmation_no,
+          request_state: state,
+          close_case_status: "no",
+          block_status: "no",
+          cancellation_status: "no",
         },
+        include: [
+          {
+            model: User,
+            attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
+          },
+          {
+            model: Documents,
+            attributes: [
+              "request_id",
+              "document_id",
+              "document_path",
+              "upload_date",
+            ],
+          },
+        ],
       });
-      if (!provider) {
-        return res.status(404).json({ error: "Provider not found" });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
       }
-      const physician_id = provider.user_id;
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+        request,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const close_case_for_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+
+    if (state === "toclose") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          close_case_status: "no",
+          block_status: "no",
+          cancellation_status: "no",
+        },
+        include: [
+          {
+            model: User,
+            attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
+          },
+        ],
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
       await RequestModel.update(
         {
-          provider_id: physician_id,
-          assign_req_description,
+          close_case_status: "yes",
         },
         {
           where: {
             confirmation_no: confirmation_no,
+            request_state: state,
           },
         }
       );
@@ -1260,8 +1677,313 @@ export const assign_request = async (
       });
     }
   } catch (error) {
-    console.error("Error in Assigning Request:", error);
+    console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const close_case_for_request_edit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no, state } = req.params;
+    const { firstname, lastname, dob, mobile_no, email } = req.body;
+    if (state === "toclose") {
+      const request = await RequestModel.findOne({
+        where: {
+          confirmation_no: confirmation_no,
+          request_state: state,
+          close_case_status: "no",
+        },
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      const patient_data = await User.findOne({
+        where: { user_id: request.patient_id },
+      });
+      if (!patient_data) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+      await User.update(
+        {
+          firstname,
+          lastname,
+          dob,
+          mobile_no,
+          email,
+        },
+        {
+          where: {
+            user_id: request.patient_id,
+            type_of_user: "patient",
+          },
+        }
+      );
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const close_case_for_request_actions_download = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, confirmation_no, document_id } = req.params;
+
+    // Find the request and associated document
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        request_state: state,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          model: Documents,
+          attributes: ["request_id", "document_id", "document_path"],
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    const document = await Documents.findOne({
+      where: {
+        request_id: request.request_id,
+        document_id: document_id,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Handle potential file path issues:
+    var filePath = document.document_path; // Assuming the path is stored correctly
+    if (!path.isAbsolute(filePath)) {
+      // If path is relative, prepend a base path (replace with appropriate logic)
+      filePath = path.join(__dirname, "uploads", filePath); // Example base path
+    }
+
+    if (!filePath) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${document.document_id || "document.ext"}`
+    );
+    res.sendFile(filePath, (error) => {
+      if (error) {
+        console.error("Error sending file:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      } else {
+        console.log("File downloaded successfully");
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+/**Admin Request Support */
+export const request_support = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { support_message } = req.body;
+    await User.update(
+      {
+        support_message,
+      },
+      {
+        where: {
+          scheduled_status: "no",
+          type_of_user: "provider",
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**Admin Profile */
+export const admin_profile_view = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+    const verifiedToken: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    );
+
+    const admin_id = verifiedToken.user_id;
+    const profile = await User.findOne({
+      where: {
+        user_id: admin_id,
+      },
+      include: [
+        "username",
+        "status",
+        "role",
+        "firstname",
+        "lastname",
+        "email",
+        "mobile_no",
+        "address_1",
+        "address_2",
+        "city",
+        "state",
+        "zip",
+        "billing_mobile_no",
+      ],
+    });
+    if (!profile) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    res.status(200).json({ profile });
+  } catch (error) {
+    console.error("Error fetching Admin Profile:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const admin_profile_reset_password = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      body: { password, admin_id },
+    } = req;
+
+    const hashedPassword: string = await bcrypt.hash(password, 10);
+    const user_data = await User.findOne({
+      where: {
+        user_id: admin_id,
+      },
+    });
+    if (user_data) {
+      const updatePassword = await User.update(
+        { password: hashedPassword },
+        {
+          where: {
+            user_id: admin_id,
+          },
+        }
+      );
+      if (updatePassword) {
+        res.status(200).json({ status: "Successfull" });
+      }
+    }
+  } catch (error) {
+    console.error("Error setting password", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const admin_profile_admin_info_edit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { firstname, lastname, email, mobile_no } = req.body;
+    const { admin_id } = req.params;
+    const adminprofile = await User.findOne({
+      where: {
+        user_id: admin_id,
+      },
+    });
+    if (!adminprofile) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+    const updatestatus = await User.update(
+      {
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+      },
+      {
+        where: {
+          user_id: admin_id,
+        },
+      }
+    );
+    if (updatestatus) {
+      res.status(200).json({ status: "Updated Successfully" });
+    }
+  } catch (error) {
+    console.error("Error fetching Admin Profile:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const admin_profile_mailing_billling_info_edit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  {
+    try {
+      const { address_1, address_2, city, state, zip, billing_mobile_no } =
+        req.body;
+      const { admin_id } = req.params;
+      const adminprofile = await User.findOne({
+        where: {
+          user_id: admin_id,
+        },
+      });
+      if (!adminprofile) {
+        return res.status(404).json({ error: "Admin not found" });
+      }
+      const updatestatus = await User.update(
+        {
+          address_1,
+          address_2,
+          city,
+          state,
+          zip,
+          billing_mobile_no,
+        },
+        {
+          where: {
+            user_id: admin_id,
+          },
+        }
+      );
+      if (updatestatus) {
+        res.status(200).json({ status: "Updated Successfully" });
+      }
+    } catch (error) {
+      console.error("Error fetching Admin Profile:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 };
 
@@ -1288,7 +2010,6 @@ export const access_accountaccess = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const access_accountaccess_edit = async (
   req: Request,
   res: Response,
@@ -1324,7 +2045,6 @@ export const access_accountaccess_edit = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const access_accountaccess_edit_save = async (
   req: Request,
   res: Response,
@@ -1339,10 +2059,9 @@ export const access_accountaccess_edit_save = async (
       address_1,
       address_2,
       city,
-      state,
+      region,
       zip,
       dob,
-      region,
     } = req.body;
     const account = await User.findOne({
       where: {
@@ -1361,10 +2080,9 @@ export const access_accountaccess_edit_save = async (
         address_1,
         address_2,
         city,
-        state,
+        state: region,
         zip,
         dob,
-        region,
       },
       {
         where: {
@@ -1384,7 +2102,6 @@ export const access_accountaccess_edit_save = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const access_accountaccess_delete = async (
   req: Request,
   res: Response,
@@ -1461,7 +2178,6 @@ export const access_useraccess = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const access_useraccess_edit = async (
   req: Request,
   res: Response,
@@ -1497,7 +2213,6 @@ export const access_useraccess_edit = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const access_useraccess_edit_save = async (
   req: Request,
   res: Response,
@@ -1512,10 +2227,9 @@ export const access_useraccess_edit_save = async (
       address_1,
       address_2,
       city,
-      state,
+      region,
       zip,
       dob,
-      region,
       type_of_user,
     } = req.body;
     const account = await User.findOne({
@@ -1534,10 +2248,9 @@ export const access_useraccess_edit_save = async (
         address_1,
         address_2,
         city,
-        state,
+        state: region,
         zip,
         dob,
-        region,
         type_of_user,
       },
       {

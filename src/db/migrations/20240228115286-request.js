@@ -29,34 +29,29 @@ module.exports = {
       patient_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-          model: "User",
-          key: "user_id",
-        },
       },
       provider_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: "User",
-          key: "user_id",
-        },
       },
       requested_by: {
-        type: Sequelize.ENUM("family_friend", "concierge", "business_partner","admin", "patient","provider"),
+        type: Sequelize.ENUM(
+          "family_friend",
+          "concierge",
+          "business_partner",
+          "admin",
+          "patient",
+          "provider"
+        ),
         allowNull: false,
       },
       requestor_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: "Requestor",
-          key: "user_id",
-        },
       },
       requested_date: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       notes_symptoms: {
         type: Sequelize.STRING,
@@ -69,7 +64,11 @@ module.exports = {
       block_status: {
         type: Sequelize.ENUM("yes", "no"),
         defaultValue: "no",
-        allowNull: false,
+        allowNull: false, 
+      },
+      block_status_reason: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       cancellation_status: {
         type: Sequelize.ENUM("yes", "no"),
@@ -97,7 +96,8 @@ module.exports = {
       },
       createdAt: {
         type: Sequelize.DATE,
-        default: Sequelize.NOW,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
       },
       updatedAt: {
         type: Sequelize.DATE,

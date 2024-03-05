@@ -59,6 +59,10 @@ Request.init({
         defaultValue: "no",
         allowNull: false,
     },
+    block_status_reason: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     cancellation_status: {
         type: sequelize_1.DataTypes.ENUM("yes", "no"),
         defaultValue: "no",
@@ -93,8 +97,5 @@ Request.init({
         allowNull: false,
         onUpdate: "CASCADE",
     },
-}, { timestamps: true,
-    sequelize: database_1.default,
-    tableName: "request",
-});
+}, { timestamps: true, sequelize: database_1.default, tableName: "request" });
 exports.default = Request;

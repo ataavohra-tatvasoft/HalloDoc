@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.ENUM("admin", "patient", "provider"),
         allowNull: false,
       },
-
+  
       // Common fields
       firstname: {
         type: Sequelize.STRING,
@@ -46,8 +46,8 @@ module.exports = {
         allowNull: true,
       },
       address_1: {
-        type: Sequelize.STRING,
-        allowNull: true,
+          type: Sequelize.STRING,
+          allowNull: true,
       },
       address_2: {
         type: Sequelize.STRING,
@@ -69,11 +69,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-
+  
       // Admin-specific fields
       billing_mobile_no: {
         type: Sequelize.INTEGER,
-      allowNull: true,
+        allowNull: true,
         unique: true,
       },
       status: {
@@ -82,19 +82,15 @@ module.exports = {
       },
       role: {
         type: Sequelize.STRING,
-        allowNull: true  // Removed redundant "admin" role field
+        allowNull: true // Removed redundant "admin" role field
       },
-
+  
       // Patient-specific fields
       dob: {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      region: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-
+  
       // Provider-specific fields
       medical_licence: {
         type: Sequelize.STRING,
@@ -118,7 +114,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-
+  
       // Additional attributes
       tax_id: {
         type: Sequelize.STRING,
