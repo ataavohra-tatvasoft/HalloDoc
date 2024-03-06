@@ -37,8 +37,13 @@ Notes.init({
         type: sequelize_1.DataTypes.ENUM("transfer_notes", "admin_notes", "physician_notes", "patient_notes", "admin_cancellation_notes", "physician_cancellation_notes", "patient_cancellation_notes"),
         allowNull: false,
     },
-}, { timestamps: true,
-    sequelize: database_1.default,
-    tableName: "notes",
-});
+    createdAt: {
+        type: sequelize_1.DataTypes.DATE,
+    },
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+    },
+}, { timestamps: true, sequelize: database_1.default, tableName: "notes" });
 exports.default = Notes;

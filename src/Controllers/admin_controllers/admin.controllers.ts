@@ -20,7 +20,6 @@ import path from "path";
 /** Configs */
 dotenv.config({ path: `.env` });
 
-
 /**                              Admin in Dashboard                                       */
 /**Admin SignUp */
 export const admin_signup = async (
@@ -90,7 +89,6 @@ export const admin_signup = async (
   }
 };
 
-
 /**Admin Create Request */
 export const admin_create_request = async (
   req: Request,
@@ -140,7 +138,7 @@ export const admin_create_request = async (
     const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
     const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
 
-    const todaysRequestsCount : any = await RequestModel.count({
+    const todaysRequestsCount: any = await RequestModel.count({
       where: {
         createdAt: {
           [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
@@ -250,7 +248,9 @@ export const region_without_thirdparty_API = async (
   next: NextFunction
 ) => {
   try {
-    const regions = Region.findAll();
+    const regions = Region.findAll({
+      attributes: ["region_name"],
+    });
     if (!regions) {
       res.status(500).json({ error: "Error fetching region data" });
     }
@@ -299,8 +299,8 @@ export const requests_by_request_state = async (
   next: NextFunction
 ) => {
   try {
-    const { state, region } = req.params;
-    const { firstname, lastname } = req.query; // Get search parameters from query string
+    const { state } = req.params;
+    const { firstname, lastname, region } = req.query; // Get search parameters from query string
     const whereClause: { [key: string]: any } = {};
     if (firstname) {
       whereClause.firstname = {
@@ -318,7 +318,12 @@ export const requests_by_request_state = async (
         {
           const requests = await RequestModel.findAll({
             where: { request_state: state },
-            attributes: ["requested_date", "request_state", "patient_id"],
+            attributes: [
+              "requested_date",
+              "request_state",
+              "patient_id",
+              "requested_by",
+            ],
             include: [
               {
                 model: User,
@@ -575,10 +580,10 @@ export const view_case_for_request = async (
           },
           {
             model: Notes,
-            attributes: ["requestId", "noteId", "description"],
-            where: {
-              typeOfNote: "patient_notes",
-            },
+            attributes: ["requestId", "noteId", "description", "typeOfNote"],
+            // where: {
+            //   typeOfNote: "patient_notes",
+            // },
           },
         ],
       });
@@ -689,7 +694,7 @@ export const cancel_case_for_request_view_data = async (
 ) => {
   try {
     const { confirmation_no, state } = req.params;
-    if (state === "new") {
+    if (state == "new") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no: confirmation_no,
@@ -731,7 +736,7 @@ export const cancel_case_for_request = async (
   try {
     const { confirmation_no, state } = req.params;
     const { reason, additional_notes } = req.body;
-    if (state === "new") {
+    if (state == "new") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no: confirmation_no,
@@ -840,7 +845,7 @@ export const assign_request_region_physician = async (
 ) => {
   try {
     const { region, state } = req.params;
-    if (state === "new") {
+    if (state == "new") {
       const physicians = await User.findAll({
         where: {
           type_of_user: "provider",
@@ -848,7 +853,7 @@ export const assign_request_region_physician = async (
           state: region,
           scheduled_status: "no",
         },
-        include: ["region", " firstname", "lastname"],
+        attributes: ["state", "firstname", "lastname"],
       });
 
       return res.status(200).json({
@@ -870,7 +875,7 @@ export const assign_request = async (
   try {
     const { confirmation_no, state } = req.params;
     const { firstname, lastname, assign_req_description } = req.body;
-    if (state === "new") {
+    if (state == "new") {
       const provider = await User.findOne({
         where: {
           type_of_user: "provider",
@@ -1042,6 +1047,7 @@ export const view_uploads_upload = async (
 ) => {
   try {
     const { state, confirmation_no } = req.params;
+    console.log(req.file);
     const file: any = req.file;
     const fileURL = file.path;
     const request = await RequestModel.findOne({
@@ -1078,7 +1084,6 @@ export const view_uploads_actions_delete = async (
 ) => {
   try {
     const { state, confirmation_no, document_id } = req.params;
-    const file: any = req.file;
     // const fileURL = file.path;
     const request = await RequestModel.findOne({
       where: {
@@ -1195,7 +1200,6 @@ export const view_uploads_delete_all = async (
 ) => {
   try {
     const { state, confirmation_no } = req.params;
-    const file: any = req.file;
     // const fileURL = file.path;
     const request = await RequestModel.findOne({
       where: {
@@ -1337,7 +1341,7 @@ export const transfer_request_region_physician = async (
 ) => {
   try {
     const { region, state } = req.params;
-    if (state === " pending") {
+    if (state == " pending") {
       const physicians = await User.findAll({
         where: {
           type_of_user: "provider",
@@ -1345,7 +1349,7 @@ export const transfer_request_region_physician = async (
           role: "physician",
           scheduled_status: "no",
         },
-        include: ["region", " firstname", "lastname"],
+        attributes: ["state", " firstname", "lastname"],
       });
 
       return res.status(200).json({
@@ -1414,7 +1418,7 @@ export const clear_case_for_request = async (
   try {
     const { state, confirmation_no } = req.params;
     try {
-      if (state === "pending" || "toclose") {
+      if (state == "pending" || "toclose") {
         const request = await RequestModel.findOne({
           where: { confirmation_no },
           attributes: ["confirmation_no"],
@@ -1467,7 +1471,7 @@ export const send_agreement = async (
         errormessage: statusCodes[400],
       });
     }
-    if (state === " pending") {
+    if (state == " pending") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no,
@@ -1536,7 +1540,12 @@ export const send_agreement = async (
         subject: "Agreement",
         html: mailContent,
       });
-
+     if(!info){
+      res.status(500).json({
+        message: "Error while sending agreement to your mail",
+        errormessage: statusCodes[200],
+      });
+     }
       res.status(200).json({
         message: "Agreement sent to your email",
         errormessage: statusCodes[200],
@@ -1577,6 +1586,12 @@ export const update_agreement = async (
         },
       }
     );
+    if(!update_status){
+      res.status(200).json({
+        status: true,
+        message: "Error while updating !!!",
+      });
+    };
     res.status(200).json({
       status: true,
       message: "Successfull !!!",
@@ -1614,7 +1629,7 @@ export const close_case_for_request_view_details = async (
               "request_id",
               "document_id",
               "document_path",
-              "upload_date",
+              "createdAt",
             ],
           },
         ],
@@ -1641,7 +1656,7 @@ export const close_case_for_request = async (
   try {
     const { confirmation_no, state } = req.params;
 
-    if (state === "toclose") {
+    if (state == "toclose") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no: confirmation_no,
@@ -1689,7 +1704,7 @@ export const close_case_for_request_edit = async (
   try {
     const { confirmation_no, state } = req.params;
     const { firstname, lastname, dob, mobile_no, email } = req.body;
-    if (state === "toclose") {
+    if (state == "toclose") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no: confirmation_no,
@@ -1848,8 +1863,8 @@ export const admin_profile_view = async (
       where: {
         user_id: admin_id,
       },
-      include: [
-        "username",
+      attributes: [
+        // "username",
         "status",
         "role",
         "firstname",
@@ -1913,8 +1928,8 @@ export const admin_profile_admin_info_edit = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, email, mobile_no } = req.body;
-    const { admin_id } = req.params;
+    const { firstname, lastname, email, mobile_no,admin_id } = req.body;
+    // const { admin_id } = req.params;
     const adminprofile = await User.findOne({
       where: {
         user_id: admin_id,
@@ -1951,9 +1966,9 @@ export const admin_profile_mailing_billling_info_edit = async (
 ) => {
   {
     try {
-      const { address_1, address_2, city, state, zip, billing_mobile_no } =
+      const { admin_id,address_1, address_2, city, state, zip, billing_mobile_no } =
         req.body;
-      const { admin_id } = req.params;
+      // const { admin_id } = req.params;
       const adminprofile = await User.findOne({
         where: {
           user_id: admin_id,

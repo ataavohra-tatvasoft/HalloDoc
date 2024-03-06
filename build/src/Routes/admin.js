@@ -15,10 +15,10 @@ router.post("/dashboard/requests/createrequest", middlewares_1.authmiddleware, (
 router.get("/dashboard/requests/region", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.region_without_thirdparty_API)(req, res, next);
 });
-router.get("/dashboard/requests/region", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/regions", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.region_with_thirdparty_API)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:region", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:state", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.requests_by_request_state)(req, res, next);
 });
 /**Admin Request Actions */
@@ -64,13 +64,13 @@ router.get("/dashboard/requests/:state/:confirmation_no/actions/viewuploads/down
 router.delete("/dashboard/requests/:state/:confirmation_no/actions/viewuploads/deleteall", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.view_uploads_delete_all)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/sendorders/professions", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/actions/sendorders/professions", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.professions_for_send_orders)(req, res, next);
 });
 router.post("/dashboard/requests/:state/:confirmation_no/actions/sendorders", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.send_orders_for_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/transferrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:state/actions/transferrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.transfer_request_region_physician)(req, res, next);
 });
 router.post("/dashboard/requests/:state/:confirmation_no/actions/transferrequest", middlewares_1.authmiddleware, (req, res, next) => {

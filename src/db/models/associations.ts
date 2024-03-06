@@ -29,7 +29,7 @@ Request.belongsTo(Requestor, {
   targetKey: "user_id",
 });
 
-// Request.hasMany(Notes,  { foreignKey : 'request_id'});
+Request.hasMany(Notes,  { foreignKey : 'requestId'});
 Notes.belongsTo(Request, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
@@ -45,6 +45,7 @@ Order.belongsTo(Request, {
   targetKey: "request_id",
 });
 
+Request.hasMany(Documents,  { foreignKey : 'request_id'});
 Documents.belongsTo(Request, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",

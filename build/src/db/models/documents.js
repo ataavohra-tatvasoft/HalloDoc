@@ -16,16 +16,21 @@ Documents.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
     },
     document_path: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-    upload_date: {
+    createdAt: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: false,
         defaultValue: sequelize_1.DataTypes.NOW,
+    },
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
     },
 }, { timestamps: true, sequelize: database_1.default, tableName: "documents" });
 exports.default = Documents;

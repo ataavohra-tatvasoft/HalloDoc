@@ -17,7 +17,7 @@ Requestor.init({
     //   type: DataTypes.INTEGER,
     //   allowNull: false,
     //   references: {
-    //     model: 'Request', 
+    //     model: 'Request',
     //     key: 'request_id',
     //   },
     // },
@@ -59,8 +59,13 @@ Requestor.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-}, { timestamps: true,
-    sequelize: database_1.default,
-    tableName: 'requestor',
-});
+    createdAt: {
+        type: sequelize_1.DataTypes.DATE,
+    },
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+    },
+}, { timestamps: true, sequelize: database_1.default, tableName: "requestor" });
 exports.default = Requestor;
