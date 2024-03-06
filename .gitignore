@@ -1,4 +1,4 @@
 node_modules
-src/db/config/config.json
 src/connections
+src/db/config
 .env
