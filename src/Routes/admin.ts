@@ -64,14 +64,14 @@ router.get(
   }
 );
 router.get(
-  "/dashboard/requests/region",
+  "/dashboard/requests/regions",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     region_with_thirdparty_API(req, res, next);
   }
 );
 router.get(
-  "/dashboard/requests/:state/:region",
+  "/dashboard/requests/:state",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     requests_by_request_state(req, res, next);
@@ -178,7 +178,7 @@ router.delete(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/sendorders/professions",
+  "/dashboard/requests/actions/sendorders/professions",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     professions_for_send_orders(req, res, next);
@@ -192,7 +192,7 @@ router.post(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/transferrequestregionphysician/:region",
+  "/dashboard/requests/:state/actions/transferrequestregionphysician/:region",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     transfer_request_region_physician(req, res, next);

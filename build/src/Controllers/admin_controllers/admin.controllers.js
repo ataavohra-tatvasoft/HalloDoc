@@ -221,7 +221,9 @@ exports.admin_create_request = admin_create_request;
 // };
 const region_without_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const regions = region_1.default.findAll();
+        const regions = region_1.default.findAll({
+            attributes: ["region_name"],
+        });
         if (!regions) {
             res.status(500).json({ error: "Error fetching region data" });
         }
@@ -264,8 +266,8 @@ const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0,
 exports.region_with_thirdparty_API = region_with_thirdparty_API;
 const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, region } = req.params;
-        const { firstname, lastname } = req.query; // Get search parameters from query string
+        const { state } = req.params;
+        const { firstname, lastname, region } = req.query; // Get search parameters from query string
         const whereClause = {};
         if (firstname) {
             whereClause.firstname = {
@@ -283,7 +285,12 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 {
                     const requests = yield request_1.default.findAll({
                         where: { request_state: state },
-                        attributes: ["requested_date", "request_state", "patient_id"],
+                        attributes: [
+                            "requested_date",
+                            "request_state",
+                            "patient_id",
+                            "requested_by",
+                        ],
                         include: [
                             {
                                 model: user_1.default,
@@ -533,10 +540,10 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
                     },
                     {
                         model: notes_1.default,
-                        attributes: ["requestId", "noteId", "description"],
-                        where: {
-                            typeOfNote: "patient_notes",
-                        },
+                        attributes: ["requestId", "noteId", "description", "typeOfNote"],
+                        // where: {
+                        //   typeOfNote: "patient_notes",
+                        // },
                     },
                 ],
             });
@@ -634,7 +641,7 @@ exports.save_view_notes_for_request = save_view_notes_for_request;
 const cancel_case_for_request_view_data = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { confirmation_no, state } = req.params;
-        if (state === "new") {
+        if (state == "new") {
             const request = yield request_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
@@ -672,7 +679,7 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
     try {
         const { confirmation_no, state } = req.params;
         const { reason, additional_notes } = req.body;
-        if (state === "new") {
+        if (state == "new") {
             const request = yield request_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
@@ -769,7 +776,7 @@ exports.cancel_case_for_request = cancel_case_for_request;
 const assign_request_region_physician = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { region, state } = req.params;
-        if (state === "new") {
+        if (state == "new") {
             const physicians = yield user_1.default.findAll({
                 where: {
                     type_of_user: "provider",
@@ -777,7 +784,7 @@ const assign_request_region_physician = (req, res, next) => __awaiter(void 0, vo
                     state: region,
                     scheduled_status: "no",
                 },
-                include: ["region", " firstname", "lastname"],
+                attributes: ["state", "firstname", "lastname"],
             });
             return res.status(200).json({
                 status: true,
@@ -796,7 +803,7 @@ const assign_request = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     try {
         const { confirmation_no, state } = req.params;
         const { firstname, lastname, assign_req_description } = req.body;
-        if (state === "new") {
+        if (state == "new") {
             const provider = yield user_1.default.findOne({
                 where: {
                     type_of_user: "provider",
@@ -951,6 +958,7 @@ exports.view_uploads_view_data = view_uploads_view_data;
 const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, confirmation_no } = req.params;
+        console.log(req.file);
         const file = req.file;
         const fileURL = file.path;
         const request = yield request_1.default.findOne({
@@ -985,7 +993,6 @@ exports.view_uploads_upload = view_uploads_upload;
 const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, confirmation_no, document_id } = req.params;
-        const file = req.file;
         // const fileURL = file.path;
         const request = yield request_1.default.findOne({
             where: {
@@ -1089,7 +1096,6 @@ exports.view_uploads_actions_download = view_uploads_actions_download;
 const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, confirmation_no } = req.params;
-        const file = req.file;
         // const fileURL = file.path;
         const request = yield request_1.default.findOne({
             where: {
@@ -1213,7 +1219,7 @@ exports.send_orders_for_request = send_orders_for_request;
 const transfer_request_region_physician = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { region, state } = req.params;
-        if (state === " pending") {
+        if (state == " pending") {
             const physicians = yield user_1.default.findAll({
                 where: {
                     type_of_user: "provider",
@@ -1221,7 +1227,7 @@ const transfer_request_region_physician = (req, res, next) => __awaiter(void 0, 
                     role: "physician",
                     scheduled_status: "no",
                 },
-                include: ["region", " firstname", "lastname"],
+                attributes: ["state", " firstname", "lastname"],
             });
             return res.status(200).json({
                 status: true,
@@ -1282,7 +1288,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
     try {
         const { state, confirmation_no } = req.params;
         try {
-            if (state === "pending" || "toclose") {
+            if (state == "pending" || "toclose") {
                 const request = yield request_1.default.findOne({
                     where: { confirmation_no },
                     attributes: ["confirmation_no"],
@@ -1334,7 +1340,7 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 errormessage: status_codes_1.default[400],
             });
         }
-        if (state === " pending") {
+        if (state == " pending") {
             const request = yield request_1.default.findOne({
                 where: {
                     confirmation_no,
@@ -1400,6 +1406,12 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 subject: "Agreement",
                 html: mailContent,
             });
+            if (!info) {
+                res.status(500).json({
+                    message: "Error while sending agreement to your mail",
+                    errormessage: status_codes_1.default[200],
+                });
+            }
             res.status(200).json({
                 message: "Agreement sent to your email",
                 errormessage: status_codes_1.default[200],
@@ -1434,6 +1446,13 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 confirmation_no,
             },
         });
+        if (!update_status) {
+            res.status(200).json({
+                status: true,
+                message: "Error while updating !!!",
+            });
+        }
+        ;
         res.status(200).json({
             status: true,
             message: "Successfull !!!",
@@ -1468,7 +1487,7 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
                             "request_id",
                             "document_id",
                             "document_path",
-                            "upload_date",
+                            "createdAt",
                         ],
                     },
                 ],
@@ -1492,7 +1511,7 @@ exports.close_case_for_request_view_details = close_case_for_request_view_detail
 const close_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { confirmation_no, state } = req.params;
-        if (state === "toclose") {
+        if (state == "toclose") {
             const request = yield request_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
@@ -1535,7 +1554,7 @@ const close_case_for_request_edit = (req, res, next) => __awaiter(void 0, void 0
     try {
         const { confirmation_no, state } = req.params;
         const { firstname, lastname, dob, mobile_no, email } = req.body;
-        if (state === "toclose") {
+        if (state == "toclose") {
             const request = yield request_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
@@ -1667,8 +1686,8 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
             where: {
                 user_id: admin_id,
             },
-            include: [
-                "username",
+            attributes: [
+                // "username",
                 "status",
                 "role",
                 "firstname",
@@ -1722,8 +1741,8 @@ const admin_profile_reset_password = (req, res, next) => __awaiter(void 0, void 
 exports.admin_profile_reset_password = admin_profile_reset_password;
 const admin_profile_admin_info_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { firstname, lastname, email, mobile_no } = req.body;
-        const { admin_id } = req.params;
+        const { firstname, lastname, email, mobile_no, admin_id } = req.body;
+        // const { admin_id } = req.params;
         const adminprofile = yield user_1.default.findOne({
             where: {
                 user_id: admin_id,
@@ -1755,8 +1774,8 @@ exports.admin_profile_admin_info_edit = admin_profile_admin_info_edit;
 const admin_profile_mailing_billling_info_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     {
         try {
-            const { address_1, address_2, city, state, zip, billing_mobile_no } = req.body;
-            const { admin_id } = req.params;
+            const { admin_id, address_1, address_2, city, state, zip, billing_mobile_no } = req.body;
+            // const { admin_id } = req.params;
             const adminprofile = yield user_1.default.findOne({
                 where: {
                     user_id: admin_id,
