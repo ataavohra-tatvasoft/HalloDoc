@@ -1,8 +1,9 @@
 
-export * from "./admin";
+export * from "./profession";
+export * from "./region";
+export * from "./documents";
 export *from "./requestor";
 export * from "./notes";
 export * from "./order";
 export * from "./request";
-export * from "./patient";
-export * from "./provider";
+export * from "./user"
