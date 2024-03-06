@@ -32,7 +32,7 @@ Documents.init(
       defaultValue: DataTypes.NOW,
     },
   },
-  { timestamps: false, sequelize, tableName: "documents" }
+  { timestamps: true, sequelize, tableName: "documents" }
 );
 
 export default Documents;

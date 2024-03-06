@@ -51,7 +51,7 @@ Notes.init(
       allowNull: false,
     },
   },
-  {  timestamps:false,
+  {  timestamps:true,
     sequelize,
     tableName: "notes",
   }

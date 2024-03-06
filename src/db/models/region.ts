@@ -19,7 +19,7 @@ Region.init(
       allowNull: false,
     },
   },
-  {  timestamps:false,
+  {  timestamps:true,
     sequelize,
     tableName: "region",
   }

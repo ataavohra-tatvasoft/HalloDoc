@@ -65,7 +65,7 @@ Order.init(
       defaultValue: 0,
     },
   },
-  {  timestamps:false,
+  {  timestamps:true,
     sequelize,
     tableName: 'order',
   }
