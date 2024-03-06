@@ -37,10 +37,6 @@ Request.init({
     requestor_id: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: true,
-        // references: {
-        //   model: 'Requestor',
-        //   key: "user_id",
-        // },
     },
     requested_date: {
         type: sequelize_1.DataTypes.DATE,

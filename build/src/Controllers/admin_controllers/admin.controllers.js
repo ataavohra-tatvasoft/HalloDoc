@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physician = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.admin_create_request = exports.admin_signup = void 0;
+exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physician = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
 const request_1 = __importDefault(require("../../db/models/request"));
 const requestor_1 = __importDefault(require("../../db/models/requestor"));
 const user_1 = __importDefault(require("../../db/models/user"));
@@ -219,6 +219,49 @@ exports.admin_create_request = admin_create_request;
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // };
+const region_without_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const regions = region_1.default.findAll();
+        if (!regions) {
+            res.status(500).json({ error: "Error fetching region data" });
+        }
+        res.status(200).json({ status: "Successfull", regions });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+exports.region_without_thirdparty_API = region_without_thirdparty_API;
+const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        var headers = new Headers();
+        headers.append("X-CSCAPI-KEY", "API_KEY");
+        // var requestOptions = {
+        //   method: "GET",
+        //   headers: headers,
+        //   redirect: "follow",
+        // };
+        fetch("https://api.countrystatecity.in/v1/states", {
+            method: "GET",
+            headers: headers,
+            redirect: "follow",
+        })
+            .then((response) => response.text())
+            .then((result) => {
+            const states = result;
+            res.status(200).json({
+                status: "Successful",
+                data: states,
+            });
+        })
+            .catch((error) => console.log("error", error));
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+exports.region_with_thirdparty_API = region_with_thirdparty_API;
 const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, region } = req.params;
@@ -860,7 +903,7 @@ const block_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
     }
 });
 exports.block_case_for_request = block_case_for_request;
-// Send Mail and Download All remaining in View Uploads 
+// Send Mail and Download All remaining in View Uploads
 const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, confirmation_no } = req.params;
@@ -1010,8 +1053,8 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
         const document = yield documents_1.default.findOne({
             where: {
                 request_id: request.request_id,
-                document_id: document_id
-            }
+                document_id: document_id,
+            },
         });
         if (!document) {
             return res.status(404).json({ error: "Document not found" });
@@ -1020,26 +1063,26 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
         var filePath = document.document_path; // Assuming the path is stored correctly
         if (!path_1.default.isAbsolute(filePath)) {
             // If path is relative, prepend a base path (replace with appropriate logic)
-            filePath = path_1.default.join(__dirname, 'uploads', filePath); // Example base path
+            filePath = path_1.default.join(__dirname, "uploads", filePath); // Example base path
         }
         if (!filePath) {
             return res.status(404).json({ error: "File not found" });
         }
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename=${document.document_id || 'document.ext'}`);
+        res.setHeader("Content-Type", "application/octet-stream");
+        res.setHeader("Content-Disposition", `attachment; filename=${document.document_id || "document.ext"}`);
         res.sendFile(filePath, (error) => {
             if (error) {
-                console.error('Error sending file:', error);
-                res.status(500).json({ error: 'Internal Server Error' });
+                console.error("Error sending file:", error);
+                res.status(500).json({ error: "Internal Server Error" });
             }
             else {
-                console.log('File downloaded successfully');
+                console.log("File downloaded successfully");
             }
         });
     }
     catch (error) {
-        console.error('Error fetching request:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error("Error fetching request:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.view_uploads_actions_download = view_uploads_actions_download;
@@ -1062,7 +1105,7 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
         const status = yield documents_1.default.findAll({
             where: {
                 request_id: request.request_id,
-            }
+            },
         });
         if (!status) {
             return res.status(404).json({ error: "Error while deleting" });
@@ -1421,8 +1464,13 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
                     },
                     {
                         model: documents_1.default,
-                        attributes: ["request_id", "document_id", "document_path", "upload_date"]
-                    }
+                        attributes: [
+                            "request_id",
+                            "document_id",
+                            "document_path",
+                            "upload_date",
+                        ],
+                    },
                 ],
             });
             if (!request) {
@@ -1552,8 +1600,8 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
         const document = yield documents_1.default.findOne({
             where: {
                 request_id: request.request_id,
-                document_id: document_id
-            }
+                document_id: document_id,
+            },
         });
         if (!document) {
             return res.status(404).json({ error: "Document not found" });
@@ -1562,72 +1610,29 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
         var filePath = document.document_path; // Assuming the path is stored correctly
         if (!path_1.default.isAbsolute(filePath)) {
             // If path is relative, prepend a base path (replace with appropriate logic)
-            filePath = path_1.default.join(__dirname, 'uploads', filePath); // Example base path
+            filePath = path_1.default.join(__dirname, "uploads", filePath); // Example base path
         }
         if (!filePath) {
             return res.status(404).json({ error: "File not found" });
         }
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename=${document.document_id || 'document.ext'}`);
+        res.setHeader("Content-Type", "application/octet-stream");
+        res.setHeader("Content-Disposition", `attachment; filename=${document.document_id || "document.ext"}`);
         res.sendFile(filePath, (error) => {
             if (error) {
-                console.error('Error sending file:', error);
-                res.status(500).json({ error: 'Internal Server Error' });
+                console.error("Error sending file:", error);
+                res.status(500).json({ error: "Internal Server Error" });
             }
             else {
-                console.log('File downloaded successfully');
+                console.log("File downloaded successfully");
             }
         });
     }
     catch (error) {
-        console.error('Error fetching request:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error("Error fetching request:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.close_case_for_request_actions_download = close_case_for_request_actions_download;
-const region_without_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const regions = region_1.default.findAll();
-        if (!regions) {
-            res.status(500).json({ error: "Error fetching region data" });
-        }
-        res.status(200).json({ status: "Seccessfull", regions });
-    }
-    catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-exports.region_without_thirdparty_API = region_without_thirdparty_API;
-const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        var headers = new Headers();
-        headers.append("X-CSCAPI-KEY", "API_KEY");
-        // var requestOptions = {
-        //   method: "GET",
-        //   headers: headers,
-        //   redirect: "follow",
-        // };
-        fetch("https://api.countrystatecity.in/v1/states", {
-            method: "GET",
-            headers: headers,
-            redirect: "follow",
-        })
-            .then((response) => response.text())
-            .then((result) => {
-            const states = result;
-            res.status(200).json({
-                status: "Successful",
-                data: states,
-            });
-        })
-            .catch((error) => console.log("error", error));
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-exports.region_with_thirdparty_API = region_with_thirdparty_API;
 /**Admin Request Support */
 const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
