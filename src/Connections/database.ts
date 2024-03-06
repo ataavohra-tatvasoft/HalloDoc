@@ -3,7 +3,7 @@ import { config } from "dotenv";
 config();
 
 const sequelize = new Sequelize(
-  "hallodoc_ngrok",
+  "hallodoc",
   process.env.DB_USER as string,
   process.env.DB_PASS,
   {

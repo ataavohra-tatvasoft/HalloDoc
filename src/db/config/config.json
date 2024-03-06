@@ -2,7 +2,7 @@
   "development": {
     "username": "ataavohra",
     "password": "password567",
-    "database": "hallodoc_ngrok",
+    "database": "hallodoc",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

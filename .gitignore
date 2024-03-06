@@ -1,3 +1,4 @@
 node_modules
-src/connections/database.ts
+src/db/config/config.json
+src/connections
 .env
