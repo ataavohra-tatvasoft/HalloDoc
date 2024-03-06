@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: "config.env" });
-const sequelize = new sequelize_1.Sequelize("hallodoc", process.env.DB_USER, process.env.DB_PASS, {
+const sequelize = new sequelize_1.Sequelize("hallodoc_ngrok", process.env.DB_USER, process.env.DB_PASS, {
     dialect: "mysql",
     host: "localhost",
     define: {

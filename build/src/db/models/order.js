@@ -18,7 +18,7 @@ Order.init({
         allowNull: false,
         references: {
             model: "Request",
-            key: 'request_id',
+            key: "request_id",
         },
     },
     request_state: {
@@ -55,8 +55,13 @@ Order.init({
         allowNull: false,
         defaultValue: 0,
     },
-}, { timestamps: true,
-    sequelize: database_1.default,
-    tableName: 'order',
-});
+    createdAt: {
+        type: sequelize_1.DataTypes.DATE,
+    },
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
+    },
+}, { timestamps: true, sequelize: database_1.default, tableName: "order" });
 exports.default = Order;

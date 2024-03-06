@@ -6,9 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("../../connections/database"));
 const sequelize_1 = require("sequelize");
 class User extends sequelize_1.Model {
-    ;
-    ;
-    ; // Removed redundant "admin" role field
 }
 User.init({
     user_id: {
@@ -87,7 +84,7 @@ User.init({
     },
     role: {
         type: sequelize_1.DataTypes.STRING,
-        allowNull: true // Removed redundant "admin" role field
+        allowNull: true, // Removed redundant "admin" role field
     },
     // Patient-specific fields
     dob: {
@@ -142,6 +139,14 @@ User.init({
     support_message: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
+    },
+    createdAt: {
+        type: sequelize_1.DataTypes.DATE,
+    },
+    updatedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: false,
+        onUpdate: "CASCADE",
     },
 }, {
     timestamps: true,

@@ -102,7 +102,7 @@ exports.admin_signup = admin_signup;
 /**Admin Create Request */
 const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { body: { FirstName, LastName, DOB, PhoneNumber, Email, Street, City, State, Zip, Room, AdminNotes, }, } = req;
+        const { body: { FirstName, LastName, PhoneNumber, Email, DOB, Street, City, State, Zip, Room, AdminNotes, }, } = req;
         // const today = new Date();
         // console.log(today,today.getFullYear(),today.getFullYear().toString(),today.getFullYear().toString().slice(-2));
         const patient_data = yield user_1.default.create({
@@ -615,7 +615,7 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
                 description: new_note,
             }, {
                 where: {
-                    request_id: request.request_id,
+                    requestId: request.request_id,
                     typeOfNote: "admin_notes",
                 },
             });
@@ -928,7 +928,7 @@ const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, voi
                         "request_id",
                         "document_id",
                         "document_path",
-                        "upload_date",
+                        "createdAt",
                     ],
                 },
             ],
@@ -1001,7 +1001,7 @@ const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0
                         "request_id",
                         "document_id",
                         "document_path",
-                        "upload_date",
+                        "createdAt",
                     ],
                 },
             ],
