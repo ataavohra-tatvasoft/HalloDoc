@@ -1,10 +1,17 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../../connections/database';
-import Request from './request'; 
-
-class Order extends Model {
-  declare orderId: number; 
-  declare requestId: number; 
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../../connections/database";
+import Request from "./request";
+import {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
+class Order extends Model<
+  InferAttributes<Order>,
+  InferCreationAttributes<Order>
+> {
+  declare orderId: CreationOptional<number>;
+  declare requestId: number;
   declare request_state: string;
   declare profession: string;
   declare businessName: string;
@@ -13,6 +20,8 @@ class Order extends Model {
   declare faxNumber: number;
   declare orderDetails: string;
   declare numberOfRefill: number;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 Order.init(
@@ -27,10 +36,10 @@ Order.init(
       allowNull: false,
       references: {
         model: "Request",
-        key: 'request_id',
+        key: "request_id",
       },
     },
-    request_state:{
+    request_state: {
       type: DataTypes.ENUM("active", "conclude", "toclose"),
       allowNull: false,
     },
@@ -64,11 +73,16 @@ Order.init(
       allowNull: false,
       defaultValue: 0,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
+    },
   },
-  {  timestamps:true,
-    sequelize,
-    tableName: 'order',
-  }
+  { timestamps: true, sequelize, tableName: "order" }
 );
 
 export default Order;

@@ -59,7 +59,7 @@ Requestor.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-}, {
+}, { timestamps: true,
     sequelize: database_1.default,
     tableName: 'requestor',
 });

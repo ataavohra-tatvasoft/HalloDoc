@@ -27,7 +27,8 @@ class Request extends Model<
   declare transfer_request_status: CreationOptional<string>;
   declare agreement_status: CreationOptional<string>;
   declare assign_req_description: CreationOptional<string>;
-
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 Request.init(
@@ -91,7 +92,7 @@ Request.init(
     block_status: {
       type: DataTypes.ENUM("yes", "no"),
       defaultValue: "no",
-      allowNull: false, 
+      allowNull: false,
     },
     block_status_reason: {
       type: DataTypes.STRING,
@@ -120,6 +121,14 @@ Request.init(
     assign_req_description: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
     },
   },
   { timestamps: true, sequelize, tableName: "request" }

@@ -10,26 +10,26 @@ import {
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare user_id: CreationOptional<number>;
   declare email: string;
-  declare password:CreationOptional <string>;
+  declare password: CreationOptional<string>;
   declare type_of_user: string;
 
   // Common fields for all user types
   declare firstname: string;
   declare lastname: string;
   declare mobile_no: number;
-  declare address_1:  string;
+  declare address_1: string;
   declare address_2: CreationOptional<string> | null;
-  declare city: string ;
-  declare state: string ;
+  declare city: string;
+  declare state: string;
   declare country_code: CreationOptional<string> | null;
-  declare zip: number ;
+  declare zip: number;
   declare reset_token: CreationOptional<string> | null;
   declare reset_token_expiry: CreationOptional<number> | null;
 
   // Admin-specific fields
-  declare billing_mobile_no: CreationOptional<number> | null;;
-  declare status: CreationOptional<string> | null;;
-  declare role: CreationOptional<string> | null;; // Removed redundant "admin" role field
+  declare billing_mobile_no: CreationOptional<number> | null;
+  declare status: CreationOptional<string> | null;
+  declare role: CreationOptional<string> | null; // Removed redundant "admin" role field
 
   // Patient-specific fields
   declare dob: CreationOptional<Date> | null;
@@ -51,6 +51,8 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare on_call_status: CreationOptional<string> | null;
   declare scheduled_status: CreationOptional<string> | null;
   declare support_message: CreationOptional<string> | null;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 User.init(
@@ -97,8 +99,8 @@ User.init(
       allowNull: true,
     },
     address_1: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     address_2: {
       type: DataTypes.STRING,
@@ -133,7 +135,7 @@ User.init(
     },
     role: {
       type: DataTypes.STRING,
-      allowNull: true // Removed redundant "admin" role field
+      allowNull: true, // Removed redundant "admin" role field
     },
 
     // Patient-specific fields
@@ -191,6 +193,14 @@ User.init(
     support_message: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
     },
   },
 

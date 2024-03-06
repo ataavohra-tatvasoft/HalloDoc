@@ -102,9 +102,9 @@ export const admin_create_request = async (
       body: {
         FirstName,
         LastName,
-        DOB,
         PhoneNumber,
         Email,
+        DOB,
         Street,
         City,
         State,
@@ -140,7 +140,7 @@ export const admin_create_request = async (
     const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
     const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
 
-    const todaysRequestsCount = await RequestModel.count({
+    const todaysRequestsCount : any = await RequestModel.count({
       where: {
         createdAt: {
           [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
@@ -667,7 +667,7 @@ export const save_view_notes_for_request = async (
         },
         {
           where: {
-            request_id: request.request_id,
+            requestId: request.request_id,
             typeOfNote: "admin_notes",
           },
         }
@@ -1017,7 +1017,7 @@ export const view_uploads_view_data = async (
             "request_id",
             "document_id",
             "document_path",
-            "upload_date",
+            "createdAt",
           ],
         },
       ],
@@ -1094,7 +1094,7 @@ export const view_uploads_actions_delete = async (
             "request_id",
             "document_id",
             "document_path",
-            "upload_date",
+            "createdAt",
           ],
         },
       ],

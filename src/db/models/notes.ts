@@ -1,14 +1,23 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../../connections/database";
 import Request from "./request";
-
-class Notes extends Model {
+import {
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
+class Notes extends Model<
+  InferAttributes<Notes>,
+  InferCreationAttributes<Notes>
+> {
   declare requestId: number;
-  declare noteId: number;
-  declare physician_name: string;
-  declare reason: string;
+  declare noteId: CreationOptional<number>;
+  declare physician_name: CreationOptional<string>;
+  declare reason:CreationOptional <string>;
   declare description: string;
   declare typeOfNote: string;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 Notes.init(
@@ -50,11 +59,16 @@ Notes.init(
       ),
       allowNull: false,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
+    },
   },
-  {  timestamps:true,
-    sequelize,
-    tableName: "notes",
-  }
+  { timestamps: true, sequelize, tableName: "notes" }
 );
 
 export default Notes;

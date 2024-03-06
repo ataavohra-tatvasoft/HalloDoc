@@ -11,19 +11,20 @@ class Requestor extends Model<
   InferAttributes<Requestor>,
   InferCreationAttributes<Requestor>
 > {
-    declare user_id: CreationOptional<number>; 
-    // declare request_id: number;
-    declare first_name: CreationOptional<string>;
-    declare last_name: CreationOptional<string>;
-    declare mobile_number: CreationOptional<number>;
-    declare email: CreationOptional<string>;
-    declare house_name: CreationOptional<string>;
-    declare street: CreationOptional<string>;
-    declare city: CreationOptional<string>;
-    declare state: CreationOptional<string>;
-    declare zip: CreationOptional<number>;
+  declare user_id: CreationOptional<number>;
+  // declare request_id: number;
+  declare first_name: CreationOptional<string>;
+  declare last_name: CreationOptional<string>;
+  declare mobile_number: CreationOptional<number>;
+  declare email: CreationOptional<string>;
+  declare house_name: CreationOptional<string>;
+  declare street: CreationOptional<string>;
+  declare city: CreationOptional<string>;
+  declare state: CreationOptional<string>;
+  declare zip: CreationOptional<number>;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
-
 
 Requestor.init(
   {
@@ -36,7 +37,7 @@ Requestor.init(
     //   type: DataTypes.INTEGER,
     //   allowNull: false,
     //   references: {
-    //     model: 'Request', 
+    //     model: 'Request',
     //     key: 'request_id',
     //   },
     // },
@@ -78,11 +79,16 @@ Requestor.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      onUpdate: "CASCADE",
+    },
   },
-  { timestamps: true, 
-    sequelize,
-    tableName: 'requestor',
-  }
+  { timestamps: true, sequelize, tableName: "requestor" }
 );
 
 export default Requestor;
