@@ -51,7 +51,12 @@ export const admin_schema_signup = async (
       tlds: { allow: ["com"] },
     }),
     Confirm_Email: Joi.ref("Email"),
-    Password: Joi.string().alphanum().min(5).required(),
+    Password: Joi.string()
+      .min(5)
+      .required()
+      .pattern(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/
+      ),
     Confirm_Password: Joi.ref("Password"),
     Status: Joi.string().valid("Active", "In-Active"),
     Role: Joi.string().valid("Admin"),
@@ -134,7 +139,9 @@ export const admin_schema_signup = async (
       "Lakshadweep",
       "Puducherry"
     ),
-    Country_Code: Joi.string().pattern(/^[a-zA-Z]{2}$/).required(),
+    Country_Code: Joi.string()
+      .pattern(/^[a-zA-Z]{2}$/)
+      .required(),
   });
 
   try {
