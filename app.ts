@@ -6,7 +6,7 @@ import routes from "./src/routes";
 import dotenv from "dotenv";
 import multer from "multer";
 
-dotenv.config({ path: ".env" });
+dotenv.config({ path: "config.env" });
 /** Constants */
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
