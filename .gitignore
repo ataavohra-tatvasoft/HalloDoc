@@ -2,4 +2,3 @@ node_modules
 src/connections
 src/db/config
 .env
-src/db/config

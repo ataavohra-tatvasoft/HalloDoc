@@ -11,6 +11,8 @@ module.exports = {
         { profession_id: 3, profession_name: "Profession 3" },
         { profession_id: 4, profession_name: "Profession 4" },
         { profession_id: 5, profession_name: "Profession 5" },
+        { profession_id: 5, profession_name: "Profession 5" },
+        { profession_id: 6, profession_name: "Profession 6" },
       ],
       {}
     );
