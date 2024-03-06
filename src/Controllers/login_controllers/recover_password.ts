@@ -27,19 +27,28 @@ export const forgot_password = async (
       });
     }
 
-    const resetToken = crypto.createHash("sha256").update(email).digest("hex");
+    const reset_token = crypto.createHash("sha256").update(email).digest("hex");
     const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
 
     if (user) {
       await User.update(
-        { reset_token: resetToken, reset_token_expiry: expireTime },
+        { reset_token: reset_token, reset_token_expiry: expireTime },
         { where: { email } }
       );
     }
 
-    const resetUrl = `http://localhost:7000/recoverpassword/user_resetpassword`;
+    // const resetUrl = `http://localhost:8080/recoverpassword/user_resetpassword`;
     const mailContent = `
       <html>
+      <p>You requested a password reset for your account.</p>
+      <p>Click the link below to reset your password:</p>
+      <button> <a href = "http://localhost:8080/recoverpassword/user_resetpassword_page/${reset_token}"> Reset Password </a></button>
+      <p>This link will expire in 1 hour.</p>
+      </form>
+      </html>
+    `;
+    
+/**      <html>
       <form action = "${resetUrl}" method="POST"> 
       <p>You requested a password reset for your account.</p>
       <p>Click the link below to reset your password:</p>
@@ -53,8 +62,8 @@ export const forgot_password = async (
       <button type = "submit">Reset Password</button>
       <p>This link will expire in 1 hour.</p>
       </form>
-      </html>
-    `;
+      </html> 
+*/
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -95,24 +104,25 @@ export const reset_password = async (
   next: NextFunction
 ) => {
   try {
-    const { ResetToken, Password } = req.body;
-    console.log(ResetToken, Password);
+    const { reset_token} = req.params;
+    const { password } = req.body;
+    // console.log(ResetToken, Password);
     // Validate reset token and expiry
     const user = await User.findOne({
       where: {
-        reset_token: ResetToken,
+        reset_token: reset_token,
         reset_token_expiry: { [Op.gt]: Date.now() },
       },
     });
 
-    if (!user ) {
+    if (!user) {
       return res.status(400).json({
         message: "Invalid or expired reset token",
         errormessage: statusCodes[400],
       });
     }
 
-    const hashedPassword = await brcypt.hash(Password, 10);
+    const hashedPassword = await brcypt.hash(password, 10);
     if (user) {
       await User.update(
         {
@@ -128,7 +138,6 @@ export const reset_password = async (
         errormessage: statusCodes[200],
       });
     }
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({

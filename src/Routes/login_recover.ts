@@ -1,10 +1,7 @@
 import express, { Router } from "express";
 import { Request, Response, NextFunction } from "express";
-import {
-  forgot_password,
-  reset_password,
-  login,
-} from "../controllers";
+import { forgot_password, reset_password, login } from "../controllers";
+import { reset_password_schema } from "../middlewares";
 const router: Router = express.Router();
 
 router.post(
@@ -23,6 +20,7 @@ router.post(
 
 router.post(
   "/user_resetpassword",
+  reset_password_schema,
   (req: Request, res: Response, next: NextFunction) => {
     reset_password(req, res, next);
   }

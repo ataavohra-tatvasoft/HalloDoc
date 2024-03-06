@@ -61,7 +61,6 @@ export const login = async (
         });
       }
     }
-    console.log(user_data);
     const data = {
       user_id: user.user_id,
       firstname: user.firstname,

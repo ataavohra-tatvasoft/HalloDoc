@@ -39,7 +39,10 @@ const admin_schema_signup = (req, res, next) => __awaiter(void 0, void 0, void 0
             tlds: { allow: ["com"] },
         }),
         Confirm_Email: joi_1.default.ref("Email"),
-        Password: joi_1.default.string().alphanum().min(5).required(),
+        Password: joi_1.default.string()
+            .min(5)
+            .required()
+            .pattern(/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/),
         Confirm_Password: joi_1.default.ref("Password"),
         Status: joi_1.default.string().valid("Active", "In-Active"),
         Role: joi_1.default.string().valid("Admin"),
@@ -58,7 +61,9 @@ const admin_schema_signup = (req, res, next) => __awaiter(void 0, void 0, void 0
         Address_2: joi_1.default.string().max(15).min(10),
         City: joi_1.default.string().valid("Ahmedabad", "Amreli district", "Anand", "Banaskantha", "Bharuch", "Bhavnagar", "Dahod", "The Dangs", "Gandhinagar", "Jamnagar", "Junagadh", "Kutch", "Kheda", "Mehsana", "Narmada", "Navsari", "Patan", "Panchmahal", "Porbandar", "Rajkot", "Sabarkantha", "Surendranagar", "Surat", "Vyara", "Vadodara", "Valsad"),
         State: joi_1.default.string().valid("Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttarakhand", "Uttar Pradesh", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli", "Daman and Diu", "Delhi", "Lakshadweep", "Puducherry"),
-        Country_Code: joi_1.default.string().pattern(/^[a-zA-Z]{2}$/).required(),
+        Country_Code: joi_1.default.string()
+            .pattern(/^[a-zA-Z]{2}$/)
+            .required(),
     });
     try {
         yield adminSchema.validateAsync({

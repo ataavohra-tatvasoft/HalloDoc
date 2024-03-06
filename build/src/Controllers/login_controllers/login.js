@@ -67,7 +67,6 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                 });
             }
         }
-        console.log(user_data);
         const data = {
             user_id: user.user_id,
             firstname: user.firstname,

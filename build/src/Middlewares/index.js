@@ -17,3 +17,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./auth"), exports);
 __exportStar(require("./admin_schema"), exports);
 __exportStar(require("./request_schema"), exports);
+__exportStar(require("./reset_password_schema"), exports);

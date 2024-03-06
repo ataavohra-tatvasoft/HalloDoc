@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { Express } from "express";
 // import { Sequelize } from "sequelize";
 import "./src/db/models/associations";
@@ -28,10 +29,19 @@ const fileFilter = (req: any, file: any, cb: any) => {
   }
 };
 const app: Express = express();
+app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(routes);
-
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
