@@ -83,15 +83,5 @@ Request.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
-    createdAt: {
-        type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
-        defaultValue: sequelize_1.DataTypes.NOW,
-    },
-    updatedAt: {
-        type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
-        onUpdate: "CASCADE",
-    },
 }, { timestamps: true, sequelize: database_1.default, tableName: "request" });
 exports.default = Request;

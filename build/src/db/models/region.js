@@ -17,7 +17,7 @@ Region.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-}, { timestamps: false,
+}, { timestamps: true,
     sequelize: database_1.default,
     tableName: "region",
 });

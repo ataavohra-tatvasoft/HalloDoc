@@ -79,7 +79,7 @@ Requestor.init(
       allowNull: false,
     },
   },
-  {
+  { timestamps: true, 
     sequelize,
     tableName: 'requestor',
   }

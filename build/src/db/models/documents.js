@@ -27,5 +27,5 @@ Documents.init({
         allowNull: false,
         defaultValue: sequelize_1.DataTypes.NOW,
     },
-}, { timestamps: false, sequelize: database_1.default, tableName: "documents" });
+}, { timestamps: true, sequelize: database_1.default, tableName: "documents" });
 exports.default = Documents;
