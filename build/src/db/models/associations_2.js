@@ -9,55 +9,35 @@ const requestor_1 = __importDefault(require("./requestor"));
 const notes_1 = __importDefault(require("./notes"));
 const order_1 = __importDefault(require("./order"));
 const documents_1 = __importDefault(require("./documents"));
-/**Associations */
-// User.hasMany(Request,{ foreignKey : 'user_id'});
+/** Associations */
+// Each request belongs to one provider
 request_1.default.belongsTo(user_1.default, {
     as: 'Provider',
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
     foreignKey: "provider_id",
-    targetKey: "user_id",
 });
-// User.hasMany(Request,{ foreignKey : 'user_id'});
+// Each request belongs to one physician
 request_1.default.belongsTo(user_1.default, {
     as: 'Physician',
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
     foreignKey: "physician_id",
-    targetKey: "user_id",
 });
+// Each request belongs to one patient
 request_1.default.belongsTo(user_1.default, {
     as: 'Patient',
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
     foreignKey: "patient_id",
-    targetKey: "user_id",
 });
-// Requestor.hasMany(Request, { foreignKey : 'user_id'});
+// Each request belongs to one requestor
 request_1.default.belongsTo(requestor_1.default, {
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
     foreignKey: "requestor_id",
-    targetKey: "user_id",
 });
+// Each request has many notes
 request_1.default.hasMany(notes_1.default, { foreignKey: "requestId" });
-notes_1.default.belongsTo(request_1.default, {
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
-    foreignKey: "requestId",
-    targetKey: "request_id",
-});
-// Request.hasMany(Order);
-order_1.default.belongsTo(request_1.default, {
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
-    foreignKey: "requestId",
-    targetKey: "request_id",
-});
+// Each note belongs to one request
+notes_1.default.belongsTo(request_1.default, { foreignKey: "requestId" });
+// Each request has one order
+request_1.default.hasOne(order_1.default, { foreignKey: "requestId" });
+// Each order belongs to one request
+order_1.default.belongsTo(request_1.default, { foreignKey: "requestId" });
+// Each request has many documents
 request_1.default.hasMany(documents_1.default, { foreignKey: "request_id" });
-documents_1.default.belongsTo(request_1.default, {
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
-    foreignKey: "request_id",
-    targetKey: "request_id",
-});
+// Each document belongs to one request
+documents_1.default.belongsTo(request_1.default, { foreignKey: "request_id" });

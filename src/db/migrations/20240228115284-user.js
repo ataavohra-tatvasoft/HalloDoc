@@ -147,7 +147,7 @@ module.exports = {
       },
       updatedAt: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
         onUpdate: "CASCADE",
       },
     });

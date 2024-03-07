@@ -8,6 +8,7 @@ import Documents from "./documents";
 
 // User.hasMany(Request,{ foreignKey : 'user_id'});
 Request.belongsTo(User, {
+  as: 'Provider',
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "provider_id",
@@ -16,6 +17,7 @@ Request.belongsTo(User, {
 
 // User.hasMany(Request,{ foreignKey : 'user_id'});
 Request.belongsTo(User, {
+  as: 'Physician',
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "physician_id",
@@ -23,7 +25,7 @@ Request.belongsTo(User, {
 });
 
 Request.belongsTo(User, {
-  as: '',
+  as: 'Patient',
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "patient_id",
