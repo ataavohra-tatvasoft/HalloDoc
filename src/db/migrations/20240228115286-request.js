@@ -26,19 +26,42 @@ module.exports = {
         ),
         allowNull: false,
       },
-      patient_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
       provider_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
+        references: {
+          model: "User",
+          key: "user_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
+        },
+      },
+      physician_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: "User",
+          key: "user_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
+        },
+      },
+      patient_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "User",
+          key: "user_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
+        },
       },
       requested_by: {
         type: Sequelize.ENUM(
-          "family_friend",
+          "family/friend",
           "concierge",
-          "business_partner",
+          "business",
+          "vip",
           "admin",
           "patient",
           "provider"
@@ -64,7 +87,7 @@ module.exports = {
       block_status: {
         type: Sequelize.ENUM("yes", "no"),
         defaultValue: "no",
-        allowNull: false, 
+        allowNull: false,
       },
       block_status_reason: {
         type: Sequelize.STRING,
@@ -81,14 +104,14 @@ module.exports = {
         allowNull: false,
       },
       transfer_request_status: {
-        type: Sequelize.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "undefined",
-        allowNull: false,
+        type: Sequelize.ENUM("pending", "accepted", "rejected"),
+        defaultValue: null,
+        allowNull: true,
       },
       agreement_status: {
-        type: Sequelize.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "undefined",
-        allowNull: false,
+        type: Sequelize.ENUM("pending", "accepted", "rejected"),
+        defaultValue: null,
+        allowNull: true,
       },
       assign_req_description: {
         type: Sequelize.STRING,
