@@ -71,21 +71,21 @@ const forgot_password = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
       </html>
     `;
         /**      <html>
-              <form action = "${resetUrl}" method="POST">
-              <p>You requested a password reset for your account.</p>
-              <p>Click the link below to reset your password:</p>
-              <p>Your token is: ${resetToken}</p>
-              <label for="ResetToken">Token:</label>
-              <input type="text" id="ResetToken" name="ResetToken" required>
-              <br>
-              <label for="Password">Password:</label>
-              <input type="password" id="Password" name="Password" required>
-              <br>
-              <button type = "submit">Reset Password</button>
-              <p>This link will expire in 1 hour.</p>
-              </form>
-              </html>
-        */
+          <form action = "${resetUrl}" method="POST">
+          <p>You requested a password reset for your account.</p>
+          <p>Click the link below to reset your password:</p>
+          <p>Your token is: ${resetToken}</p>
+          <label for="ResetToken">Token:</label>
+          <input type="text" id="ResetToken" name="ResetToken" required>
+          <br>
+          <label for="Password">Password:</label>
+          <input type="password" id="Password" name="Password" required>
+          <br>
+          <button type = "submit">Reset Password</button>
+          <p>This link will expire in 1 hour.</p>
+          </form>
+          </html>
+    */
         const transporter = nodemailer_1.default.createTransport({
             host: process.env.EMAIL_HOST,
             port: Number(process.env.EMAIL_PORT),
@@ -119,8 +119,8 @@ const forgot_password = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.forgot_password = forgot_password;
 const reset_password = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { reset_token } = req.params;
-        const { password } = req.body;
+        // const { reset_token} = req.params;
+        const { password, reset_token } = req.body;
         // console.log(ResetToken, Password);
         // Validate reset token and expiry
         const user = yield user_1.default.findOne({

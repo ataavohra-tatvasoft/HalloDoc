@@ -47,8 +47,8 @@ export const forgot_password = async (
       </form>
       </html>
     `;
-    
-/**      <html>
+
+    /**      <html>
       <form action = "${resetUrl}" method="POST"> 
       <p>You requested a password reset for your account.</p>
       <p>Click the link below to reset your password:</p>
@@ -104,8 +104,8 @@ export const reset_password = async (
   next: NextFunction
 ) => {
   try {
-    const { reset_token} = req.params;
-    const { password } = req.body;
+    // const { reset_token} = req.params;
+    const { password, reset_token } = req.body;
     // console.log(ResetToken, Password);
     // Validate reset token and expiry
     const user = await User.findOne({
