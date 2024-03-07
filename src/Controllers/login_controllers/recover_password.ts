@@ -45,7 +45,7 @@ export const forgot_password = async (
       <p>Click the link below to reset your password:</p>
       </br>
       </br>
-      <button> <a href = "http://localhost:8080/recoverpassword/user_resetpassword_page/${reset_token}"> Reset Password </a></button>
+      <button> <a href = " http://localhost:3000/resetPassword/${reset_token}"> Reset Password </a></button>
       </br>
       </br>
       <p>This link will expire in 1 hour.</p>
