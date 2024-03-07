@@ -1,7 +1,6 @@
 import express, { Router } from "express";
 import login_routes from "./login_recover";
 import signup_routes from "./signup";
-import recover_password_routes from "./login_recover";
 import admin_routes from "./admin";
 import { authmiddleware } from "../middlewares";
 
@@ -9,7 +8,7 @@ const router: Router = express.Router();
 
 router.use("/login", login_routes);
 router.use("/signup", signup_routes);
-router.use("/recoverpassword", recover_password_routes);
+router.use("/recoverpassword", login_routes);
 router.use("/admin", authmiddleware, admin_routes);
 
 export default router;

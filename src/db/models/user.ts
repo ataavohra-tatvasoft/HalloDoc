@@ -167,7 +167,6 @@ User.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-
     // Additional attributes
     tax_id: {
       type: DataTypes.STRING,

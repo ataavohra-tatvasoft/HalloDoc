@@ -64,8 +64,13 @@ const forgot_password = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const mailContent = `
       <html>
       <p>You requested a password reset for your account.</p>
+      </br>
       <p>Click the link below to reset your password:</p>
-      <button> <a href = "http://localhost:8080/recoverpassword/user_resetpassword_page/${reset_token}"> Reset Password </a></button>
+      </br>
+      </br>
+      <button> <a href = " http://localhost:3000/resetPassword/${reset_token}"> Reset Password </a></button>
+      </br>
+      </br>
       <p>This link will expire in 1 hour.</p>
       </form>
       </html>

@@ -13,8 +13,9 @@ class Request extends Model<
   declare request_id: CreationOptional<number>;
   declare confirmation_no: CreationOptional<string>;
   declare request_state: string;
-  declare provider_id: CreationOptional<number>;
   declare patient_id: number;
+  declare physician_id: CreationOptional<number>;
+  declare provider_id: CreationOptional<number>;
   declare requested_by: string;
   declare requestor_id: CreationOptional<number>;
   declare requested_date: Date;
@@ -54,19 +55,24 @@ Request.init(
       ),
       allowNull: false,
     },
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     provider_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    physician_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    patient_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     requested_by: {
       type: DataTypes.ENUM(
-        "family_friend",
+        "family/friend",
         "concierge",
-        "business_partner",
+        "business",
+        "vip",
         "admin",
         "patient",
         "provider"
@@ -109,14 +115,14 @@ Request.init(
       allowNull: false,
     },
     transfer_request_status: {
-      type: DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-      defaultValue: "undefined",
-      allowNull: false,
+      type: DataTypes.ENUM("pending", "accepted", "rejected"),
+      defaultValue: null,
+      allowNull: true,
     },
     agreement_status: {
-      type: DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-      defaultValue: "undefined",
-      allowNull: false,
+      type: DataTypes.ENUM("pending", "accepted", "rejected"),
+      defaultValue: null,
+      allowNull: true,
     },
     assign_req_description: {
       type: DataTypes.STRING,

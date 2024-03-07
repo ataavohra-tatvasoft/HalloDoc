@@ -18,7 +18,7 @@ router.get("/dashboard/requests/region", middlewares_1.authmiddleware, (req, res
 router.get("/dashboard/requests/regions", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.region_with_thirdparty_API)(req, res, next);
 });
-router.get("/dashboard/requests/:state", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.requests_by_request_state)(req, res, next);
 });
 /**Admin Request Actions */

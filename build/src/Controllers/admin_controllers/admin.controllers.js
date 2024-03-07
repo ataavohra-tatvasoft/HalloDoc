@@ -266,115 +266,31 @@ const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0,
 exports.region_with_thirdparty_API = region_with_thirdparty_API;
 const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state } = req.params;
-        const { firstname, lastname, region } = req.query; // Get search parameters from query string
-        const whereClause = {};
-        if (firstname) {
-            whereClause.firstname = {
-                [sequelize_1.Op.like]: `%${firstname}%`, // Use LIKE operator for partial matching
-            };
-        }
-        if (lastname) {
-            whereClause.lastname = {
-                [sequelize_1.Op.like]: `%${lastname}%`,
-            };
-            whereClause.state = region;
-        }
+        const { state, firstname, lastname, region, requestor } = req.query;
+        const whereClause = Object.assign(Object.assign(Object.assign({ [sequelize_1.Op.or]: [
+                { type_of_user: "provider", role: "physician" },
+                { type_of_user: "patient" },
+            ] }, (firstname && { firstname: { [sequelize_1.Op.like]: `%${firstname}%` } })), (lastname && { lastname: { [sequelize_1.Op.like]: `%${lastname}%` } })), (region && { state: region }));
         switch (state) {
             case "new": {
-                {
-                    const requests = yield request_1.default.findAll({
-                        where: { request_state: state },
-                        attributes: [
-                            "requested_date",
-                            "request_state",
-                            "patient_id",
-                            "requested_by",
-                        ],
-                        include: [
-                            {
-                                model: user_1.default,
-                                attributes: [
-                                    "user_id",
-                                    "firstname",
-                                    "lastname",
-                                    "dob",
-                                    "mobile_no",
-                                    "address_1",
-                                ],
-                                // where: {
-                                //   type_of_user: "patient",
-                                // },
-                                where: whereClause,
-                            },
-                            {
-                                model: requestor_1.default,
-                                attributes: ["user_id", "first_name", "last_name"],
-                            },
-                            {
-                                model: notes_1.default,
-                                attributes: ["requestId", "description", "typeOfNote"],
-                            },
-                        ],
-                    });
-                    res.json(requests);
-                    break;
-                }
-            }
-            case "pending": {
-                {
-                    const requests = yield request_1.default.findAll({
-                        where: { request_state: state },
-                        attributes: ["requested_date", "notes_symptoms", "date_of_service"],
-                        include: [
-                            {
-                                model: user_1.default,
-                                attributes: [
-                                    "user_id",
-                                    "firstname",
-                                    "lastname",
-                                    "dob",
-                                    "mobile_no",
-                                    "address_1",
-                                ],
-                                where: whereClause,
-                            },
-                            {
-                                model: requestor_1.default,
-                                attributes: ["user_id", "first_name", "last_name"],
-                            },
-                            {
-                                model: user_1.default,
-                                where: { role: "physician", type_of_user: "provider" },
-                                attributes: [
-                                    "user_id",
-                                    "firstname",
-                                    "lastname",
-                                    "role",
-                                    "type_of_user",
-                                ],
-                            },
-                            {
-                                model: notes_1.default,
-                                attributes: ["requestId", "description", "typeOfNote"],
-                            },
-                        ],
-                    });
-                    if (requests) {
-                        console.log("error");
-                    }
-                    res.json(requests);
-                    break;
-                }
-            }
-            case "active": {
+                const formattedResponse = {
+                    status: true,
+                    data: [],
+                };
                 const requests = yield request_1.default.findAll({
-                    where: { request_state: state },
-                    attributes: ["requested_date", "notes_symptoms", "date_of_service"],
+                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    attributes: [
+                        "request_state",
+                        "confirmation_no",
+                        "requested_by",
+                        "requested_date",
+                        "patient_id"
+                    ],
                     include: [
                         {
                             model: user_1.default,
                             attributes: [
+                                "type_of_user",
                                 "user_id",
                                 "firstname",
                                 "lastname",
@@ -389,111 +305,588 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             attributes: ["user_id", "first_name", "last_name"],
                         },
                         {
-                            model: user_1.default,
-                            where: { role: "physician", type_of_user: "provider" },
-                            attributes: ["user_id", "firstname", "lastname"],
-                        },
-                        {
                             model: notes_1.default,
-                            attributes: ["requestId", "description", "typeOfNote"],
+                            attributes: ["requestId", "typeOfNote", "description"],
                         },
                     ],
                 });
-                res.json(requests);
-                break;
+                for (const request of requests) {
+                    const formattedRequest = {
+                        // Include desired properties from the original request object
+                        request_state: request.request_state,
+                        confirmationNo: request.confirmation_no,
+                        requestor: request.requested_by,
+                        requested_date: request.requested_date,
+                        // patient: {
+                        //   // Extract relevant information from the nested User object
+                        //   type: request.User.type_of_user,
+                        // },
+                        // Requestor: request.Requestor || null, // Include Requestor details or null
+                        // notes: request.Notes.map((note) => ({
+                        //   id: note.requestId,
+                        //   type: note.typeOfNote,
+                        //   description: note.description,
+                        // })),
+                    };
+                    formattedResponse.data.push(formattedRequest);
+                }
+                // return res.status(200).json(formattedResponse);
+                return res.status(200).json(requests);
+            }
+            case "pending": {
+                {
+                    if (requestor) {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state, requested_by: requestor },
+                            attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "requested_date",
+                                "physician_id",
+                                "patient_id",
+                            ],
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: {
+                                        [sequelize_1.Op.or]: [
+                                            { type_of_user: "provider", role: "physician" },
+                                            { type_of_user: "patient" },
+                                        ],
+                                    },
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                    else {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state },
+                            attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "requested_date",
+                                "physician_id",
+                                "patient_id",
+                            ],
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: {
+                                        [sequelize_1.Op.or]: [
+                                            { type_of_user: "provider", role: "physician" },
+                                            { type_of_user: "patient" },
+                                        ],
+                                    },
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                }
+            }
+            case "active": {
+                {
+                    if (requestor) {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state, requested_by: requestor },
+                            attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "requested_date",
+                                "patient_id",
+                            ],
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "role",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                        "state",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                    else {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state },
+                            attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "requested_date",
+                                "patient_id",
+                            ],
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                        "role",
+                                        "state",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                }
             }
             case "conslude": {
-                const requests = yield request_1.default.findAll({
-                    where: { request_state: state },
-                    attributes: ["requested_date", "date_of_service"],
-                    include: [
-                        {
-                            model: user_1.default,
+                {
+                    if (requestor) {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state, requested_by: requestor },
                             attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "date_of_service",
                                 "patient_id",
-                                "firstname",
-                                "lastname",
-                                "dob",
-                                "mobile_no",
-                                "address_1",
                             ],
-                            where: whereClause,
-                        },
-                        {
-                            model: user_1.default,
-                            where: { role: "physician", type_of_user: "provider" },
-                            attributes: ["user_id", "firstname", "lastname"],
-                        },
-                        {
-                            model: notes_1.default,
-                            attributes: ["requestId", "description", "typeOfNote"],
-                        },
-                    ],
-                });
-                res.json(requests);
-                break;
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "role",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                    else {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state },
+                            attributes: [
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "date_of_service",
+                                "patient_id",
+                            ],
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                        "role",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                }
             }
             case "toclose": {
-                const requests = yield request_1.default.findAll({
-                    where: { request_state: state },
-                    attributes: ["date_of_service", "notes_symptoms"],
-                    include: [
-                        {
-                            model: user_1.default,
+                {
+                    if (requestor) {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state, requested_by: requestor },
                             attributes: [
-                                "user_id",
-                                "firstname",
-                                "lastname",
-                                "dob",
-                                "address_1",
-                                "region",
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "date_of_service",
+                                "patient_id",
                             ],
-                            where: whereClause,
-                        },
-                        {
-                            model: user_1.default,
-                            where: { role: "physician", type_of_user: "provider" },
-                            attributes: ["user_id", "firstname", "lastname"],
-                        },
-                        {
-                            model: notes_1.default,
-                            attributes: ["requestId", "description", "typeOfNote"],
-                        },
-                    ],
-                });
-                res.json(requests);
-                break;
-            }
-            case "unpaid": {
-                const requests = yield request_1.default.findAll({
-                    where: { request_state: state },
-                    attributes: ["date_of_service"],
-                    include: [
-                        {
-                            model: user_1.default,
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "role",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                    else {
+                        const requests = yield request_1.default.findAll({
+                            where: { request_state: state },
                             attributes: [
-                                "user_id",
-                                "firstname",
-                                "lastname",
-                                "mobile_no",
-                                "address_1",
+                                "request_state",
+                                "confirmation_no",
+                                "requested_by",
+                                "date_of_service",
+                                "notes_symptoms",
+                                "patient_id",
                             ],
-                            where: whereClause,
-                        },
-                        {
-                            model: user_1.default,
-                            where: { role: "physician", type_of_user: "provider" },
-                            attributes: ["provider_id", "firstname", "lastname"],
-                        },
-                        {
-                            model: notes_1.default,
-                            attributes: ["requestId", "description", "typeOfNote"],
-                        },
-                    ],
-                });
-                res.json(requests);
-                break;
+                            include: [
+                                {
+                                    model: user_1.default,
+                                    attributes: [
+                                        "user_id",
+                                        "type_of_user",
+                                        "firstname",
+                                        "lastname",
+                                        "dob",
+                                        "mobile_no",
+                                        "address_1",
+                                        "state",
+                                    ],
+                                    where: whereClause,
+                                },
+                                {
+                                    model: requestor_1.default,
+                                    attributes: ["user_id", "first_name", "last_name"],
+                                },
+                                {
+                                    model: user_1.default,
+                                    where: { type_of_user: "provider", role: "physician" },
+                                    attributes: [
+                                        "type_of_user",
+                                        "role",
+                                        "user_id",
+                                        "firstname",
+                                        "lastname",
+                                    ],
+                                },
+                                {
+                                    model: notes_1.default,
+                                    attributes: ["requestId", "typeOfNote", "description"],
+                                },
+                            ],
+                        });
+                        return res.status(200).json({
+                            status: true,
+                            message: requests,
+                        });
+                    }
+                }
             }
+            case "unpaid":
+                {
+                    {
+                        if (requestor) {
+                            const requests = yield request_1.default.findAll({
+                                where: { request_state: state, requested_by: requestor },
+                                attributes: [
+                                    "request_state",
+                                    "confirmation_no",
+                                    "requested_by",
+                                    "date_of_service",
+                                    "patient_id",
+                                ],
+                                include: [
+                                    {
+                                        model: user_1.default,
+                                        attributes: [
+                                            "user_id",
+                                            "type_of_user",
+                                            "firstname",
+                                            "lastname",
+                                            "dob",
+                                            "mobile_no",
+                                            "address_1",
+                                            "state",
+                                        ],
+                                        where: whereClause,
+                                    },
+                                    {
+                                        model: requestor_1.default,
+                                        attributes: ["user_id", "first_name", "last_name"],
+                                    },
+                                    {
+                                        model: user_1.default,
+                                        where: { type_of_user: "provider", role: "physician" },
+                                        attributes: [
+                                            "type_of_user",
+                                            "role",
+                                            "user_id",
+                                            "firstname",
+                                            "lastname",
+                                        ],
+                                    },
+                                    {
+                                        model: notes_1.default,
+                                        attributes: ["requestId", "typeOfNote", "description"],
+                                    },
+                                ],
+                            });
+                            return res.status(200).json({
+                                status: true,
+                                message: requests,
+                            });
+                        }
+                        else {
+                            const requests = yield request_1.default.findAll({
+                                where: { request_state: state },
+                                attributes: [
+                                    "request_state",
+                                    "confirmation_no",
+                                    "requested_by",
+                                    "date_of_service",
+                                    "patient_id",
+                                ],
+                                include: [
+                                    {
+                                        model: user_1.default,
+                                        attributes: [
+                                            "user_id",
+                                            "type_of_user",
+                                            "firstname",
+                                            "lastname",
+                                            "dob",
+                                            "mobile_no",
+                                            "address_1",
+                                            "state",
+                                        ],
+                                        where: whereClause,
+                                    },
+                                    {
+                                        model: requestor_1.default,
+                                        attributes: ["user_id", "first_name", "last_name"],
+                                    },
+                                    {
+                                        model: user_1.default,
+                                        where: { type_of_user: "provider", role: "physician" },
+                                        attributes: [
+                                            "type_of_user",
+                                            "role",
+                                            "user_id",
+                                            "firstname",
+                                            "lastname",
+                                        ],
+                                    },
+                                    {
+                                        model: notes_1.default,
+                                        attributes: ["requestId", "typeOfNote", "description"],
+                                    },
+                                ],
+                            });
+                            return res.status(200).json({
+                                status: true,
+                                message: requests,
+                            });
+                        }
+                    }
+                }
+                {
+                    const requests = yield request_1.default.findAll({
+                        where: { request_state: state },
+                        attributes: ["date_of_service"],
+                        include: [
+                            {
+                                model: user_1.default,
+                                attributes: [
+                                    "user_id",
+                                    "firstname",
+                                    "lastname",
+                                    "mobile_no",
+                                    "address_1",
+                                ],
+                                where: whereClause,
+                            },
+                            {
+                                model: user_1.default,
+                                where: { role: "physician", type_of_user: "provider" },
+                                attributes: ["provider_id", "firstname", "lastname"],
+                            },
+                            {
+                                model: notes_1.default,
+                                attributes: ["requestId", "description", "typeOfNote"],
+                            },
+                        ],
+                    });
+                    res.json(requests);
+                    break;
+                }
             default: {
                 res.status(500).json({ message: "Invalid State !!!" });
             }
@@ -1452,7 +1845,6 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 message: "Error while updating !!!",
             });
         }
-        ;
         res.status(200).json({
             status: true,
             message: "Successfull !!!",
@@ -1774,7 +2166,7 @@ exports.admin_profile_admin_info_edit = admin_profile_admin_info_edit;
 const admin_profile_mailing_billling_info_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     {
         try {
-            const { admin_id, address_1, address_2, city, state, zip, billing_mobile_no } = req.body;
+            const { admin_id, address_1, address_2, city, state, zip, billing_mobile_no, } = req.body;
             // const { admin_id } = req.params;
             const adminprofile = yield user_1.default.findOne({
                 where: {

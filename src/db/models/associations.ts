@@ -13,8 +13,17 @@ Request.belongsTo(User, {
   foreignKey: "provider_id",
   targetKey: "user_id",
 });
+
 // User.hasMany(Request,{ foreignKey : 'user_id'});
 Request.belongsTo(User, {
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+  foreignKey: "physician_id",
+  targetKey: "user_id",
+});
+
+Request.belongsTo(User, {
+  as: '',
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
   foreignKey: "patient_id",
@@ -29,7 +38,7 @@ Request.belongsTo(Requestor, {
   targetKey: "user_id",
 });
 
-Request.hasMany(Notes,  { foreignKey : 'requestId'});
+Request.hasMany(Notes, { foreignKey: "requestId" });
 Notes.belongsTo(Request, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
@@ -45,7 +54,7 @@ Order.belongsTo(Request, {
   targetKey: "request_id",
 });
 
-Request.hasMany(Documents,  { foreignKey : 'request_id'});
+Request.hasMany(Documents, { foreignKey: "request_id" });
 Documents.belongsTo(Request, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",

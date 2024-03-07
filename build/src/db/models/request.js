@@ -22,16 +22,20 @@ Request.init({
         type: sequelize_1.DataTypes.ENUM("new", "active", "pending", "conclude", "toclose", "unpaid"),
         allowNull: false,
     },
-    patient_id: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-    },
     provider_id: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: true,
     },
+    physician_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+    },
+    patient_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: false,
+    },
     requested_by: {
-        type: sequelize_1.DataTypes.ENUM("family_friend", "concierge", "business_partner", "admin", "patient", "provider"),
+        type: sequelize_1.DataTypes.ENUM("family/friend", "concierge", "business", "vip", "admin", "patient", "provider"),
         allowNull: false,
     },
     requestor_id: {
@@ -70,14 +74,14 @@ Request.init({
         allowNull: false,
     },
     transfer_request_status: {
-        type: sequelize_1.DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "undefined",
-        allowNull: false,
+        type: sequelize_1.DataTypes.ENUM("pending", "accepted", "rejected"),
+        defaultValue: null,
+        allowNull: true,
     },
     agreement_status: {
-        type: sequelize_1.DataTypes.ENUM("undefined", "pending", "accepted", "rejected"),
-        defaultValue: "undefined",
-        allowNull: false,
+        type: sequelize_1.DataTypes.ENUM("pending", "accepted", "rejected"),
+        defaultValue: null,
+        allowNull: true,
     },
     assign_req_description: {
         type: sequelize_1.DataTypes.STRING,

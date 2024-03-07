@@ -71,7 +71,7 @@ router.get(
   }
 );
 router.get(
-  "/dashboard/requests/:state",
+  "/dashboard/requests",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     requests_by_request_state(req, res, next);

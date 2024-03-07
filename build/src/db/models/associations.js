@@ -21,6 +21,12 @@ request_1.default.belongsTo(user_1.default, {
 request_1.default.belongsTo(user_1.default, {
     onDelete: "SET NULL",
     onUpdate: "CASCADE",
+    foreignKey: "physician_id",
+    targetKey: "user_id",
+});
+request_1.default.belongsTo(user_1.default, {
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
     foreignKey: "patient_id",
     targetKey: "user_id",
 });
@@ -31,7 +37,7 @@ request_1.default.belongsTo(requestor_1.default, {
     foreignKey: "requestor_id",
     targetKey: "user_id",
 });
-request_1.default.hasMany(notes_1.default, { foreignKey: 'requestId' });
+request_1.default.hasMany(notes_1.default, { foreignKey: "requestId" });
 notes_1.default.belongsTo(request_1.default, {
     onDelete: "SET NULL",
     onUpdate: "CASCADE",
@@ -45,7 +51,7 @@ order_1.default.belongsTo(request_1.default, {
     foreignKey: "requestId",
     targetKey: "request_id",
 });
-request_1.default.hasMany(documents_1.default, { foreignKey: 'request_id' });
+request_1.default.hasMany(documents_1.default, { foreignKey: "request_id" });
 documents_1.default.belongsTo(request_1.default, {
     onDelete: "SET NULL",
     onUpdate: "CASCADE",
