@@ -302,7 +302,7 @@ export const requests_by_request_state = async (
             },
             {
               model: Notes,
-              attributes: ["requestId", "typeOfNote", "description"],
+              attributes: ["noteId", "typeOfNote", "description"],
             },
           ],
         });
@@ -405,7 +405,7 @@ export const requests_by_request_state = async (
             },
             {
               model: Notes,
-              attributes: ["requestId", "typeOfNote", "description"],
+              attributes: ["noteId", "typeOfNote", "description"],
             },
           ],
         });
