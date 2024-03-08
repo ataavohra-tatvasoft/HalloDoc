@@ -332,7 +332,7 @@ export const requests_by_request_state = async (
               last_name: request.Requestor?.last_name || null,
             },
             notes: request.Notes?.map((note) => ({
-              note_id: note.requestId,
+              note_id: note.noteId,
               type_of_note: note.typeOfNote,
               description: note.description,
             })),
@@ -445,7 +445,7 @@ export const requests_by_request_state = async (
               last_name: request.Requestor?.last_name || null,
             },
             notes: request.Notes?.map((note) => ({
-              note_id: note.requestId,
+              note_id: note.noteId,
               type_of_note: note.typeOfNote,
               description: note.description,
             })),
