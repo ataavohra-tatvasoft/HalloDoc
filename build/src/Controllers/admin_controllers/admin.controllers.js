@@ -218,10 +218,10 @@ const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0,
 });
 exports.region_with_thirdparty_API = region_with_thirdparty_API;
 const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     try {
         const { state, firstname, lastname, region, requestor } = req.query;
-        const whereClause = Object.assign(Object.assign(Object.assign({ type_of_user: "patient" }, (firstname && { firstname: { [sequelize_1.Op.like]: `%${firstname}%` } })), (lastname && { lastname: { [sequelize_1.Op.like]: `%${lastname}%` } })), (region && { state: region }));
+        const whereClause_patient = Object.assign(Object.assign(Object.assign({ type_of_user: "patient" }, (firstname && { firstname: { [sequelize_1.Op.like]: `%${firstname}%` } })), (lastname && { lastname: { [sequelize_1.Op.like]: `%${lastname}%` } })), (region && { state: region }));
         switch (state) {
             case "new": {
                 const formattedResponse = {
@@ -231,6 +231,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 const requests = yield request_2_1.default.findAll({
                     where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
+                        "request_id",
                         "request_state",
                         "confirmation_no",
                         "requested_by",
@@ -251,7 +252,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 "address_1",
                                 "address_2",
                             ],
-                            where: whereClause,
+                            where: whereClause_patient,
                         },
                         {
                             model: requestor_2_1.default,
@@ -267,6 +268,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 for (const request of requests) {
                     const formattedRequest = {
                         sr_no: i,
+                        request_id: request.request_id,
                         request_state: request.request_state,
                         confirmationNo: request.confirmation_no,
                         requestor: request.requested_by,
@@ -280,7 +282,9 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         },
                         requestor_data: {
                             user_id: ((_a = request.Requestor) === null || _a === void 0 ? void 0 : _a.user_id) || null,
-                            firstname: ((_b = request.Requestor) === null || _b === void 0 ? void 0 : _b.first_name) || null + " " + ((_c = request.Requestor) === null || _c === void 0 ? void 0 : _c.last_name) || null,
+                            firstname: ((_b = request.Requestor) === null || _b === void 0 ? void 0 : _b.first_name) ||
+                                null + " " + ((_c = request.Requestor) === null || _c === void 0 ? void 0 : _c.last_name) ||
+                                null,
                             last_name: ((_d = request.Requestor) === null || _d === void 0 ? void 0 : _d.last_name) || null,
                         },
                         notes: (_e = request.Notes) === null || _e === void 0 ? void 0 : _e.map((note) => ({
@@ -296,13 +300,14 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 // return res.status(200).json(requests);
             }
             case "pending": {
-                const whereCondition = { request_state: state };
-                if (requestor) {
-                    whereCondition.requested_by = requestor;
-                }
+                const formattedResponse = {
+                    status: true,
+                    data: [],
+                };
                 const requests = yield request_2_1.default.findAll({
-                    where: whereCondition,
+                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
+                        "request_id",
                         "request_state",
                         "confirmation_no",
                         "requested_by",
@@ -339,7 +344,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 "dob",
                                 "mobile_no",
                                 "address_1",
-                                "state",
+                                "address_2",
                             ],
                             where: {
                                 type_of_user: "provider",
@@ -356,10 +361,46 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         },
                     ],
                 });
-                return res.status(200).json({
-                    status: true,
-                    message: requests,
-                });
+                var i = 1;
+                for (const request of requests) {
+                    const formattedRequest = {
+                        sr_no: i,
+                        request_id: request.request_id,
+                        request_state: request.request_state,
+                        confirmationNo: request.confirmation_no,
+                        requestor: request.requested_by,
+                        requested_date: request.requested_date.toISOString().split("T")[0],
+                        patient_data: {
+                            user_id: request.Patient.user_id,
+                            name: request.Patient.firstname + " " + request.Patient.lastname,
+                            DOB: request.Patient.dob.toISOString().split("T")[0],
+                            mobile_no: request.Patient.mobile_no,
+                            address: request.Patient.address_1 + " " + request.Patient.address_2,
+                        },
+                        physician_data: {
+                            user_id: request.Physician.user_id,
+                            name: request.Physician.firstname + " " + request.Patient.lastname,
+                            DOB: request.Physician.dob.toISOString().split("T")[0],
+                            mobile_no: request.Physician.mobile_no,
+                            address: request.Physician.address_1 + " " + request.Patient.address_2,
+                        },
+                        requestor_data: {
+                            user_id: ((_f = request.Requestor) === null || _f === void 0 ? void 0 : _f.user_id) || null,
+                            firstname: ((_g = request.Requestor) === null || _g === void 0 ? void 0 : _g.first_name) ||
+                                null + " " + ((_h = request.Requestor) === null || _h === void 0 ? void 0 : _h.last_name) ||
+                                null,
+                            last_name: ((_j = request.Requestor) === null || _j === void 0 ? void 0 : _j.last_name) || null,
+                        },
+                        notes: (_k = request.Notes) === null || _k === void 0 ? void 0 : _k.map((note) => ({
+                            note_id: note.requestId,
+                            type_of_note: note.typeOfNote,
+                            description: note.description,
+                        })),
+                    };
+                    i++;
+                    formattedResponse.data.push(formattedRequest);
+                }
+                return res.status(200).json(formattedResponse);
             }
             case "active": {
                 {
@@ -386,7 +427,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -438,7 +479,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -494,7 +535,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -545,7 +586,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -600,7 +641,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -652,7 +693,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         "address_1",
                                         "state",
                                     ],
-                                    where: whereClause,
+                                    where: whereClause_patient,
                                 },
                                 {
                                     model: requestor_2_1.default,
@@ -708,7 +749,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                             "address_1",
                                             "state",
                                         ],
-                                        where: whereClause,
+                                        where: whereClause_patient,
                                     },
                                     {
                                         model: requestor_2_1.default,
@@ -759,7 +800,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                             "address_1",
                                             "state",
                                         ],
-                                        where: whereClause,
+                                        where: whereClause_patient,
                                     },
                                     {
                                         model: requestor_2_1.default,
@@ -803,7 +844,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     "mobile_no",
                                     "address_1",
                                 ],
-                                where: whereClause,
+                                where: whereClause_patient,
                             },
                             {
                                 model: user_2_1.default,
@@ -1642,7 +1683,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
                 });
             }
         }
-        catch (_f) {
+        catch (_l) {
             res.status(404).json({ error: "Invalid State !!!" });
         }
     }

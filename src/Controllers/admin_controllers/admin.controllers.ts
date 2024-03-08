@@ -254,7 +254,7 @@ export const requests_by_request_state = async (
       region: string;
       requestor: string;
     };
-    const whereClause = {
+    const whereClause_patient = {
       type_of_user: "patient",
       ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
       ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
@@ -273,6 +273,7 @@ export const requests_by_request_state = async (
             ...(requestor ? { requested_by: requestor } : {}),
           },
           attributes: [
+            "request_id",
             "request_state",
             "confirmation_no",
             "requested_by",
@@ -293,7 +294,7 @@ export const requests_by_request_state = async (
                 "address_1",
                 "address_2",
               ],
-              where: whereClause,
+              where: whereClause_patient,
             },
             {
               model: Requestor,
@@ -309,6 +310,7 @@ export const requests_by_request_state = async (
         for (const request of requests) {
           const formattedRequest: any = {
             sr_no: i,
+            request_id: request.request_id,
             request_state: request.request_state,
             confirmationNo: request.confirmation_no,
             requestor: request.requested_by,
@@ -323,7 +325,10 @@ export const requests_by_request_state = async (
             },
             requestor_data: {
               user_id: request.Requestor?.user_id || null,
-              firstname: request.Requestor?.first_name || null + " " + request.Requestor?.last_name || null,
+              firstname:
+                request.Requestor?.first_name ||
+                null + " " + request.Requestor?.last_name ||
+                null,
               last_name: request.Requestor?.last_name || null,
             },
             notes: request.Notes?.map((note) => ({
@@ -340,14 +345,17 @@ export const requests_by_request_state = async (
         // return res.status(200).json(requests);
       }
       case "pending": {
-        const whereCondition: any = { request_state: state };
-        if (requestor) {
-          whereCondition.requested_by = requestor;
-        }
-
+        const formattedResponse: any = {
+          status: true,
+          data: [],
+        };
         const requests = await RequestModel.findAll({
-          where: whereCondition,
+          where: {
+            request_state: state,
+            ...(requestor ? { requested_by: requestor } : {}),
+          },
           attributes: [
+            "request_id",
             "request_state",
             "confirmation_no",
             "requested_by",
@@ -384,7 +392,7 @@ export const requests_by_request_state = async (
                 "dob",
                 "mobile_no",
                 "address_1",
-                "state",
+                "address_2",
               ],
               where: {
                 type_of_user: "provider",
@@ -402,10 +410,51 @@ export const requests_by_request_state = async (
           ],
         });
 
-        return res.status(200).json({
-          status: true,
-          message: requests,
-        });
+        var i = 1;
+        for (const request of requests) {
+          const formattedRequest: any = {
+            sr_no: i,
+            request_id: request.request_id,
+            request_state: request.request_state,
+            confirmationNo: request.confirmation_no,
+            requestor: request.requested_by,
+            requested_date: request.requested_date.toISOString().split("T")[0],
+            patient_data: {
+              user_id: request.Patient.user_id,
+              name: request.Patient.firstname + " " + request.Patient.lastname,
+              DOB: request.Patient.dob.toISOString().split("T")[0],
+              mobile_no: request.Patient.mobile_no,
+              address:
+                request.Patient.address_1 + " " + request.Patient.address_2,
+            },
+            physician_data: {
+              user_id: request.Physician.user_id,
+              name:
+                request.Physician.firstname + " " + request.Patient.lastname,
+              DOB: request.Physician.dob.toISOString().split("T")[0],
+              mobile_no: request.Physician.mobile_no,
+              address:
+                request.Physician.address_1 + " " + request.Patient.address_2,
+            },
+            requestor_data: {
+              user_id: request.Requestor?.user_id || null,
+              firstname:
+                request.Requestor?.first_name ||
+                null + " " + request.Requestor?.last_name ||
+                null,
+              last_name: request.Requestor?.last_name || null,
+            },
+            notes: request.Notes?.map((note) => ({
+              note_id: note.requestId,
+              type_of_note: note.typeOfNote,
+              description: note.description,
+            })),
+          };
+          i++;
+          formattedResponse.data.push(formattedRequest);
+        }
+
+        return res.status(200).json(formattedResponse);
       }
 
       case "active": {
@@ -433,7 +482,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -484,7 +533,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -540,7 +589,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -590,7 +639,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -645,7 +694,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -696,7 +745,7 @@ export const requests_by_request_state = async (
                     "address_1",
                     "state",
                   ],
-                  where: whereClause,
+                  where: whereClause_patient,
                 },
                 {
                   model: Requestor,
@@ -752,7 +801,7 @@ export const requests_by_request_state = async (
                       "address_1",
                       "state",
                     ],
-                    where: whereClause,
+                    where: whereClause_patient,
                   },
                   {
                     model: Requestor,
@@ -802,7 +851,7 @@ export const requests_by_request_state = async (
                       "address_1",
                       "state",
                     ],
-                    where: whereClause,
+                    where: whereClause_patient,
                   },
                   {
                     model: Requestor,
@@ -846,7 +895,7 @@ export const requests_by_request_state = async (
                   "mobile_no",
                   "address_1",
                 ],
-                where: whereClause,
+                where: whereClause_patient,
               },
               {
                 model: User,
