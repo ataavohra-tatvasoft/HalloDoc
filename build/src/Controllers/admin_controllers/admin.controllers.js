@@ -218,12 +218,9 @@ const region_with_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0,
 });
 exports.region_with_thirdparty_API = region_with_thirdparty_API;
 const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e;
     try {
         const { state, firstname, lastname, region, requestor } = req.query;
-        // [Op.or]: [
-        //   { type_of_user: "provider", role: "physician" },
-        //   { type_of_user: "patient" },
-        // ],
         const whereClause = Object.assign(Object.assign(Object.assign({ type_of_user: "patient" }, (firstname && { firstname: { [sequelize_1.Op.like]: `%${firstname}%` } })), (lastname && { lastname: { [sequelize_1.Op.like]: `%${lastname}%` } })), (region && { state: region }));
         switch (state) {
             case "new": {
@@ -252,6 +249,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 "dob",
                                 "mobile_no",
                                 "address_1",
+                                "address_2",
                             ],
                             where: whereClause,
                         },
@@ -265,27 +263,37 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         },
                     ],
                 });
-                // for (const request of requests) {
-                //   const formattedRequest: any = {
-                //     // Include desired properties from the original request object
-                //     request_state: request.request_state,
-                //     confirmationNo: request.confirmation_no,
-                //     requestor: request.requested_by,
-                //     requested_date: request.requested_date,
-                //     patient: {
-                //       type: request.Patient[0].type_of_user,
-                //     },
-                //     Requestor: request.Requestors[0] || null, // Include Requestor details or null
-                //     notes: request.Notes.map((note) => ({
-                //       id: note.requestId,
-                //       type: note.typeOfNote,
-                //       description: note.description,
-                //     })),
-                //   };
-                //   // formattedResponse.data.push(formattedRequest);
-                // }
-                // return res.status(200).json(formattedResponse);
-                return res.status(200).json(requests);
+                var i = 1;
+                for (const request of requests) {
+                    const formattedRequest = {
+                        sr_no: i,
+                        request_state: request.request_state,
+                        confirmationNo: request.confirmation_no,
+                        requestor: request.requested_by,
+                        requested_date: request.requested_date.toISOString().split("T")[0],
+                        patient_data: {
+                            user_id: request.Patient.user_id,
+                            name: request.Patient.firstname + " " + request.Patient.lastname,
+                            DOB: request.Patient.dob.toISOString().split("T")[0],
+                            mobile_no: request.Patient.mobile_no,
+                            address: request.Patient.address_1 + " " + request.Patient.address_2,
+                        },
+                        requestor_data: {
+                            user_id: ((_a = request.Requestor) === null || _a === void 0 ? void 0 : _a.user_id) || null,
+                            firstname: ((_b = request.Requestor) === null || _b === void 0 ? void 0 : _b.first_name) || null + " " + ((_c = request.Requestor) === null || _c === void 0 ? void 0 : _c.last_name) || null,
+                            last_name: ((_d = request.Requestor) === null || _d === void 0 ? void 0 : _d.last_name) || null,
+                        },
+                        notes: (_e = request.Notes) === null || _e === void 0 ? void 0 : _e.map((note) => ({
+                            note_id: note.requestId,
+                            type_of_note: note.typeOfNote,
+                            description: note.description,
+                        })),
+                    };
+                    i++;
+                    formattedResponse.data.push(formattedRequest);
+                }
+                return res.status(200).json(formattedResponse);
+                // return res.status(200).json(requests);
             }
             case "pending": {
                 const whereCondition = { request_state: state };
@@ -321,7 +329,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             },
                         },
                         {
-                            as: "Provider",
+                            as: "Physician",
                             model: user_2_1.default,
                             attributes: [
                                 "user_id",
@@ -1634,7 +1642,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
                 });
             }
         }
-        catch (_a) {
+        catch (_f) {
             res.status(404).json({ error: "Invalid State !!!" });
         }
     }

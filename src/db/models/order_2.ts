@@ -76,5 +76,11 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   })
   numberOfRefill: number;
 
+  @BelongsTo(() => Request, {
+    foreignKey: "requestId",
+    targetKey: "request_id",
+  })
+  Request: Request;
+
   // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

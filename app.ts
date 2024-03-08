@@ -1,7 +1,7 @@
 import cors from "cors";
 import express, { Express } from "express";
 // import { Sequelize } from "sequelize";
-import "./src/db/models/associations_2";
+// import "./src/db/models/associations_2";
 import bodyParser from "body-parser";
 import routes from "./src/routes";
 import dotenv from "dotenv";

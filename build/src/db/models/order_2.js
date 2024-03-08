@@ -96,6 +96,13 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], Order.prototype, "numberOfRefill", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => request_2_1.default, {
+        foreignKey: "requestId",
+        targetKey: "request_id",
+    }),
+    __metadata("design:type", request_2_1.default)
+], Order.prototype, "Request", void 0);
 Order = __decorate([
     (0, sequelize_typescript_1.Table)({ timestamps: true, tableName: "order" })
 ], Order);

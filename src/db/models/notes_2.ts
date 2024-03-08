@@ -63,4 +63,11 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
     allowNull: false,
   })
   typeOfNote: string;
+
+  @BelongsTo(() => Request, {
+    foreignKey: "requestId",
+    targetKey: "request_id",
+  })
+  Request: Request;
+
 }

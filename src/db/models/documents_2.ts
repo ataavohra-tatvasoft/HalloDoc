@@ -19,11 +19,11 @@ import {
       })
       request_id: number;
     
-      @BelongsTo(() => Request, {
-        foreignKey: "request_id",
-        targetKey: "request_id",
-      })
-      request: Request; // Optional association for Request
+      // @BelongsTo(() => Request, {
+      //   foreignKey: "request_id",
+      //   targetKey: "request_id",
+      // })
+      // request: Request; // Optional association for Request
     
       @Column({
         type: DataType.INTEGER,
@@ -45,6 +45,12 @@ import {
         defaultValue: DataType.NOW,
       })
       createdAt: Date;
+
+      @BelongsTo(() => Request, {
+        foreignKey: "request_id",
+        targetKey: "request_id",
+      })
+      Request: Request;
   
     // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
   }

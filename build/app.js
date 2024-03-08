@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 // import { Sequelize } from "sequelize";
-require("./src/db/models/associations_2");
+// import "./src/db/models/associations_2";
 const body_parser_1 = __importDefault(require("body-parser"));
 const routes_1 = __importDefault(require("./src/routes"));
 const dotenv_1 = __importDefault(require("dotenv"));

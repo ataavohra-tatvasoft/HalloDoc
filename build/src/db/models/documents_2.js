@@ -24,13 +24,6 @@ __decorate([
     __metadata("design:type", Number)
 ], Documents.prototype, "request_id", void 0);
 __decorate([
-    (0, sequelize_typescript_1.BelongsTo)(() => request_2_1.default, {
-        foreignKey: "request_id",
-        targetKey: "request_id",
-    }),
-    __metadata("design:type", request_2_1.default)
-], Documents.prototype, "request", void 0);
-__decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.INTEGER,
         allowNull: false,
@@ -54,6 +47,13 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], Documents.prototype, "createdAt", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => request_2_1.default, {
+        foreignKey: "request_id",
+        targetKey: "request_id",
+    }),
+    __metadata("design:type", request_2_1.default)
+], Documents.prototype, "Request", void 0);
 Documents = __decorate([
     (0, sequelize_typescript_1.Table)({ timestamps: true, tableName: "documents" })
 ], Documents);

@@ -88,6 +88,7 @@ __decorate([
 Requestor = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: true,
+        tableName: "requestor"
     })
 ], Requestor);
 exports.default = Requestor;

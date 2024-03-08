@@ -66,6 +66,13 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Notes.prototype, "typeOfNote", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => request_2_1.default, {
+        foreignKey: "requestId",
+        targetKey: "request_id",
+    }),
+    __metadata("design:type", request_2_1.default)
+], Notes.prototype, "Request", void 0);
 Notes = __decorate([
     (0, sequelize_typescript_1.Table)({ timestamps: true, tableName: "notes" })
 ], Notes);

@@ -11,6 +11,7 @@ import {
 
 @Table({
   timestamps: true,
+  tableName: "requestor"
 })
 export default class Requestor extends Model<
   RequestorCreationAttributes,

@@ -155,18 +155,44 @@ export default class Request extends Model<
   })
   assign_req_description: string;
 
+  @BelongsTo(() => User, {
+    as: "Provider",
+    foreignKey: "provider_id",
+    targetKey: "user_id",
+  })
+  Provider: User;
+
+  @BelongsTo(() => User, {
+    as: "Physician",
+    foreignKey: "physician_id",
+    targetKey: "user_id",
+  })
+  Physician: User;
+
+  @BelongsTo(() => User, {
+    as: "Patient",
+    foreignKey: "patient_id",
+    targetKey: "user_id",
+  })
+  Patient: User;
+
+  @BelongsTo(() => Requestor, {
+    foreignKey: "requestor_id",
+    targetKey: "user_id",
+  })
+  Requestor: Requestor;
+
+  @HasMany(() => Notes, { foreignKey: "requestId" })
+  Notes: Notes[];
+
+  @HasOne(() => Order, { foreignKey: "requestId" })
+  Order: Order[];
+
+  @HasMany(() => Documents, { foreignKey: "request_id" })
+  Documents: Documents[];
   // @HasMany(() => User)
   // Patient: User[];
 
   // @HasMany(() => Requestor)
   // Requestors: Requestor[];
-
-  // @HasMany(() => Order)
-  // Order: Order[];
-
-  // @HasMany(() => Notes)
-  // Notes: Notes[];
-
-  // @HasMany(() => Documents)
-  // Documents: Documents[];
 }

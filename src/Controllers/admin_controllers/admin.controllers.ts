@@ -12,7 +12,7 @@ import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import * as crypto from "crypto";
-import { Op} from "sequelize";
+import { Op } from "sequelize";
 import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
 import path from "path";
@@ -254,11 +254,6 @@ export const requests_by_request_state = async (
       region: string;
       requestor: string;
     };
-    // [Op.or]: [
-    //   { type_of_user: "provider", role: "physician" },
-    //   { type_of_user: "patient" },
-    // ],
-
     const whereClause = {
       type_of_user: "patient",
       ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
@@ -296,6 +291,7 @@ export const requests_by_request_state = async (
                 "dob",
                 "mobile_no",
                 "address_1",
+                "address_2",
               ],
               where: whereClause,
             },
@@ -309,36 +305,46 @@ export const requests_by_request_state = async (
             },
           ],
         });
-        // for (const request of requests) {
-        //   const formattedRequest: any = {
-        //     // Include desired properties from the original request object
-        //     request_state: request.request_state,
-        //     confirmationNo: request.confirmation_no,
-        //     requestor: request.requested_by,
-        //     requested_date: request.requested_date,
-        //     patient: {
-        //       type: request.Patient[0].type_of_user,
-        //     },
-        //     Requestor: request.Requestors[0] || null, // Include Requestor details or null
-        //     notes: request.Notes.map((note) => ({
-        //       id: note.requestId,
-        //       type: note.typeOfNote,
-        //       description: note.description,
-        //     })),
-        //   };
+        var i = 1;
+        for (const request of requests) {
+          const formattedRequest: any = {
+            sr_no: i,
+            request_state: request.request_state,
+            confirmationNo: request.confirmation_no,
+            requestor: request.requested_by,
+            requested_date: request.requested_date.toISOString().split("T")[0],
+            patient_data: {
+              user_id: request.Patient.user_id,
+              name: request.Patient.firstname + " " + request.Patient.lastname,
+              DOB: request.Patient.dob.toISOString().split("T")[0],
+              mobile_no: request.Patient.mobile_no,
+              address:
+                request.Patient.address_1 + " " + request.Patient.address_2,
+            },
+            requestor_data: {
+              user_id: request.Requestor?.user_id || null,
+              firstname: request.Requestor?.first_name || null + " " + request.Requestor?.last_name || null,
+              last_name: request.Requestor?.last_name || null,
+            },
+            notes: request.Notes?.map((note) => ({
+              note_id: note.requestId,
+              type_of_note: note.typeOfNote,
+              description: note.description,
+            })),
+          };
+          i++;
+          formattedResponse.data.push(formattedRequest);
+        }
 
-        //   // formattedResponse.data.push(formattedRequest);
-        // }
-
-        // return res.status(200).json(formattedResponse);
-        return res.status(200).json(requests);
+        return res.status(200).json(formattedResponse);
+        // return res.status(200).json(requests);
       }
       case "pending": {
         const whereCondition: any = { request_state: state };
         if (requestor) {
           whereCondition.requested_by = requestor;
         }
-        
+
         const requests = await RequestModel.findAll({
           where: whereCondition,
           attributes: [
@@ -368,7 +374,7 @@ export const requests_by_request_state = async (
               },
             },
             {
-              as: "Provider",
+              as: "Physician",
               model: User,
               attributes: [
                 "user_id",
@@ -395,13 +401,13 @@ export const requests_by_request_state = async (
             },
           ],
         });
-        
+
         return res.status(200).json({
           status: true,
           message: requests,
         });
       }
-      
+
       case "active": {
         {
           if (requestor) {

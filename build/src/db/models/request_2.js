@@ -8,8 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
+const documents_2_1 = __importDefault(require("./documents_2"));
+const order_2_1 = __importDefault(require("./order_2"));
+const notes_2_1 = __importDefault(require("./notes_2"));
+const user_2_1 = __importDefault(require("./user_2"));
+const requestor_2_1 = __importDefault(require("./requestor_2"));
 let Request = class Request extends sequelize_typescript_1.Model {
 };
 __decorate([
@@ -145,6 +153,49 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Request.prototype, "assign_req_description", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => user_2_1.default, {
+        as: "Provider",
+        foreignKey: "provider_id",
+        targetKey: "user_id",
+    }),
+    __metadata("design:type", user_2_1.default)
+], Request.prototype, "Provider", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => user_2_1.default, {
+        as: "Physician",
+        foreignKey: "physician_id",
+        targetKey: "user_id",
+    }),
+    __metadata("design:type", user_2_1.default)
+], Request.prototype, "Physician", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => user_2_1.default, {
+        as: "Patient",
+        foreignKey: "patient_id",
+        targetKey: "user_id",
+    }),
+    __metadata("design:type", user_2_1.default)
+], Request.prototype, "Patient", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => requestor_2_1.default, {
+        foreignKey: "requestor_id",
+        targetKey: "user_id",
+    }),
+    __metadata("design:type", requestor_2_1.default)
+], Request.prototype, "Requestor", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasMany)(() => notes_2_1.default, { foreignKey: "requestId" }),
+    __metadata("design:type", Array)
+], Request.prototype, "Notes", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasOne)(() => order_2_1.default, { foreignKey: "requestId" }),
+    __metadata("design:type", Array)
+], Request.prototype, "Order", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasMany)(() => documents_2_1.default, { foreignKey: "request_id" }),
+    __metadata("design:type", Array)
+], Request.prototype, "Documents", void 0);
 Request = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: true,
