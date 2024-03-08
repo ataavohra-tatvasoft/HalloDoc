@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import statusCodes from "../../public/status_codes";
 import { Request, Response, NextFunction } from "express";
-import User from "../../db/models/user";
+import User from "../../db/models/previous_models/user";
 import dotenv from "dotenv";
 dotenv.config();
 

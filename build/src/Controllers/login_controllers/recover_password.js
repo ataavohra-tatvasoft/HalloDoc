@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reset_password = exports.forgot_password = void 0;
 const sequelize_1 = __importDefault(require("sequelize"));
-const user_1 = __importDefault(require("../../db/models/user"));
+const user_1 = __importDefault(require("../../db/models/previous_models/user"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto = __importStar(require("crypto"));

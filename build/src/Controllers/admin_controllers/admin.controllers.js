@@ -36,20 +36,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physician = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
-const request_1 = __importDefault(require("../../db/models/request"));
-const requestor_1 = __importDefault(require("../../db/models/requestor"));
-const user_1 = __importDefault(require("../../db/models/user"));
-const notes_1 = __importDefault(require("../../db/models/notes"));
-const order_1 = __importDefault(require("../../db/models/order"));
-const region_1 = __importDefault(require("../../db/models/region"));
-const profession_1 = __importDefault(require("../../db/models/profession"));
+const request_2_1 = __importDefault(require("../../db/models/request_2"));
+const user_2_1 = __importDefault(require("../../db/models/user_2"));
+const requestor_2_1 = __importDefault(require("../../db/models/requestor_2"));
+const notes_2_1 = __importDefault(require("../../db/models/notes_2"));
+const order_2_1 = __importDefault(require("../../db/models/order_2"));
+const region_2_1 = __importDefault(require("../../db/models/region_2"));
+const profession_2_1 = __importDefault(require("../../db/models/profession_2"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
-const crypto = __importStar(require("crypto"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto = __importStar(require("crypto"));
 const sequelize_1 = require("sequelize");
-const documents_1 = __importDefault(require("../../db/models/documents"));
+const documents_2_1 = __importDefault(require("../../db/models/documents_2"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 /** Configs */
@@ -60,7 +60,7 @@ const admin_signup = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     const { body: { Email, Confirm_Email, Password, Confirm_Password, Status, Role, FirstName, LastName, MobileNumber, Zip, Billing_MobileNumber, Address_1, Address_2, City, State, Country_Code, }, } = req;
     const hashedPassword = yield bcrypt_1.default.hash(Password, 10);
     try {
-        const adminData = yield user_1.default.create({
+        const adminData = yield user_2_1.default.create({
             type_of_user: "admin",
             email: Email,
             password: hashedPassword,
@@ -105,7 +105,7 @@ const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 
         const { body: { FirstName, LastName, PhoneNumber, Email, DOB, Street, City, State, Zip, Room, AdminNotes, }, } = req;
         // const today = new Date();
         // console.log(today,today.getFullYear(),today.getFullYear().toString(),today.getFullYear().toString().slice(-2));
-        const patient_data = yield user_1.default.create({
+        const patient_data = yield user_2_1.default.create({
             type_of_user: "patient",
             firstname: FirstName,
             lastname: LastName,
@@ -128,7 +128,7 @@ const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 
         const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
         const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
         const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-        const todaysRequestsCount = yield request_1.default.count({
+        const todaysRequestsCount = yield request_2_1.default.count({
             where: {
                 createdAt: {
                     [sequelize_1.Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
@@ -137,14 +137,14 @@ const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 
             },
         });
         const confirmation_no = `${patient_data.state.slice(0, 2)}${year}${month}${day}${LastName.slice(0, 2)}${FirstName.slice(0, 2)}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
-        const request_data = yield request_1.default.create({
+        const request_data = yield request_2_1.default.create({
             request_state: "new",
             patient_id: patient_data.user_id,
             requested_by: "admin",
             requested_date: new Date(),
             confirmation_no: confirmation_no,
         });
-        const admin_note = yield notes_1.default.create({
+        const admin_note = yield notes_2_1.default.create({
             requestId: request_data.request_id,
             //  requested_by: "Admin",
             description: AdminNotes,
@@ -172,56 +172,9 @@ const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 
     }
 });
 exports.admin_create_request = admin_create_request;
-/**Admin request by request_state and region */
-// export const requests_by_request_state_regions = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { state } = req.params;
-//     if (state) {
-//       // Use distinct query to get unique regions
-//       const requests = await RequestModel.findAll({
-//         where: {
-//          request_state:state,
-//         },
-//         attributes: ["region", "firstname", "lastname"],
-//       });
-//       if (!requests) {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No Requests found.", // Include an empty regions array
-//         });
-//       }
-//       const patients = await User.findAll({
-//         where: {
-//          user_id: requests[0].patient_id,
-//         },
-//         attributes: ["region", "firstname", "lastname"],
-//       });
-//       if (!patients) {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No Requests found.", // Include an empty regions array
-//         });
-//       }
-//       // Extract unique regions from physicians
-//       const uniqueRegions = Array.from(new Set(patients.map((p) => p.region)));
-//       return res.status(200).json({
-//         status: true,
-//         message: "Successfull !!!",
-//         regions: uniqueRegions, // Include the unique regions array
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error in fetching Physicians:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 const region_without_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const regions = region_1.default.findAll({
+        const regions = region_2_1.default.findAll({
             attributes: ["region_name"],
         });
         if (!regions) {
@@ -278,7 +231,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     status: true,
                     data: [],
                 };
-                const requests = yield request_1.default.findAll({
+                const requests = yield request_2_1.default.findAll({
                     where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_state",
@@ -290,7 +243,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     include: [
                         {
                             as: "Patient",
-                            model: user_1.default,
+                            model: user_2_1.default,
                             attributes: [
                                 "type_of_user",
                                 "user_id",
@@ -303,35 +256,34 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             where: whereClause,
                         },
                         {
-                            model: requestor_1.default,
+                            model: requestor_2_1.default,
                             attributes: ["user_id", "first_name", "last_name"],
                         },
                         {
-                            model: notes_1.default,
+                            model: notes_2_1.default,
                             attributes: ["requestId", "typeOfNote", "description"],
                         },
                     ],
                 });
-                for (const request of requests) {
-                    const formattedRequest = {
-                        // Include desired properties from the original request object
-                        request_state: request.request_state,
-                        confirmationNo: request.confirmation_no,
-                        requestor: request.requested_by,
-                        requested_date: request.requested_date,
-                        // patient: {
-                        //   // Extract relevant information from the nested User object
-                        //   type: request.User.type_of_user,
-                        // },
-                        // Requestor: request.Requestor || null, // Include Requestor details or null
-                        // notes: request.Notes.map((note) => ({
-                        //   id: note.requestId,
-                        //   type: note.typeOfNote,
-                        //   description: note.description,
-                        // })),
-                    };
-                    formattedResponse.data.push(formattedRequest);
-                }
+                // for (const request of requests) {
+                //   const formattedRequest: any = {
+                //     // Include desired properties from the original request object
+                //     request_state: request.request_state,
+                //     confirmationNo: request.confirmation_no,
+                //     requestor: request.requested_by,
+                //     requested_date: request.requested_date,
+                //     patient: {
+                //       type: request.Patient[0].type_of_user,
+                //     },
+                //     Requestor: request.Requestors[0] || null, // Include Requestor details or null
+                //     notes: request.Notes.map((note) => ({
+                //       id: note.requestId,
+                //       type: note.typeOfNote,
+                //       description: note.description,
+                //     })),
+                //   };
+                //   // formattedResponse.data.push(formattedRequest);
+                // }
                 // return res.status(200).json(formattedResponse);
                 return res.status(200).json(requests);
             }
@@ -340,7 +292,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 if (requestor) {
                     whereCondition.requested_by = requestor;
                 }
-                const requests = yield request_1.default.findAll({
+                const requests = yield request_2_1.default.findAll({
                     where: whereCondition,
                     attributes: [
                         "request_state",
@@ -353,7 +305,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     include: [
                         {
                             as: "Patient",
-                            model: user_1.default,
+                            model: user_2_1.default,
                             attributes: [
                                 "user_id",
                                 "type_of_user",
@@ -370,7 +322,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         },
                         {
                             as: "Provider",
-                            model: user_1.default,
+                            model: user_2_1.default,
                             attributes: [
                                 "user_id",
                                 "type_of_user",
@@ -387,11 +339,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             },
                         },
                         {
-                            model: requestor_1.default,
+                            model: requestor_2_1.default,
                             attributes: ["user_id", "first_name", "last_name"],
                         },
                         {
-                            model: notes_1.default,
+                            model: notes_2_1.default,
                             attributes: ["requestId", "typeOfNote", "description"],
                         },
                     ],
@@ -404,7 +356,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
             case "active": {
                 {
                     if (requestor) {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state, requested_by: requestor },
                             attributes: [
                                 "request_state",
@@ -415,7 +367,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -429,11 +381,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -445,7 +397,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -456,7 +408,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         });
                     }
                     else {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state },
                             attributes: [
                                 "request_state",
@@ -467,7 +419,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -481,11 +433,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -497,7 +449,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -512,7 +464,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
             case "conslude": {
                 {
                     if (requestor) {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state, requested_by: requestor },
                             attributes: [
                                 "request_state",
@@ -523,7 +475,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -537,11 +489,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -552,7 +504,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -563,7 +515,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         });
                     }
                     else {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state },
                             attributes: [
                                 "request_state",
@@ -574,7 +526,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -588,11 +540,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -603,7 +555,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -618,7 +570,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
             case "toclose": {
                 {
                     if (requestor) {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state, requested_by: requestor },
                             attributes: [
                                 "request_state",
@@ -629,7 +581,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -643,11 +595,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -658,7 +610,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -669,7 +621,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         });
                     }
                     else {
-                        const requests = yield request_1.default.findAll({
+                        const requests = yield request_2_1.default.findAll({
                             where: { request_state: state },
                             attributes: [
                                 "request_state",
@@ -681,7 +633,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             ],
                             include: [
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     attributes: [
                                         "user_id",
                                         "type_of_user",
@@ -695,11 +647,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     where: whereClause,
                                 },
                                 {
-                                    model: requestor_1.default,
+                                    model: requestor_2_1.default,
                                     attributes: ["user_id", "first_name", "last_name"],
                                 },
                                 {
-                                    model: user_1.default,
+                                    model: user_2_1.default,
                                     where: { type_of_user: "provider", role: "physician" },
                                     attributes: [
                                         "type_of_user",
@@ -710,7 +662,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                     ],
                                 },
                                 {
-                                    model: notes_1.default,
+                                    model: notes_2_1.default,
                                     attributes: ["requestId", "typeOfNote", "description"],
                                 },
                             ],
@@ -726,7 +678,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 {
                     {
                         if (requestor) {
-                            const requests = yield request_1.default.findAll({
+                            const requests = yield request_2_1.default.findAll({
                                 where: { request_state: state, requested_by: requestor },
                                 attributes: [
                                     "request_state",
@@ -737,7 +689,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 ],
                                 include: [
                                     {
-                                        model: user_1.default,
+                                        model: user_2_1.default,
                                         attributes: [
                                             "user_id",
                                             "type_of_user",
@@ -751,11 +703,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         where: whereClause,
                                     },
                                     {
-                                        model: requestor_1.default,
+                                        model: requestor_2_1.default,
                                         attributes: ["user_id", "first_name", "last_name"],
                                     },
                                     {
-                                        model: user_1.default,
+                                        model: user_2_1.default,
                                         where: { type_of_user: "provider", role: "physician" },
                                         attributes: [
                                             "type_of_user",
@@ -766,7 +718,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         ],
                                     },
                                     {
-                                        model: notes_1.default,
+                                        model: notes_2_1.default,
                                         attributes: ["requestId", "typeOfNote", "description"],
                                     },
                                 ],
@@ -777,7 +729,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                             });
                         }
                         else {
-                            const requests = yield request_1.default.findAll({
+                            const requests = yield request_2_1.default.findAll({
                                 where: { request_state: state },
                                 attributes: [
                                     "request_state",
@@ -788,7 +740,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 ],
                                 include: [
                                     {
-                                        model: user_1.default,
+                                        model: user_2_1.default,
                                         attributes: [
                                             "user_id",
                                             "type_of_user",
@@ -802,11 +754,11 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         where: whereClause,
                                     },
                                     {
-                                        model: requestor_1.default,
+                                        model: requestor_2_1.default,
                                         attributes: ["user_id", "first_name", "last_name"],
                                     },
                                     {
-                                        model: user_1.default,
+                                        model: user_2_1.default,
                                         where: { type_of_user: "provider", role: "physician" },
                                         attributes: [
                                             "type_of_user",
@@ -817,7 +769,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                         ],
                                     },
                                     {
-                                        model: notes_1.default,
+                                        model: notes_2_1.default,
                                         attributes: ["requestId", "typeOfNote", "description"],
                                     },
                                 ],
@@ -830,12 +782,12 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     }
                 }
                 {
-                    const requests = yield request_1.default.findAll({
+                    const requests = yield request_2_1.default.findAll({
                         where: { request_state: state },
                         attributes: ["date_of_service"],
                         include: [
                             {
-                                model: user_1.default,
+                                model: user_2_1.default,
                                 attributes: [
                                     "user_id",
                                     "firstname",
@@ -846,12 +798,12 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                                 where: whereClause,
                             },
                             {
-                                model: user_1.default,
+                                model: user_2_1.default,
                                 where: { role: "physician", type_of_user: "provider" },
                                 attributes: ["provider_id", "firstname", "lastname"],
                             },
                             {
-                                model: notes_1.default,
+                                model: notes_2_1.default,
                                 attributes: ["requestId", "description", "typeOfNote"],
                             },
                         ],
@@ -880,7 +832,7 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
             "conclude" ||
             "toclose" ||
             "unpaid") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     block_status: "no",
@@ -888,7 +840,7 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
                 attributes: ["request_id", "request_state", "confirmation_no"],
                 include: [
                     {
-                        model: user_1.default,
+                        model: user_2_1.default,
                         attributes: [
                             "firstname",
                             "lastname",
@@ -904,7 +856,7 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
                         },
                     },
                     {
-                        model: notes_1.default,
+                        model: notes_2_1.default,
                         attributes: ["requestId", "noteId", "description", "typeOfNote"],
                         // where: {
                         //   typeOfNote: "patient_notes",
@@ -933,7 +885,7 @@ const view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             "conclude" ||
             "toclose" ||
             "unpaid") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -943,7 +895,7 @@ const view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            const list = yield notes_1.default.findAll({
+            const list = yield notes_2_1.default.findAll({
                 where: {
                     requestId: request.request_id,
                     typeOfNote: notes_for,
@@ -973,7 +925,7 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
             "conclude" ||
             "toclose" ||
             "unpaid") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -983,7 +935,7 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            const list = yield notes_1.default.update({
+            const list = yield notes_2_1.default.update({
                 description: new_note,
             }, {
                 where: {
@@ -1007,7 +959,7 @@ const cancel_case_for_request_view_data = (req, res, next) => __awaiter(void 0, 
     try {
         const { confirmation_no, state } = req.params;
         if (state == "new") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1016,7 +968,7 @@ const cancel_case_for_request_view_data = (req, res, next) => __awaiter(void 0, 
                 },
                 include: [
                     {
-                        model: user_1.default,
+                        model: user_2_1.default,
                         attributes: ["firstname", "lastname"],
                         where: {
                             type_of_user: "patient",
@@ -1045,7 +997,7 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
         const { confirmation_no, state } = req.params;
         const { reason, additional_notes } = req.body;
         if (state == "new") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1056,7 +1008,7 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield request_1.default.update({
+            yield request_2_1.default.update({
                 cancellation_status: "yes",
             }, {
                 where: {
@@ -1064,14 +1016,14 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
                     request_state: state,
                 },
             });
-            const find_note = yield notes_1.default.findOne({
+            const find_note = yield notes_2_1.default.findOne({
                 where: {
                     requestId: request.request_id,
                     typeOfNote: "admin_cancellation_notes",
                 },
             });
             if (find_note) {
-                notes_1.default.update({
+                notes_2_1.default.update({
                     description: additional_notes,
                     reason: reason,
                 }, {
@@ -1082,7 +1034,7 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
                 });
             }
             else {
-                notes_1.default.create({
+                notes_2_1.default.create({
                     requestId: request.request_id,
                     typeOfNote: "admin_cancellation_notes",
                     description: additional_notes,
@@ -1142,7 +1094,7 @@ const assign_request_region_physician = (req, res, next) => __awaiter(void 0, vo
     try {
         const { region, state } = req.params;
         if (state == "new") {
-            const physicians = yield user_1.default.findAll({
+            const physicians = yield user_2_1.default.findAll({
                 where: {
                     type_of_user: "provider",
                     role: "physician",
@@ -1169,7 +1121,7 @@ const assign_request = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const { confirmation_no, state } = req.params;
         const { firstname, lastname, assign_req_description } = req.body;
         if (state == "new") {
-            const provider = yield user_1.default.findOne({
+            const provider = yield user_2_1.default.findOne({
                 where: {
                     type_of_user: "provider",
                     firstname,
@@ -1181,7 +1133,7 @@ const assign_request = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 return res.status(404).json({ error: "Provider not found" });
             }
             const physician_id = provider.user_id;
-            yield request_1.default.update({
+            yield request_2_1.default.update({
                 provider_id: physician_id,
                 assign_req_description,
             }, {
@@ -1205,7 +1157,7 @@ const block_case_for_request_view = (req, res, next) => __awaiter(void 0, void 0
     try {
         const { confirmation_no, state } = req.params;
         if (state === "new") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1214,7 +1166,7 @@ const block_case_for_request_view = (req, res, next) => __awaiter(void 0, void 0
                 },
                 include: [
                     {
-                        model: user_1.default,
+                        model: user_2_1.default,
                         attributes: ["firstname", "lastname"],
                         where: {
                             type_of_user: "patient",
@@ -1243,7 +1195,7 @@ const block_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
         const { confirmation_no, state } = req.params;
         const { reason_for_block } = req.body;
         if (state === "new") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1254,7 +1206,7 @@ const block_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield request_1.default.update({
+            yield request_2_1.default.update({
                 block_status: "yes",
                 block_status_reason: reason_for_block,
             }, {
@@ -1279,7 +1231,7 @@ exports.block_case_for_request = block_case_for_request;
 const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { state, confirmation_no } = req.params;
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
                 request_state: state,
@@ -1288,14 +1240,14 @@ const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, voi
             },
             include: [
                 {
-                    model: user_1.default,
+                    model: user_2_1.default,
                     attributes: ["firstname", "lastname"],
                     where: {
                         type_of_user: "patient",
                     },
                 },
                 {
-                    model: documents_1.default,
+                    model: documents_2_1.default,
                     attributes: [
                         "request_id",
                         "document_id",
@@ -1326,7 +1278,7 @@ const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0
         console.log(req.file);
         const file = req.file;
         const fileURL = file.path;
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
                 request_state: state,
@@ -1337,7 +1289,7 @@ const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const upload_status = yield documents_1.default.create({
+        const upload_status = yield documents_2_1.default.create({
             request_id: request.request_id,
             document_path: fileURL,
         });
@@ -1359,7 +1311,7 @@ const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0
     try {
         const { state, confirmation_no, document_id } = req.params;
         // const fileURL = file.path;
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
                 request_state: state,
@@ -1368,7 +1320,7 @@ const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0
             },
             include: [
                 {
-                    model: documents_1.default,
+                    model: documents_2_1.default,
                     attributes: [
                         "request_id",
                         "document_id",
@@ -1381,7 +1333,7 @@ const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const delete_status = yield documents_1.default.destroy({
+        const delete_status = yield documents_2_1.default.destroy({
             where: {
                 request_id: request.request_id,
                 document_id,
@@ -1405,7 +1357,7 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
     try {
         const { state, confirmation_no, document_id } = req.params;
         // Find the request and associated document
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no,
                 request_state: state,
@@ -1414,7 +1366,7 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
             },
             include: [
                 {
-                    model: documents_1.default,
+                    model: documents_2_1.default,
                     attributes: ["request_id", "document_id", "document_path"],
                 },
             ],
@@ -1422,7 +1374,7 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const document = yield documents_1.default.findOne({
+        const document = yield documents_2_1.default.findOne({
             where: {
                 request_id: request.request_id,
                 document_id: document_id,
@@ -1462,7 +1414,7 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
     try {
         const { state, confirmation_no } = req.params;
         // const fileURL = file.path;
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
                 request_state: state,
@@ -1473,7 +1425,7 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const status = yield documents_1.default.findAll({
+        const status = yield documents_2_1.default.findAll({
             where: {
                 request_id: request.request_id,
             },
@@ -1494,7 +1446,7 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
 exports.view_uploads_delete_all = view_uploads_delete_all;
 const professions_for_send_orders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const professions = profession_1.default.findAll();
+        const professions = profession_2_1.default.findAll();
         if (!professions) {
             res.status(500).json({ error: "Error fetching region data" });
         }
@@ -1510,7 +1462,7 @@ const send_orders_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
         const { confirmation_no, state } = req.params;
         const { profession, businessName, businessContact, email, faxNumber, orderDetails, numberOfRefill, } = req.body;
         if (state === "active" || "conclude" || "toclose") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1521,7 +1473,7 @@ const send_orders_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield order_1.default.create({
+            yield order_2_1.default.create({
                 requestId: request.request_id,
                 request_state: state,
                 profession,
@@ -1585,7 +1537,7 @@ const transfer_request_region_physician = (req, res, next) => __awaiter(void 0, 
     try {
         const { region, state } = req.params;
         if (state == " pending") {
-            const physicians = yield user_1.default.findAll({
+            const physicians = yield user_2_1.default.findAll({
                 where: {
                     type_of_user: "provider",
                     state: region,
@@ -1612,7 +1564,7 @@ const transfer_request = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         const { confirmation_no, state } = req.params;
         const { physician_name, description } = req.body;
         if (state == "pending") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no,
                     block_status: "no",
@@ -1623,13 +1575,13 @@ const transfer_request = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield notes_1.default.create({
+            yield notes_2_1.default.create({
                 requestId: request.request_id,
                 physician_name,
                 description,
                 typeOfNote: "transfer_notes",
             });
-            yield request_1.default.update({
+            yield request_2_1.default.update({
                 transfer_request_status: "pending",
             }, {
                 where: {
@@ -1654,24 +1606,24 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
         const { state, confirmation_no } = req.params;
         try {
             if (state == "pending" || "toclose") {
-                const request = yield request_1.default.findOne({
+                const request = yield request_2_1.default.findOne({
                     where: { confirmation_no },
                     attributes: ["confirmation_no"],
                 });
                 if (!request) {
                     return res.status(404).json({ error: "Request not found" });
                 }
-                yield notes_1.default.destroy({
+                yield notes_2_1.default.destroy({
                     where: {
                         requestId: request.request_id,
                     },
                 });
-                yield order_1.default.destroy({
+                yield order_2_1.default.destroy({
                     where: {
                         requestId: request.request_id,
                     },
                 });
-                yield request_1.default.destroy({
+                yield request_2_1.default.destroy({
                     where: {
                         confirmation_no: confirmation_no,
                     },
@@ -1696,7 +1648,7 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     try {
         const { confirmation_no, state } = req.params;
         const { mobile_no, email } = req.body;
-        const user = yield user_1.default.findOne({
+        const user = yield user_2_1.default.findOne({
             where: { email, mobile_no, type_of_user: "patient" },
         });
         if (!user) {
@@ -1706,7 +1658,7 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             });
         }
         if (state == " pending") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no,
                     block_status: "no",
@@ -1714,7 +1666,7 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     close_case_status: "no",
                 },
                 include: {
-                    model: user_1.default,
+                    model: user_2_1.default,
                     attributes: ["email", "mobile_number"],
                     where: {
                         type_of_user: "patient",
@@ -1796,7 +1748,7 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     try {
         const { state, confirmation_no } = req.params;
         const { agreement_status } = req.body;
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 request_state: state,
                 confirmation_no,
@@ -1805,7 +1757,7 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const update_status = yield request_1.default.update({ agreement_status }, {
+        const update_status = yield request_2_1.default.update({ agreement_status }, {
             where: {
                 request_state: state,
                 confirmation_no,
@@ -1832,7 +1784,7 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
     try {
         const { confirmation_no, state } = req.params;
         if (state === "toclose") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1842,11 +1794,11 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
                 },
                 include: [
                     {
-                        model: user_1.default,
+                        model: user_2_1.default,
                         attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
                     },
                     {
-                        model: documents_1.default,
+                        model: documents_2_1.default,
                         attributes: [
                             "request_id",
                             "document_id",
@@ -1876,7 +1828,7 @@ const close_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
     try {
         const { confirmation_no, state } = req.params;
         if (state == "toclose") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1886,7 +1838,7 @@ const close_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
                 },
                 include: [
                     {
-                        model: user_1.default,
+                        model: user_2_1.default,
                         attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
                     },
                 ],
@@ -1894,7 +1846,7 @@ const close_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield request_1.default.update({
+            yield request_2_1.default.update({
                 close_case_status: "yes",
             }, {
                 where: {
@@ -1919,7 +1871,7 @@ const close_case_for_request_edit = (req, res, next) => __awaiter(void 0, void 0
         const { confirmation_no, state } = req.params;
         const { firstname, lastname, dob, mobile_no, email } = req.body;
         if (state == "toclose") {
-            const request = yield request_1.default.findOne({
+            const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
                     request_state: state,
@@ -1929,13 +1881,13 @@ const close_case_for_request_edit = (req, res, next) => __awaiter(void 0, void 0
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            const patient_data = yield user_1.default.findOne({
+            const patient_data = yield user_2_1.default.findOne({
                 where: { user_id: request.patient_id },
             });
             if (!patient_data) {
                 return res.status(404).json({ error: "Patient not found" });
             }
-            yield user_1.default.update({
+            yield user_2_1.default.update({
                 firstname,
                 lastname,
                 dob,
@@ -1963,7 +1915,7 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
     try {
         const { state, confirmation_no, document_id } = req.params;
         // Find the request and associated document
-        const request = yield request_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no,
                 request_state: state,
@@ -1972,7 +1924,7 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
             },
             include: [
                 {
-                    model: documents_1.default,
+                    model: documents_2_1.default,
                     attributes: ["request_id", "document_id", "document_path"],
                 },
             ],
@@ -1980,7 +1932,7 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const document = yield documents_1.default.findOne({
+        const document = yield documents_2_1.default.findOne({
             where: {
                 request_id: request.request_id,
                 document_id: document_id,
@@ -2020,7 +1972,7 @@ exports.close_case_for_request_actions_download = close_case_for_request_actions
 const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { support_message } = req.body;
-        yield user_1.default.update({
+        yield user_2_1.default.update({
             support_message,
         }, {
             where: {
@@ -2046,7 +1998,7 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
         const token = authorization.split(" ")[1];
         const verifiedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
         const admin_id = verifiedToken.user_id;
-        const profile = yield user_1.default.findOne({
+        const profile = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
@@ -2081,13 +2033,13 @@ const admin_profile_reset_password = (req, res, next) => __awaiter(void 0, void 
     try {
         const { body: { password, admin_id }, } = req;
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-        const user_data = yield user_1.default.findOne({
+        const user_data = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
         });
         if (user_data) {
-            const updatePassword = yield user_1.default.update({ password: hashedPassword }, {
+            const updatePassword = yield user_2_1.default.update({ password: hashedPassword }, {
                 where: {
                     user_id: admin_id,
                 },
@@ -2107,7 +2059,7 @@ const admin_profile_admin_info_edit = (req, res, next) => __awaiter(void 0, void
     try {
         const { firstname, lastname, email, mobile_no, admin_id } = req.body;
         // const { admin_id } = req.params;
-        const adminprofile = yield user_1.default.findOne({
+        const adminprofile = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
@@ -2115,7 +2067,7 @@ const admin_profile_admin_info_edit = (req, res, next) => __awaiter(void 0, void
         if (!adminprofile) {
             return res.status(404).json({ error: "Admin not found" });
         }
-        const updatestatus = yield user_1.default.update({
+        const updatestatus = yield user_2_1.default.update({
             firstname,
             lastname,
             email,
@@ -2140,7 +2092,7 @@ const admin_profile_mailing_billling_info_edit = (req, res, next) => __awaiter(v
         try {
             const { admin_id, address_1, address_2, city, state, zip, billing_mobile_no, } = req.body;
             // const { admin_id } = req.params;
-            const adminprofile = yield user_1.default.findOne({
+            const adminprofile = yield user_2_1.default.findOne({
                 where: {
                     user_id: admin_id,
                 },
@@ -2148,7 +2100,7 @@ const admin_profile_mailing_billling_info_edit = (req, res, next) => __awaiter(v
             if (!adminprofile) {
                 return res.status(404).json({ error: "Admin not found" });
             }
-            const updatestatus = yield user_1.default.update({
+            const updatestatus = yield user_2_1.default.update({
                 address_1,
                 address_2,
                 city,
@@ -2175,7 +2127,7 @@ exports.admin_profile_mailing_billling_info_edit = admin_profile_mailing_billlin
 /** Admin Account Access */
 const access_accountaccess = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const account = yield user_1.default.findAll({
+        const account = yield user_2_1.default.findAll({
             where: {
                 status: "active",
             },
@@ -2195,7 +2147,7 @@ exports.access_accountaccess = access_accountaccess;
 const access_accountaccess_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { admin_id } = req.params;
-        const account = yield user_1.default.findOne({
+        const account = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
                 status: "active",
@@ -2229,7 +2181,7 @@ const access_accountaccess_edit_save = (req, res, next) => __awaiter(void 0, voi
     try {
         const { admin_id } = req.params;
         const { firstname, lastname, mobile_no, address_1, address_2, city, region, zip, dob, } = req.body;
-        const account = yield user_1.default.findOne({
+        const account = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
                 status: "active",
@@ -2238,7 +2190,7 @@ const access_accountaccess_edit_save = (req, res, next) => __awaiter(void 0, voi
         if (!account) {
             return res.status(404).json({ error: "Account not found" });
         }
-        const account_data = yield user_1.default.update({
+        const account_data = yield user_2_1.default.update({
             firstname,
             lastname,
             mobile_no,
@@ -2270,7 +2222,7 @@ exports.access_accountaccess_edit_save = access_accountaccess_edit_save;
 const access_accountaccess_delete = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { admin_id } = req.params;
-        const account = yield user_1.default.findOne({
+        const account = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
                 status: "active",
@@ -2279,7 +2231,7 @@ const access_accountaccess_delete = (req, res, next) => __awaiter(void 0, void 0
         if (!account) {
             return res.status(404).json({ error: "Account not found" });
         }
-        const delete_account = yield user_1.default.destroy({
+        const delete_account = yield user_2_1.default.destroy({
             where: {
                 user_id: admin_id,
             },
@@ -2313,7 +2265,7 @@ const access_useraccess = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 [sequelize_1.Op.like]: `%${lastname}%`,
             };
         }
-        const accounts = yield user_1.default.findAll({
+        const accounts = yield user_2_1.default.findAll({
             attributes: [
                 "firstname",
                 "lastname",
@@ -2337,7 +2289,7 @@ exports.access_useraccess = access_useraccess;
 const access_useraccess_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { admin_id } = req.params;
-        const account = yield user_1.default.findOne({
+        const account = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
@@ -2371,7 +2323,7 @@ const access_useraccess_edit_save = (req, res, next) => __awaiter(void 0, void 0
     try {
         const { admin_id } = req.params;
         const { firstname, lastname, mobile_no, address_1, address_2, city, region, zip, dob, type_of_user, } = req.body;
-        const account = yield user_1.default.findOne({
+        const account = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
@@ -2379,7 +2331,7 @@ const access_useraccess_edit_save = (req, res, next) => __awaiter(void 0, void 0
         if (!account) {
             return res.status(404).json({ error: "Account not found" });
         }
-        const account_data = yield user_1.default.update({
+        const account_data = yield user_2_1.default.update({
             firstname,
             lastname,
             mobile_no,

@@ -1,4 +1,4 @@
-import sequelize from "../../connections/database";
+import sequelize from "../../../connections/database";
 import {
   InferAttributes,
   InferCreationAttributes,
@@ -6,7 +6,8 @@ import {
   Model,
   CreationOptional,
 } from "sequelize";
-class Request extends Model<
+
+class Request extends Model< 
   InferAttributes<Request>,
   InferCreationAttributes<Request>
 > {

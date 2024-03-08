@@ -16,7 +16,7 @@ exports.login = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
-const user_1 = __importDefault(require("../../db/models/user"));
+const user_1 = __importDefault(require("../../db/models/previous_models/user"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

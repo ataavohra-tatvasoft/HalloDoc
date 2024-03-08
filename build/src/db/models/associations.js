@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_1 = __importDefault(require("./user"));
-const request_1 = __importDefault(require("./request"));
-const requestor_1 = __importDefault(require("./requestor"));
-const notes_1 = __importDefault(require("./notes"));
-const order_1 = __importDefault(require("./order"));
-const documents_1 = __importDefault(require("./documents"));
+const user_1 = __importDefault(require("./previous_models/user"));
+const request_1 = __importDefault(require("./previous_models/request"));
+const requestor_1 = __importDefault(require("./previous_models/requestor"));
+const notes_1 = __importDefault(require("./previous_models/notes"));
+const order_1 = __importDefault(require("./previous_models/order"));
+const documents_1 = __importDefault(require("./previous_models/documents"));
 /**Associations */
 // User.hasMany(Request,{ foreignKey : 'user_id'});
 request_1.default.belongsTo(user_1.default, {

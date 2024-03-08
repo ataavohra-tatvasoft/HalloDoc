@@ -1,19 +1,19 @@
 /** Imports */
 import { Request, Response, NextFunction } from "express";
-import RequestModel from "../../db/models/request";
-import Requestor from "../../db/models/requestor";
-import User from "../../db/models/user";
-import Notes from "../../db/models/notes";
-import Order from "../../db/models/order";
-import Region from "../../db/models/region";
-import Profession from "../../db/models/profession";
+import RequestModel from "../../db/models/request_2";
+import User from "../../db/models/user_2";
+import Requestor from "../../db/models/requestor_2";
+import Notes from "../../db/models/notes_2";
+import Order from "../../db/models/order_2";
+import Region from "../../db/models/region_2";
+import Profession from "../../db/models/profession_2";
 import statusCodes from "../../public/status_codes";
-import * as crypto from "crypto";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import { Op, Sequelize, where } from "sequelize";
-import Documents from "../../db/models/documents";
+import * as crypto from "crypto";
+import { Op} from "sequelize";
+import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -190,58 +190,6 @@ export const admin_create_request = async (
   }
 };
 
-/**Admin request by request_state and region */
-// export const requests_by_request_state_regions = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { state } = req.params;
-
-//     if (state) {
-//       // Use distinct query to get unique regions
-//       const requests = await RequestModel.findAll({
-//         where: {
-//          request_state:state,
-//         },
-//         attributes: ["region", "firstname", "lastname"],
-//       });
-
-//       if (!requests) {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No Requests found.", // Include an empty regions array
-//         });
-//       }
-//       const patients = await User.findAll({
-//         where: {
-//          user_id: requests[0].patient_id,
-//         },
-//         attributes: ["region", "firstname", "lastname"],
-//       });
-
-//       if (!patients) {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No Requests found.", // Include an empty regions array
-//         });
-//       }
-
-//       // Extract unique regions from physicians
-//       const uniqueRegions = Array.from(new Set(patients.map((p) => p.region)));
-
-//       return res.status(200).json({
-//         status: true,
-//         message: "Successfull !!!",
-//         regions: uniqueRegions, // Include the unique regions array
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error in fetching Physicians:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 export const region_without_thirdparty_API = async (
   req: Request,
   res: Response,
@@ -361,27 +309,26 @@ export const requests_by_request_state = async (
             },
           ],
         });
-        for (const request of requests) {
-          const formattedRequest: any = {
-            // Include desired properties from the original request object
-            request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date,
-            // patient: {
-            //   // Extract relevant information from the nested User object
-            //   type: request.User.type_of_user,
-            // },
-            // Requestor: request.Requestor || null, // Include Requestor details or null
-            // notes: request.Notes.map((note) => ({
-            //   id: note.requestId,
-            //   type: note.typeOfNote,
-            //   description: note.description,
-            // })),
-          };
+        // for (const request of requests) {
+        //   const formattedRequest: any = {
+        //     // Include desired properties from the original request object
+        //     request_state: request.request_state,
+        //     confirmationNo: request.confirmation_no,
+        //     requestor: request.requested_by,
+        //     requested_date: request.requested_date,
+        //     patient: {
+        //       type: request.Patient[0].type_of_user,
+        //     },
+        //     Requestor: request.Requestors[0] || null, // Include Requestor details or null
+        //     notes: request.Notes.map((note) => ({
+        //       id: note.requestId,
+        //       type: note.typeOfNote,
+        //       description: note.description,
+        //     })),
+        //   };
 
-          formattedResponse.data.push(formattedRequest);
-        }
+        //   // formattedResponse.data.push(formattedRequest);
+        // }
 
         // return res.status(200).json(formattedResponse);
         return res.status(200).json(requests);

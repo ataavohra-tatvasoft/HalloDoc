@@ -1,9 +1,9 @@
-import User from "./user";
-import Request from "./request";
-import Requestor from "./requestor";
-import Notes from "./notes";
-import Order from "./order";
-import Documents from "./documents";
+import User from "./previous_models/user";
+import Request from "./previous_models/request";
+import Requestor from "./previous_models/requestor";
+import Notes from "./previous_models/notes";
+import Order from "./previous_models/order";
+import Documents from "./previous_models/documents";
 /**Associations */
 
 // User.hasMany(Request,{ foreignKey : 'user_id'});
