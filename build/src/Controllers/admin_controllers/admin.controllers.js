@@ -687,51 +687,75 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
 exports.requests_by_request_state = requests_by_request_state;
 /**Admin Request Actions */
 const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _m;
     try {
-        const { confirmation_no, state } = req.params;
-        if (state === "new" ||
-            "active" ||
-            " pending" ||
-            "conclude" ||
-            "toclose" ||
-            "unpaid") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    block_status: "no",
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                block_status: "no",
+            },
+            attributes: ["request_id", "request_state", "confirmation_no"],
+            include: [
+                {
+                    as: "Patient",
+                    model: user_2_1.default,
+                    attributes: [
+                        "firstname",
+                        "lastname",
+                        "dob",
+                        "mobile_no",
+                        "email",
+                        "state",
+                        "business_name",
+                        "address_1",
+                    ],
+                    where: {
+                        type_of_user: "patient",
+                    },
                 },
-                attributes: ["request_id", "request_state", "confirmation_no"],
-                include: [
-                    {
-                        model: user_2_1.default,
-                        attributes: [
-                            "firstname",
-                            "lastname",
-                            "dob",
-                            "mobile_no",
-                            "email",
-                            "state",
-                            "business_name",
-                            "address_1",
-                        ],
-                        where: {
-                            type_of_user: "patient",
-                        },
+                {
+                    model: notes_2_1.default,
+                    attributes: ["requestId", "noteId", "description", "typeOfNote"],
+                    where: {
+                        typeOfNote: "patient_notes",
                     },
-                    {
-                        model: notes_2_1.default,
-                        attributes: ["requestId", "noteId", "description", "typeOfNote"],
-                        // where: {
-                        //   typeOfNote: "patient_notes",
-                        // },
-                    },
-                ],
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            res.json({ request });
+                },
+            ],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const formattedRequest = {
+            request_id: request.request_id,
+            request_state: request.request_state,
+            confirmation_no: request.confirmation_no,
+            // requested_date: request.requested_date.toISOString().split("T")[0],
+            patient_data: {
+                user_id: request.Patient.user_id,
+                patient_notes: (_m = request.Notes) === null || _m === void 0 ? void 0 : _m.map((note) => ({
+                    note_id: note.noteId,
+                    type_of_note: note.typeOfNote,
+                    description: note.description,
+                })),
+                first_name: request.Patient.firstname,
+                last_name: request.Patient.lastname,
+                DOB: request.Patient.dob.toISOString().split("T")[0],
+                mobile_no: request.Patient.mobile_no,
+                email: request.Patient.email,
+                location_information: {
+                    region: request.Patient.state,
+                    business_name: request.Patient.business_name,
+                    room: request.Patient.address_1 + " " + request.Patient.address_2,
+                },
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1497,7 +1521,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
                 });
             }
         }
-        catch (_m) {
+        catch (_o) {
             res.status(404).json({ error: "Invalid State !!!" });
         }
     }

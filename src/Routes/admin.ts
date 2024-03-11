@@ -80,7 +80,7 @@ router.get(
 
 /**Admin Request Actions */
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewcase",
+  "/dashboard/requests/:confirmation_no/actions/viewcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_case_for_request(req, res, next);

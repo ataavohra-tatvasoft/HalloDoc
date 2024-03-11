@@ -22,7 +22,7 @@ router.get("/dashboard/requests", middlewares_1.authmiddleware, (req, res, next)
     (0, controllers_1.requests_by_request_state)(req, res, next);
 });
 /**Admin Request Actions */
-router.get("/dashboard/requests/:state/:confirmation_no/actions/viewcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/viewcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.view_case_for_request)(req, res, next);
 });
 router.get("/dashboard/requests/:state/:confirmation_no/actions/viewnotes/:notes_for", middlewares_1.authmiddleware, (req, res, next) => {
