@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physician = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
+exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physicians = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
 const request_2_1 = __importDefault(require("../../db/models/request_2"));
 const user_2_1 = __importDefault(require("../../db/models/user_2"));
 const requestor_2_1 = __importDefault(require("../../db/models/requestor_2"));
@@ -174,13 +174,13 @@ const admin_create_request = (req, res, next) => __awaiter(void 0, void 0, void 
 exports.admin_create_request = admin_create_request;
 const region_without_thirdparty_API = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const regions = region_2_1.default.findAll({
+        const regions = yield region_2_1.default.findAll({
             attributes: ["region_name"],
         });
         if (!regions) {
             res.status(500).json({ error: "Error fetching region data" });
         }
-        res.status(200).json({ status: "Successfull", regions });
+        return res.status(200).json({ status: "Successfull", regions: regions });
     }
     catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
@@ -411,7 +411,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 }
                 return res.status(200).json(Object.assign(Object.assign({}, formattedResponse), { totalPages: Math.ceil(requests.count / limit), currentPage: pageNumber }));
             }
-            case "conslude": {
+            case "conclude": {
                 const formattedResponse = {
                     status: true,
                     data: [],
@@ -929,10 +929,6 @@ const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
     try {
         const { confirmation_no } = req.params;
         const { reason, additional_notes } = req.body;
-        const formattedResponse = {
-            status: true,
-            data: [],
-        };
         const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
@@ -1027,23 +1023,32 @@ exports.cancel_case_for_request = cancel_case_for_request;
 // };
 const assign_request_region_physician = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { region, state } = req.params;
-        if (state == "new") {
-            const physicians = yield user_2_1.default.findAll({
-                where: {
-                    type_of_user: "provider",
-                    role: "physician",
-                    state: region,
-                    scheduled_status: "no",
-                },
-                attributes: ["state", "firstname", "lastname"],
-            });
+        const { region } = req.query;
+        var i = 1;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const physicians = yield user_2_1.default.findAll({
+            attributes: ["state", "role", "firstname", "lastname"],
+            where: Object.assign(Object.assign({ type_of_user: "provider", role: "physician" }, (region ? { state: region } : {})), { scheduled_status: "no" }),
+        });
+        if (!physicians) {
             return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                physicians,
+                status: false,
+                message: "Physician not found !!!",
             });
         }
+        for (const physician of physicians) {
+            const formattedRequest = {
+                sr_no: i,
+                firstname: physician.firstname,
+                lastname: physician.lastname,
+            };
+            i++;
+            formattedResponse.data.push(formattedRequest);
+        }
+        return res.status(200).json(Object.assign({ status: true, message: "Successfull !!!" }, formattedResponse));
     }
     catch (error) {
         console.error("Error in fetching Physicians:", error);
@@ -1053,34 +1058,40 @@ const assign_request_region_physician = (req, res, next) => __awaiter(void 0, vo
 exports.assign_request_region_physician = assign_request_region_physician;
 const assign_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { firstname, lastname, assign_req_description } = req.body;
-        if (state == "new") {
-            const provider = yield user_2_1.default.findOne({
-                where: {
-                    type_of_user: "provider",
-                    firstname,
-                    lastname,
-                    role: "physician",
-                },
-            });
-            if (!provider) {
-                return res.status(404).json({ error: "Provider not found" });
-            }
-            const physician_id = provider.user_id;
-            yield request_2_1.default.update({
-                provider_id: physician_id,
-                assign_req_description,
-            }, {
-                where: {
-                    confirmation_no: confirmation_no,
-                },
-            });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-            });
+        const provider = yield user_2_1.default.findOne({
+            where: {
+                firstname,
+                lastname,
+                type_of_user: "provider",
+                role: "physician",
+                scheduled_status: "no",
+            },
+        });
+        if (!provider) {
+            return res.status(404).json({ error: "Provider not found" });
         }
+        const physician_id = provider.user_id;
+        yield request_2_1.default.update({
+            physician_id: physician_id,
+            assign_req_description,
+        }, {
+            where: {
+                confirmation_no: confirmation_no,
+            },
+        });
+        yield user_2_1.default.update({
+            scheduled_status: "yes",
+        }, {
+            where: {
+                user_id: physician_id,
+            },
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
         console.error("Error in Assigning Request:", error);
@@ -1090,34 +1101,41 @@ const assign_request = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.assign_request = assign_request;
 const block_case_for_request_view = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
-        if (state === "new") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                    cancellation_status: "no",
-                },
-                include: [
-                    {
-                        model: user_2_1.default,
-                        attributes: ["firstname", "lastname"],
-                        where: {
-                            type_of_user: "patient",
-                        },
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "new",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+            include: [
+                {
+                    as: "Patient",
+                    model: user_2_1.default,
+                    attributes: ["firstname", "lastname"],
+                    where: {
+                        type_of_user: "patient",
                     },
-                ],
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                request,
-            });
+                },
+            ],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const formattedRequest = {
+            patient_data: {
+                user_id: request.Patient.user_id,
+                firstname: request.Patient.firstname,
+                lastname: request.Patient.lastname,
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1127,34 +1145,32 @@ const block_case_for_request_view = (req, res, next) => __awaiter(void 0, void 0
 exports.block_case_for_request_view = block_case_for_request_view;
 const block_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { reason_for_block } = req.body;
-        if (state === "new") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                    cancellation_status: "no",
-                },
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            yield request_2_1.default.update({
-                block_status: "yes",
-                block_status_reason: reason_for_block,
-            }, {
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                },
-            });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-            });
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "new",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        yield request_2_1.default.update({
+            block_status: "yes",
+            block_status_reason: reason_for_block,
+        }, {
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "new",
+            },
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1381,11 +1397,15 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
 exports.view_uploads_delete_all = view_uploads_delete_all;
 const professions_for_send_orders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const professions = profession_2_1.default.findAll();
+        const professions = yield profession_2_1.default.findAll({
+            attributes: ["profession_name"],
+        });
         if (!professions) {
             res.status(500).json({ error: "Error fetching region data" });
         }
-        res.status(200).json({ status: "Successfull", professions });
+        return res
+            .status(200)
+            .json({ status: "Successfull", professions: professions });
     }
     catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
@@ -1396,7 +1416,7 @@ const send_orders_for_request = (req, res, next) => __awaiter(void 0, void 0, vo
     try {
         const { confirmation_no, state } = req.params;
         const { profession, businessName, businessContact, email, faxNumber, orderDetails, numberOfRefill, } = req.body;
-        if (state === "active" || "conclude" || "toclose") {
+        if (state == "active" || "conclude" || "toclose") {
             const request = yield request_2_1.default.findOne({
                 where: {
                     confirmation_no: confirmation_no,
@@ -1468,60 +1488,122 @@ exports.send_orders_for_request = send_orders_for_request;
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // };
-const transfer_request_region_physician = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const transfer_request_region_physicians = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { region, state } = req.params;
-        if (state == " pending") {
-            const physicians = yield user_2_1.default.findAll({
-                where: {
-                    type_of_user: "provider",
-                    state: region,
-                    role: "physician",
-                    scheduled_status: "no",
-                },
-                attributes: ["state", " firstname", "lastname"],
-            });
+        const { region } = req.query;
+        var i = 1;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const physicians = yield user_2_1.default.findAll({
+            attributes: ["state", "role", "firstname", "lastname"],
+            where: Object.assign(Object.assign({ type_of_user: "provider", role: "physician" }, (region ? { state: region } : {})), { scheduled_status: "no" }),
+        });
+        if (!physicians) {
             return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                physicians,
+                status: false,
+                message: "Physician not found !!!",
             });
         }
+        for (const physician of physicians) {
+            const formattedRequest = {
+                sr_no: i,
+                firstname: physician.firstname,
+                lastname: physician.lastname,
+            };
+            i++;
+            formattedResponse.data.push(formattedRequest);
+        }
+        return res.status(200).json(Object.assign({ status: true, message: "Successfull !!!" }, formattedResponse));
     }
     catch (error) {
         console.error("Error in fetching Physicians:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-exports.transfer_request_region_physician = transfer_request_region_physician;
+exports.transfer_request_region_physicians = transfer_request_region_physicians;
 const transfer_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
-        const { physician_name, description } = req.body;
-        if (state == "pending") {
+        const { confirmation_no } = req.params;
+        const { firstname, lastname, description } = req.body;
+        const provider = yield user_2_1.default.findOne({
+            where: {
+                firstname,
+                lastname,
+                type_of_user: "provider",
+                role: "physician",
+            },
+        });
+        if (!provider) {
+            return res.status(404).json({ error: "Provider not found" });
+        }
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no,
+                block_status: "no",
+                cancellation_status: "no",
+                close_case_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
+        }
+        // const physician_id = provider.user_id;
+        yield request_2_1.default.update({
+            // physician_id: physician_id,
+            transfer_request_status: "pending",
+        }, {
+            where: {
+                confirmation_no: confirmation_no,
+            },
+        });
+        yield notes_2_1.default.create({
+            requestId: request.request_id,
+            physician_name: firstname + " " + lastname,
+            description,
+            typeOfNote: "transfer_notes",
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
+    }
+    catch (error) {
+        console.error("Error in transfering request:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+exports.transfer_request = transfer_request;
+const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { confirmation_no } = req.params;
+        try {
             const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no,
-                    block_status: "no",
-                    cancellation_status: "no",
-                    close_case_status: "no",
-                },
+                where: { confirmation_no },
+                attributes: ["confirmation_no", "request_id"],
             });
             if (!request) {
                 return res.status(404).json({ error: "Request not found" });
             }
-            yield notes_2_1.default.create({
-                requestId: request.request_id,
-                physician_name,
-                description,
-                typeOfNote: "transfer_notes",
+            yield notes_2_1.default.destroy({
+                where: {
+                    requestId: request.request_id,
+                },
             });
-            yield request_2_1.default.update({
-                transfer_request_status: "pending",
-            }, {
+            yield order_2_1.default.destroy({
+                where: {
+                    requestId: request.request_id,
+                },
+            });
+            yield request_2_1.default.destroy({
+                where: {
+                    confirmation_no: confirmation_no,
+                },
+            });
+            yield documents_2_1.default.destroy({
                 where: {
                     request_id: request.request_id,
-                    request_state: state,
                 },
             });
             return res.status(200).json({
@@ -1529,62 +1611,27 @@ const transfer_request = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 message: "Successfull !!!",
             });
         }
-    }
-    catch (error) {
-        console.error("Error in Sending Order:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-exports.transfer_request = transfer_request;
-const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { state, confirmation_no } = req.params;
-        try {
-            if (state == "pending" || "toclose") {
-                const request = yield request_2_1.default.findOne({
-                    where: { confirmation_no },
-                    attributes: ["confirmation_no"],
-                });
-                if (!request) {
-                    return res.status(404).json({ error: "Request not found" });
-                }
-                yield notes_2_1.default.destroy({
-                    where: {
-                        requestId: request.request_id,
-                    },
-                });
-                yield order_2_1.default.destroy({
-                    where: {
-                        requestId: request.request_id,
-                    },
-                });
-                yield request_2_1.default.destroy({
-                    where: {
-                        confirmation_no: confirmation_no,
-                    },
-                });
-                return res.status(200).json({
-                    status: true,
-                    message: "Successfull !!!",
-                });
-            }
-        }
         catch (_o) {
             res.status(404).json({ error: "Invalid State !!!" });
         }
     }
     catch (error) {
-        console.error("Error fetching request:", error);
+        console.error("Error deleting request:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.clear_case_for_request = clear_case_for_request;
 const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { mobile_no, email } = req.body;
         const user = yield user_2_1.default.findOne({
-            where: { email, mobile_no, type_of_user: "patient" },
+            where: {
+                email: email,
+                mobile_no: mobile_no,
+                type_of_user: "patient",
+            },
+            attributes: ["user_id", "email", "mobile_no"],
         });
         if (!user) {
             return res.status(400).json({
@@ -1592,83 +1639,80 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 errormessage: status_codes_1.default[400],
             });
         }
-        if (state == " pending") {
-            const request = yield request_2_1.default.findOne({
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no,
+                patient_id: user.user_id,
+                block_status: "no",
+                cancellation_status: "no",
+                close_case_status: "no",
+            },
+            include: {
+                as: "Patient",
+                model: user_2_1.default,
+                attributes: ["email", "mobile_no"],
                 where: {
-                    confirmation_no,
-                    block_status: "no",
-                    cancellation_status: "no",
-                    close_case_status: "no",
+                    type_of_user: "patient",
                 },
-                include: {
-                    model: user_2_1.default,
-                    attributes: ["email", "mobile_number"],
-                    where: {
-                        type_of_user: "patient",
-                    },
-                },
+            },
+        });
+        if (!request) {
+            return res.status(400).json({
+                message: "Invalid request case",
+                errormessage: status_codes_1.default[400],
             });
-            if (!request) {
-                return res.status(400).json({
-                    message: "Invalid request case",
-                    errormessage: status_codes_1.default[400],
-                });
-            }
-            // const resetToken = uuid();
-            const resetToken = crypto
-                .createHash("sha256")
-                .update(email)
-                .digest("hex");
-            const resetUrl = `http://localhost:7000/admin/dashboard/requests/:state/:confirmation_no/actions/updateagreement`;
-            const mailContent = `
+        }
+        // const resetToken = uuid();
+        const resetToken = crypto.createHash("sha256").update(email).digest("hex");
+        const resetUrl = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
+        const mailContent = `
         <html>
         <form action = "${resetUrl}" method="POST"> 
         <p>Tell us that you accept the agreement or not:</p>
-        <p>Your token is: ${resetToken}</p>
         <br>
         <br>
-        <label for="ResetToken">Token:</label>
-        <input type="text" id="ResetToken" name="ResetToken" required>
+        <p>Your token is: </p>
+        <p>${resetToken} </p>
         <br>
         <br>
         <label for="agreement_status">Agreement_Status:</label>
-        <select id="agreement_status">
+        <br>
+        <select id="agreement_status" name= "agreement_status">
         <option value="accepted">Accepted</option>
         <option value="rejected">Rejected</option>
-      </select>
-      <br>
-      <br>
+        </select>
+        <br>
+        <br>
         <button type = "submit">Submit Response</button>
         </form>
         </html>
       `;
-            const transporter = nodemailer_1.default.createTransport({
-                host: process.env.EMAIL_HOST,
-                port: Number(process.env.EMAIL_PORT),
-                secure: false,
-                debug: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
-            });
-            const info = yield transporter.sendMail({
-                from: "vohraatta@gmail.com",
-                to: email,
-                subject: "Agreement",
-                html: mailContent,
-            });
-            if (!info) {
-                res.status(500).json({
-                    message: "Error while sending agreement to your mail",
-                    errormessage: status_codes_1.default[200],
-                });
-            }
-            res.status(200).json({
-                message: "Agreement sent to your email",
+        const transporter = nodemailer_1.default.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: Number(process.env.EMAIL_PORT),
+            secure: false,
+            debug: true,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+        const info = yield transporter.sendMail({
+            from: "vohraatta@gmail.com",
+            to: email,
+            subject: "Agreement",
+            html: mailContent,
+        });
+        if (!info) {
+            res.status(500).json({
+                message: "Error while sending agreement to your mail",
                 errormessage: status_codes_1.default[200],
             });
         }
+        res.status(200).json({
+            message: "Agreement sent to your email",
+            errormessage: status_codes_1.default[200],
+        });
     }
     catch (error) {
         console.error(error);
@@ -1681,11 +1725,10 @@ const send_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.send_agreement = send_agreement;
 const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no } = req.params;
+        const { confirmation_no } = req.params;
         const { agreement_status } = req.body;
         const request = yield request_2_1.default.findOne({
             where: {
-                request_state: state,
                 confirmation_no,
             },
         });
@@ -1694,7 +1737,6 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         }
         const update_status = yield request_2_1.default.update({ agreement_status }, {
             where: {
-                request_state: state,
                 confirmation_no,
             },
         });
@@ -1716,42 +1758,68 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
 });
 exports.update_agreement = update_agreement;
 const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _p;
     try {
-        const { confirmation_no, state } = req.params;
-        if (state === "toclose") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    close_case_status: "no",
-                    block_status: "no",
-                    cancellation_status: "no",
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "toclose",
+                close_case_status: "no",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+            include: [
+                {
+                    as: "Patient",
+                    model: user_2_1.default,
+                    attributes: [
+                        "user_id",
+                        "firstname",
+                        "lastname",
+                        "dob",
+                        "mobile_no",
+                        "email",
+                    ],
                 },
-                include: [
-                    {
-                        model: user_2_1.default,
-                        attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
-                    },
-                    {
-                        model: documents_2_1.default,
-                        attributes: [
-                            "request_id",
-                            "document_id",
-                            "document_path",
-                            "createdAt",
-                        ],
-                    },
-                ],
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                request,
-            });
+                {
+                    model: documents_2_1.default,
+                    attributes: [
+                        "request_id",
+                        "document_id",
+                        "document_path",
+                        "createdAt",
+                    ],
+                },
+            ],
+            attributes: ["request_id", "confirmation_no"],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const formattedRequest = {
+            request_id: request.request_id,
+            confirmation_no: request.confirmation_no,
+            patient_data: {
+                user_id: request.Patient.user_id,
+                first_name: request.Patient.firstname,
+                last_name: request.Patient.lastname,
+                DOB: request.Patient.dob.toISOString().split("T")[0],
+                mobile_no: request.Patient.mobile_no,
+                email: request.Patient.email,
+                documents: (_p = request.Documents) === null || _p === void 0 ? void 0 : _p.map((document) => ({
+                    document_id: document.document_id,
+                    document_path: document.document_path,
+                    upload_date: document.createdAt.toISOString().split("T")[0],
+                })),
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1761,84 +1829,81 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
 exports.close_case_for_request_view_details = close_case_for_request_view_details;
 const close_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
-        if (state == "toclose") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    close_case_status: "no",
-                    block_status: "no",
-                    cancellation_status: "no",
+        const { confirmation_no } = req.params;
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "toclose",
+                close_case_status: "no",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+            include: [
+                {
+                    as: "Patient",
+                    model: user_2_1.default,
+                    attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
                 },
-                include: [
-                    {
-                        model: user_2_1.default,
-                        attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
-                    },
-                ],
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            yield request_2_1.default.update({
-                close_case_status: "yes",
-            }, {
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                },
-            });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-            });
+            ],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        yield request_2_1.default.update({
+            close_case_status: "yes",
+        }, {
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "toclose",
+            },
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
-        console.error("Error fetching request:", error);
+        console.error("Error closing request:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.close_case_for_request = close_case_for_request;
 const close_case_for_request_edit = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { firstname, lastname, dob, mobile_no, email } = req.body;
-        if (state == "toclose") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    close_case_status: "no",
-                },
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            const patient_data = yield user_2_1.default.findOne({
-                where: { user_id: request.patient_id },
-            });
-            if (!patient_data) {
-                return res.status(404).json({ error: "Patient not found" });
-            }
-            yield user_2_1.default.update({
-                firstname,
-                lastname,
-                dob,
-                mobile_no,
-                email,
-            }, {
-                where: {
-                    user_id: request.patient_id,
-                    type_of_user: "patient",
-                },
-            });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-            });
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "toclose",
+                close_case_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const patient_data = yield user_2_1.default.findOne({
+            where: { user_id: request.patient_id },
+        });
+        if (!patient_data) {
+            return res.status(404).json({ error: "Patient not found" });
+        }
+        yield user_2_1.default.update({
+            firstname,
+            lastname,
+            dob,
+            mobile_no,
+            email,
+        }, {
+            where: {
+                user_id: request.patient_id,
+                type_of_user: "patient",
+            },
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1848,12 +1913,11 @@ const close_case_for_request_edit = (req, res, next) => __awaiter(void 0, void 0
 exports.close_case_for_request_edit = close_case_for_request_edit;
 const close_case_for_request_actions_download = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no, document_id } = req.params;
-        // Find the request and associated document
+        const { confirmation_no, document_id } = req.params;
         const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no,
-                request_state: state,
+                request_state: "toclose",
                 block_status: "no",
                 cancellation_status: "no",
             },
@@ -1913,6 +1977,7 @@ const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             where: {
                 scheduled_status: "no",
                 type_of_user: "provider",
+                role: "physician",
             },
         });
         return res.status(200).json({
@@ -1932,15 +1997,20 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
         const { authorization } = req.headers;
         const token = authorization.split(" ")[1];
         const verifiedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
         const admin_id = verifiedToken.user_id;
         const profile = yield user_2_1.default.findOne({
             where: {
                 user_id: admin_id,
             },
             attributes: [
+                "user_id",
                 // "username",
-                "status",
                 "role",
+                "status",
                 "firstname",
                 "lastname",
                 "email",
@@ -1956,7 +2026,40 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
         if (!profile) {
             return res.status(404).json({ error: "Request not found" });
         }
-        res.status(200).json({ profile });
+        const regions = yield region_2_1.default.findAll({
+            attributes: ["region_name"],
+        });
+        if (!regions) {
+            res.status(500).json({ error: "Error fetching region data" });
+        }
+        ;
+        const formattedRequest = {
+            user_id: profile.user_id,
+            account_information: {
+                username: "dummy",
+                status: profile.status,
+                role: profile.role,
+            },
+            administrator_information: {
+                firstname: profile.firstname,
+                lastname: profile.lastname,
+                email: profile.email,
+                mobile_no: profile.mobile_no,
+                regions: regions === null || regions === void 0 ? void 0 : regions.map((region) => ({
+                    region_name: region.region_name
+                })),
+            },
+            mailing_billing_information: {
+                address_1: profile.address_1,
+                address_2: profile.address_2,
+                city: profile.city,
+                state: profile.state,
+                zip: profile.zip,
+                billing_mobile_no: profile.billing_mobile_no,
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching Admin Profile:", error);

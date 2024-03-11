@@ -32,13 +32,6 @@ __decorate([
     __metadata("design:type", Number)
 ], Order.prototype, "requestId", void 0);
 __decorate([
-    (0, sequelize_typescript_1.BelongsTo)(() => request_2_1.default, {
-        foreignKey: "requestId",
-        targetKey: "request_id",
-    }),
-    __metadata("design:type", request_2_1.default)
-], Order.prototype, "request", void 0);
-__decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.ENUM("active", "conclude", "toclose"),
         allowNull: false,
@@ -70,7 +63,6 @@ __decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.STRING,
         allowNull: false,
-        unique: true,
     }),
     __metadata("design:type", String)
 ], Order.prototype, "email", void 0);

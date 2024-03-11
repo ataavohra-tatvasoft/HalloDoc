@@ -18,3 +18,4 @@ __exportStar(require("./auth"), exports);
 __exportStar(require("./admin_schema"), exports);
 __exportStar(require("./request_schema"), exports);
 __exportStar(require("./reset_password_schema"), exports);
+__exportStar(require("./admin_profile_editinfo"), exports);

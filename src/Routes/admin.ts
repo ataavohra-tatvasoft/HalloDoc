@@ -21,7 +21,6 @@ import {
   view_uploads_delete_all,
   professions_for_send_orders,
   send_orders_for_request,
-  transfer_request_region_physician,
   transfer_request,
   clear_case_for_request,
   send_agreement,
@@ -42,8 +41,9 @@ import {
   access_useraccess,
   access_useraccess_edit,
   access_useraccess_edit_save,
+  transfer_request_region_physicians,
 } from "../controllers";
-import { authmiddleware } from "../middlewares";
+import { authmiddleware, admin_profile_info_edit_middleware } from "../middlewares";
 
 const router: Router = express.Router();
 
@@ -115,28 +115,28 @@ router.put(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/assignrequestregionphysician/:region",
+  "/dashboard/requests/actions/assignrequestphysicians",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     assign_request_region_physician(req, res, next);
   }
 );
 router.put(
-  "/dashboard/requests/:state/:confirmation_no/actions/assignrequest",
+  "/dashboard/requests/:confirmation_no/actions/assignrequest",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     assign_request(req, res, next);
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewblockcase",
+  "/dashboard/requests/:confirmation_no/actions/viewblockcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     block_case_for_request_view(req, res, next);
   }
 );
 router.put(
-  "/dashboard/requests/:state/:confirmation_no/actions/blockcase",
+  "/dashboard/requests/:confirmation_no/actions/blockcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     block_case_for_request(req, res, next);
@@ -192,69 +192,70 @@ router.post(
   }
 );
 router.get(
-  "/dashboard/requests/:state/actions/transferrequestregionphysician/:region",
+  "/dashboard/requests/actions/transferrequestphysicians",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    transfer_request_region_physician(req, res, next);
+    transfer_request_region_physicians(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/transferrequest",
+  "/dashboard/requests/:confirmation_no/actions/transferrequest",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     transfer_request(req, res, next);
   }
 );
 router.delete(
-  "/dashboard/requests/:state/:confirmation_no/actions/clearcase",
+  "/dashboard/requests/:confirmation_no/actions/clearcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     clear_case_for_request(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/sendagreement",
+  "/dashboard/requests/:confirmation_no/actions/sendagreement",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     send_agreement(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/updateagreement",
+  "/dashboard/requests/:confirmation_no/actions/updateagreement",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     update_agreement(req, res, next);
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/closecase/viewdetails",
+  "/dashboard/requests/:confirmation_no/actions/closecase/viewdetails",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     close_case_for_request_view_details(req, res, next);
   }
 );
 router.put(
-  "/dashboard/requests/:state/:confirmation_no/actions/closecase",
+  "/dashboard/requests/:confirmation_no/actions/closecase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     close_case_for_request(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/closecase/edit",
+  "/dashboard/requests/:confirmation_no/actions/closecase/edit",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     close_case_for_request_edit(req, res, next);
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/closecase/actions/download/:document_id",
+  "/dashboard/requests/:confirmation_no/actions/closecase/actions/download/:document_id",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     close_case_for_request_actions_download(req, res, next);
   }
 );
-/** Clear case and admin profile are not giving proper outputs */
+/** Total 6 API's as given below */
+/** View Uploads * 4, send_link and close_case->action->download are not giving proper outputs */
 
 /**Admin Request Support */
 router.put(
@@ -283,6 +284,7 @@ router.put(
 router.post(
   "/dashboard/requests/admin_profile/editadmininfo",
   authmiddleware,
+  admin_profile_info_edit_middleware,
   (req: Request, res: Response, next: NextFunction) => {
     admin_profile_admin_info_edit(req, res, next);
   }

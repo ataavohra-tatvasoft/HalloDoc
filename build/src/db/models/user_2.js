@@ -136,6 +136,13 @@ __decorate([
 ], User.prototype, "status", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.STRING,
+        allowNull: true,
+    }),
+    __metadata("design:type", String)
+], User.prototype, "role", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.DATE,
         allowNull: true,
     }),
@@ -207,8 +214,9 @@ __decorate([
 ], User.prototype, "on_call_status", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.STRING,
-        allowNull: true,
+        type: sequelize_typescript_1.DataType.ENUM("yes", "no"),
+        defaultValue: "no",
+        allowNull: false,
     }),
     __metadata("design:type", String)
 ], User.prototype, "scheduled_status", void 0);

@@ -4,7 +4,7 @@ import {
   RegionCreationAttributes,
 } from "../../interfaces/region_model";
 @Table({ timestamps: true, tableName: "region" })
-export default  class Region extends Model<RegionAttributes, RegionCreationAttributes> {
+export default class Region extends Model<RegionAttributes, RegionCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,

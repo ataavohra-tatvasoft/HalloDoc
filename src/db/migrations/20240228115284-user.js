@@ -134,8 +134,9 @@ module.exports = {
         allowNull: true,
       },
       scheduled_status: {
-        type: Sequelize.STRING,
-        allowNull: true,
+        type: Sequelize.ENUM("yes","no"),
+        allowNull: false,
+        defaultValue: "no"
       },
       support_message: {
         type: Sequelize.STRING,

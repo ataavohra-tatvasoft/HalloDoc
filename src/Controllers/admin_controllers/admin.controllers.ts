@@ -196,13 +196,13 @@ export const region_without_thirdparty_API = async (
   next: NextFunction
 ) => {
   try {
-    const regions = Region.findAll({
+    const regions = await Region.findAll({
       attributes: ["region_name"],
     });
     if (!regions) {
       res.status(500).json({ error: "Error fetching region data" });
     }
-    res.status(200).json({ status: "Successfull", regions });
+    return res.status(200).json({ status: "Successfull", regions: regions });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -483,7 +483,7 @@ export const requests_by_request_state = async (
           currentPage: pageNumber,
         });
       }
-      case "conlude": {
+      case "conclude": {
         const formattedResponse: any = {
           status: true,
           data: [],
@@ -1067,10 +1067,6 @@ export const cancel_case_for_request = async (
   try {
     const { confirmation_no } = req.params;
     const { reason, additional_notes } = req.body;
-    const formattedResponse: any = {
-      status: true,
-      data: [],
-    };
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
@@ -1177,24 +1173,41 @@ export const assign_request_region_physician = async (
   next: NextFunction
 ) => {
   try {
-    const { region, state } = req.params;
-    if (state == "new") {
-      const physicians = await User.findAll({
-        where: {
-          type_of_user: "provider",
-          role: "physician",
-          state: region,
-          scheduled_status: "no",
-        },
-        attributes: ["state", "firstname", "lastname"],
-      });
-
+    const { region } = req.query as { region: string };
+    var i = 1;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const physicians = await User.findAll({
+      attributes: ["state", "role", "firstname", "lastname"],
+      where: {
+        type_of_user: "provider",
+        role: "physician",
+        ...(region ? { state: region } : {}),
+        scheduled_status: "no",
+      },
+    });
+    if (!physicians) {
       return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        physicians,
+        status: false,
+        message: "Physician not found !!!",
       });
     }
+    for (const physician of physicians) {
+      const formattedRequest: any = {
+        sr_no: i,
+        firstname: physician.firstname,
+        lastname: physician.lastname,
+      };
+      i++;
+      formattedResponse.data.push(formattedRequest);
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error in fetching Physicians:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1206,37 +1219,46 @@ export const assign_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { firstname, lastname, assign_req_description } = req.body;
-    if (state == "new") {
-      const provider = await User.findOne({
-        where: {
-          type_of_user: "provider",
-          firstname,
-          lastname,
-          role: "physician",
-        },
-      });
-      if (!provider) {
-        return res.status(404).json({ error: "Provider not found" });
-      }
-      const physician_id = provider.user_id;
-      await RequestModel.update(
-        {
-          provider_id: physician_id,
-          assign_req_description,
-        },
-        {
-          where: {
-            confirmation_no: confirmation_no,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
+    const provider = await User.findOne({
+      where: {
+        firstname,
+        lastname,
+        type_of_user: "provider",
+        role: "physician",
+        scheduled_status: "no",
+      },
+    });
+    if (!provider) {
+      return res.status(404).json({ error: "Provider not found" });
     }
+    const physician_id = provider.user_id;
+    await RequestModel.update(
+      {
+        physician_id: physician_id,
+        assign_req_description,
+      },
+      {
+        where: {
+          confirmation_no: confirmation_no,
+        },
+      }
+    );
+    await User.update(
+      {
+        scheduled_status: "yes",
+      },
+      {
+        where: {
+          user_id: physician_id,
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
     console.error("Error in Assigning Request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1248,36 +1270,45 @@ export const block_case_for_request_view = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-    if (state === "new") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-          cancellation_status: "no",
-        },
-
-        include: [
-          {
-            model: User,
-            attributes: ["firstname", "lastname"],
-            where: {
-              type_of_user: "patient",
-            },
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "new",
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: ["firstname", "lastname"],
+          where: {
+            type_of_user: "patient",
           },
-        ],
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        request,
-      });
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+
+    const formattedRequest: any = {
+      patient_data: {
+        user_id: request.Patient.user_id,
+        firstname: request.Patient.firstname,
+        lastname: request.Patient.lastname,
+      },
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1289,37 +1320,36 @@ export const block_case_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { reason_for_block } = req.body;
-    if (state === "new") {
-      const request = await RequestModel.findOne({
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "new",
+        block_status: "no",
+        cancellation_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    await RequestModel.update(
+      {
+        block_status: "yes",
+        block_status_reason: reason_for_block,
+      },
+      {
         where: {
           confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-          cancellation_status: "no",
+          request_state: "new",
         },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
       }
-      await RequestModel.update(
-        {
-          block_status: "yes",
-          block_status_reason: reason_for_block,
-        },
-        {
-          where: {
-            confirmation_no: confirmation_no,
-            request_state: state,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
-    }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1568,11 +1598,15 @@ export const professions_for_send_orders = async (
   next: NextFunction
 ) => {
   try {
-    const professions = Profession.findAll();
+    const professions = await Profession.findAll({
+      attributes: ["profession_name"],
+    });
     if (!professions) {
       res.status(500).json({ error: "Error fetching region data" });
     }
-    res.status(200).json({ status: "Successfull", professions });
+    return res
+      .status(200)
+      .json({ status: "Successfull", professions: professions });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -1593,7 +1627,7 @@ export const send_orders_for_request = async (
       orderDetails,
       numberOfRefill,
     } = req.body;
-    if (state === "active" || "conclude" || "toclose") {
+    if (state == "active" || "conclude" || "toclose") {
       const request = await RequestModel.findOne({
         where: {
           confirmation_no: confirmation_no,
@@ -1667,30 +1701,47 @@ export const send_orders_for_request = async (
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // };
-export const transfer_request_region_physician = async (
+export const transfer_request_region_physicians = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { region, state } = req.params;
-    if (state == " pending") {
-      const physicians = await User.findAll({
-        where: {
-          type_of_user: "provider",
-          state: region,
-          role: "physician",
-          scheduled_status: "no",
-        },
-        attributes: ["state", " firstname", "lastname"],
-      });
-
+    const { region } = req.query as { region: string };
+    var i = 1;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const physicians = await User.findAll({
+      attributes: ["state", "role", "firstname", "lastname"],
+      where: {
+        type_of_user: "provider",
+        role: "physician",
+        ...(region ? { state: region } : {}),
+        scheduled_status: "no",
+      },
+    });
+    if (!physicians) {
       return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        physicians,
+        status: false,
+        message: "Physician not found !!!",
       });
     }
+    for (const physician of physicians) {
+      const formattedRequest: any = {
+        sr_no: i,
+        firstname: physician.firstname,
+        lastname: physician.lastname,
+      };
+      i++;
+      formattedResponse.data.push(formattedRequest);
+    }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error in fetching Physicians:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1702,44 +1753,54 @@ export const transfer_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-    const { physician_name, description } = req.body;
-    if (state == "pending") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no,
-          block_status: "no",
-          cancellation_status: "no",
-          close_case_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      await Notes.create({
-        requestId: request.request_id,
-        physician_name,
-        description,
-        typeOfNote: "transfer_notes",
-      });
-      await RequestModel.update(
-        {
-          transfer_request_status: "pending",
-        },
-        {
-          where: {
-            request_id: request.request_id,
-            request_state: state,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
+    const { confirmation_no } = req.params;
+    const { firstname, lastname, description } = req.body;
+    const provider = await User.findOne({
+      where: {
+        firstname,
+        lastname,
+        type_of_user: "provider",
+        role: "physician",
+      },
+    });
+    if (!provider) {
+      return res.status(404).json({ error: "Provider not found" });
     }
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        block_status: "no",
+        cancellation_status: "no",
+        close_case_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    // const physician_id = provider.user_id;
+    await RequestModel.update(
+      {
+        // physician_id: physician_id,
+        transfer_request_status: "pending",
+      },
+      {
+        where: {
+          confirmation_no: confirmation_no,
+        },
+      }
+    );
+    await Notes.create({
+      requestId: request.request_id,
+      physician_name: firstname + " " + lastname,
+      description,
+      typeOfNote: "transfer_notes",
+    });
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
-    console.error("Error in Sending Order:", error);
+    console.error("Error in transfering request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -1749,41 +1810,44 @@ export const clear_case_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no } = req.params;
+    const { confirmation_no } = req.params;
     try {
-      if (state == "pending" || "toclose") {
-        const request = await RequestModel.findOne({
-          where: { confirmation_no },
-          attributes: ["confirmation_no"],
-        });
-        if (!request) {
-          return res.status(404).json({ error: "Request not found" });
-        }
-        await Notes.destroy({
-          where: {
-            requestId: request.request_id,
-          },
-        });
-        await Order.destroy({
-          where: {
-            requestId: request.request_id,
-          },
-        });
-        await RequestModel.destroy({
-          where: {
-            confirmation_no: confirmation_no,
-          },
-        });
-        return res.status(200).json({
-          status: true,
-          message: "Successfull !!!",
-        });
+      const request = await RequestModel.findOne({
+        where: { confirmation_no },
+        attributes: ["confirmation_no", "request_id"],
+      });
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
       }
+      await Notes.destroy({
+        where: {
+          requestId: request.request_id,
+        },
+      });
+      await Order.destroy({
+        where: {
+          requestId: request.request_id,
+        },
+      });
+      await RequestModel.destroy({
+        where: {
+          confirmation_no: confirmation_no,
+        },
+      });
+      await Documents.destroy({
+        where: {
+          request_id: request.request_id,
+        },
+      });
+      return res.status(200).json({
+        status: true,
+        message: "Successfull !!!",
+      });
     } catch {
       res.status(404).json({ error: "Invalid State !!!" });
     }
   } catch (error) {
-    console.error("Error fetching request:", error);
+    console.error("Error deleting request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -1793,10 +1857,15 @@ export const send_agreement = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { mobile_no, email } = req.body;
     const user = await User.findOne({
-      where: { email, mobile_no, type_of_user: "patient" },
+      where: {
+        email: email,
+        mobile_no: mobile_no,
+        type_of_user: "patient",
+      },
+      attributes: ["user_id", "email", "mobile_no"],
     });
     if (!user) {
       return res.status(400).json({
@@ -1804,86 +1873,82 @@ export const send_agreement = async (
         errormessage: statusCodes[400],
       });
     }
-    if (state == " pending") {
-      const request = await RequestModel.findOne({
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        patient_id: user.user_id,
+        block_status: "no",
+        cancellation_status: "no",
+        close_case_status: "no",
+      },
+      include: {
+        as: "Patient",
+        model: User,
+        attributes: ["email", "mobile_no"],
         where: {
-          confirmation_no,
-          block_status: "no",
-          cancellation_status: "no",
-          close_case_status: "no",
+          type_of_user: "patient",
         },
-        include: {
-          model: User,
-          attributes: ["email", "mobile_number"],
-          where: {
-            type_of_user: "patient",
-          },
-        },
+      },
+    });
+    if (!request) {
+      return res.status(400).json({
+        message: "Invalid request case",
+        errormessage: statusCodes[400],
       });
-      if (!request) {
-        return res.status(400).json({
-          message: "Invalid request case",
-          errormessage: statusCodes[400],
-        });
-      }
+    }
+    // const resetToken = uuid();
+    const resetToken = crypto.createHash("sha256").update(email).digest("hex");
 
-      // const resetToken = uuid();
-      const resetToken = crypto
-        .createHash("sha256")
-        .update(email)
-        .digest("hex");
-
-      const resetUrl = `http://localhost:7000/admin/dashboard/requests/:state/:confirmation_no/actions/updateagreement`;
-      const mailContent = `
+    const resetUrl = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
+    const mailContent = `
         <html>
         <form action = "${resetUrl}" method="POST"> 
         <p>Tell us that you accept the agreement or not:</p>
-        <p>Your token is: ${resetToken}</p>
         <br>
         <br>
-        <label for="ResetToken">Token:</label>
-        <input type="text" id="ResetToken" name="ResetToken" required>
+        <p>Your token is: </p>
+        <p>${resetToken} </p>
         <br>
         <br>
         <label for="agreement_status">Agreement_Status:</label>
-        <select id="agreement_status">
+        <br>
+        <select id="agreement_status" name= "agreement_status">
         <option value="accepted">Accepted</option>
         <option value="rejected">Rejected</option>
-      </select>
-      <br>
-      <br>
+        </select>
+        <br>
+        <br>
         <button type = "submit">Submit Response</button>
         </form>
         </html>
       `;
 
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: Number(process.env.EMAIL_PORT),
-        secure: false,
-        debug: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-      const info = await transporter.sendMail({
-        from: "vohraatta@gmail.com",
-        to: email,
-        subject: "Agreement",
-        html: mailContent,
-      });
-      if (!info) {
-        res.status(500).json({
-          message: "Error while sending agreement to your mail",
-          errormessage: statusCodes[200],
-        });
-      }
-      res.status(200).json({
-        message: "Agreement sent to your email",
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
+      debug: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    const info = await transporter.sendMail({
+      from: "vohraatta@gmail.com",
+      to: email,
+      subject: "Agreement",
+      html: mailContent,
+    });
+    if (!info) {
+      res.status(500).json({
+        message: "Error while sending agreement to your mail",
         errormessage: statusCodes[200],
       });
     }
+    res.status(200).json({
+      message: "Agreement sent to your email",
+      errormessage: statusCodes[200],
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -1898,12 +1963,10 @@ export const update_agreement = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no } = req.params;
+    const { confirmation_no } = req.params;
     const { agreement_status } = req.body;
-
     const request = await RequestModel.findOne({
       where: {
-        request_state: state,
         confirmation_no,
       },
     });
@@ -1914,7 +1977,6 @@ export const update_agreement = async (
       { agreement_status },
       {
         where: {
-          request_state: state,
           confirmation_no,
         },
       }
@@ -1940,42 +2002,69 @@ export const close_case_for_request_view_details = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-
-    if (state === "toclose") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          close_case_status: "no",
-          block_status: "no",
-          cancellation_status: "no",
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "toclose",
+        close_case_status: "no",
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: [
+            "user_id",
+            "firstname",
+            "lastname",
+            "dob",
+            "mobile_no",
+            "email",
+          ],
         },
-        include: [
-          {
-            model: User,
-            attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
-          },
-          {
-            model: Documents,
-            attributes: [
-              "request_id",
-              "document_id",
-              "document_path",
-              "createdAt",
-            ],
-          },
-        ],
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        request,
-      });
+        {
+          model: Documents,
+          attributes: [
+            "request_id",
+            "document_id",
+            "document_path",
+            "createdAt",
+          ],
+        },
+      ],
+      attributes: ["request_id", "confirmation_no"],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      confirmation_no: request.confirmation_no,
+      patient_data: {
+        user_id: request.Patient.user_id,
+        first_name: request.Patient.firstname,
+        last_name: request.Patient.lastname,
+        DOB: request.Patient.dob.toISOString().split("T")[0],
+        mobile_no: request.Patient.mobile_no,
+        email: request.Patient.email,
+        documents: request.Documents?.map((document) => ({
+          document_id: document.document_id,
+          document_path: document.document_path,
+          upload_date: document.createdAt.toISOString().split("T")[0],
+        })),
+      },
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1987,45 +2076,43 @@ export const close_case_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-
-    if (state == "toclose") {
-      const request = await RequestModel.findOne({
+    const { confirmation_no } = req.params;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "toclose",
+        close_case_status: "no",
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    await RequestModel.update(
+      {
+        close_case_status: "yes",
+      },
+      {
         where: {
           confirmation_no: confirmation_no,
-          request_state: state,
-          close_case_status: "no",
-          block_status: "no",
-          cancellation_status: "no",
+          request_state: "toclose",
         },
-        include: [
-          {
-            model: User,
-            attributes: ["firstname", "lastname", "dob", "mobile_no", "email"],
-          },
-        ],
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
       }
-      await RequestModel.update(
-        {
-          close_case_status: "yes",
-        },
-        {
-          where: {
-            confirmation_no: confirmation_no,
-            request_state: state,
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
-    }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
-    console.error("Error fetching request:", error);
+    console.error("Error closing request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -2035,45 +2122,43 @@ export const close_case_for_request_edit = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { firstname, lastname, dob, mobile_no, email } = req.body;
-    if (state == "toclose") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          close_case_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      const patient_data = await User.findOne({
-        where: { user_id: request.patient_id },
-      });
-      if (!patient_data) {
-        return res.status(404).json({ error: "Patient not found" });
-      }
-      await User.update(
-        {
-          firstname,
-          lastname,
-          dob,
-          mobile_no,
-          email,
-        },
-        {
-          where: {
-            user_id: request.patient_id,
-            type_of_user: "patient",
-          },
-        }
-      );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-      });
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "toclose",
+        close_case_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+    const patient_data = await User.findOne({
+      where: { user_id: request.patient_id },
+    });
+    if (!patient_data) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+    await User.update(
+      {
+        firstname,
+        lastname,
+        dob,
+        mobile_no,
+        email,
+      },
+      {
+        where: {
+          user_id: request.patient_id,
+          type_of_user: "patient",
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -2085,13 +2170,11 @@ export const close_case_for_request_actions_download = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no, document_id } = req.params;
-
-    // Find the request and associated document
+    const { confirmation_no, document_id } = req.params;
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        request_state: state,
+        request_state: "toclose",
         block_status: "no",
         cancellation_status: "no",
       },
@@ -2164,6 +2247,7 @@ export const request_support = async (
         where: {
           scheduled_status: "no",
           type_of_user: "provider",
+          role: "physician",
         },
       }
     );
@@ -2190,16 +2274,20 @@ export const admin_profile_view = async (
       token,
       process.env.JWT_SECRET_KEY as string
     );
-
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
     const admin_id = verifiedToken.user_id;
     const profile = await User.findOne({
       where: {
         user_id: admin_id,
       },
       attributes: [
+        "user_id",
         // "username",
-        "status",
         "role",
+        "status",
         "firstname",
         "lastname",
         "email",
@@ -2215,7 +2303,42 @@ export const admin_profile_view = async (
     if (!profile) {
       return res.status(404).json({ error: "Request not found" });
     }
-    res.status(200).json({ profile });
+    const regions = await Region.findAll({
+      attributes: ["region_name"],
+    });
+    if (!regions) {
+      res.status(500).json({ error: "Error fetching region data" });
+    };
+    const formattedRequest: any = {
+      user_id: profile.user_id,
+      account_information: {
+        username: "dummy",
+        status: profile.status,
+        role: profile.role,
+      },
+      administrator_information: {
+        firstname: profile.firstname,
+        lastname: profile.lastname,
+        email: profile.email,
+        mobile_no: profile.mobile_no,
+        regions: regions?.map((region) => ({
+            region_name: region.region_name
+          })),       
+      },
+      mailing_billing_information: {
+        address_1: profile.address_1,
+        address_2: profile.address_2,
+        city: profile.city,
+        state: profile.state,
+        zip: profile.zip,
+        billing_mobile_no: profile.billing_mobile_no,
+      },
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching Admin Profile:", error);
     res.status(500).json({ error: "Internal Server Error" });

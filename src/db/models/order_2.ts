@@ -20,12 +20,6 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   })
   requestId: number;
 
-  @BelongsTo(() => Request, {
-    foreignKey: "requestId",
-    targetKey: "request_id",
-  })
-  request?: Request; // Optional association for Request
-
   @Column({
     type: DataType.ENUM("active", "conclude", "toclose"),
     allowNull: false,
@@ -53,7 +47,6 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
   })
   email: string;
 
@@ -81,6 +74,5 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
     targetKey: "request_id",
   })
   Request: Request;
-
   // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

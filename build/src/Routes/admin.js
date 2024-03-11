@@ -37,16 +37,16 @@ router.get("/dashboard/requests/:confirmation_no/actions/viewcancelcase", middle
 router.put("/dashboard/requests/:confirmation_no/actions/cancelcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.cancel_case_for_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/assignrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/actions/assignrequestphysicians", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.assign_request_region_physician)(req, res, next);
 });
-router.put("/dashboard/requests/:state/:confirmation_no/actions/assignrequest", middlewares_1.authmiddleware, (req, res, next) => {
+router.put("/dashboard/requests/:confirmation_no/actions/assignrequest", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.assign_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/viewblockcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/viewblockcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.block_case_for_request_view)(req, res, next);
 });
-router.put("/dashboard/requests/:state/:confirmation_no/actions/blockcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.put("/dashboard/requests/:confirmation_no/actions/blockcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.block_case_for_request)(req, res, next);
 });
 router.get("/dashboard/requests/:state/:confirmation_no/actions/viewuploads/viewdata", middlewares_1.authmiddleware, (req, res, next) => {
@@ -70,34 +70,35 @@ router.get("/dashboard/requests/actions/sendorders/professions", middlewares_1.a
 router.post("/dashboard/requests/:state/:confirmation_no/actions/sendorders", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.send_orders_for_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/actions/transferrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {
-    (0, controllers_1.transfer_request_region_physician)(req, res, next);
+router.get("/dashboard/requests/actions/transferrequestphysicians", middlewares_1.authmiddleware, (req, res, next) => {
+    (0, controllers_1.transfer_request_region_physicians)(req, res, next);
 });
-router.post("/dashboard/requests/:state/:confirmation_no/actions/transferrequest", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/:confirmation_no/actions/transferrequest", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.transfer_request)(req, res, next);
 });
-router.delete("/dashboard/requests/:state/:confirmation_no/actions/clearcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.delete("/dashboard/requests/:confirmation_no/actions/clearcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.clear_case_for_request)(req, res, next);
 });
-router.post("/dashboard/requests/:state/:confirmation_no/actions/sendagreement", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/:confirmation_no/actions/sendagreement", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.send_agreement)(req, res, next);
 });
-router.post("/dashboard/requests/:state/:confirmation_no/actions/updateagreement", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/:confirmation_no/actions/updateagreement", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.update_agreement)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/closecase/viewdetails", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/closecase/viewdetails", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.close_case_for_request_view_details)(req, res, next);
 });
-router.put("/dashboard/requests/:state/:confirmation_no/actions/closecase", middlewares_1.authmiddleware, (req, res, next) => {
+router.put("/dashboard/requests/:confirmation_no/actions/closecase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.close_case_for_request)(req, res, next);
 });
-router.post("/dashboard/requests/:state/:confirmation_no/actions/closecase/edit", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/:confirmation_no/actions/closecase/edit", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.close_case_for_request_edit)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/closecase/actions/download/:document_id", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/closecase/actions/download/:document_id", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.close_case_for_request_actions_download)(req, res, next);
 });
-/** Clear case and admin profile are not giving proper outputs */
+/** Total 6 API's as given below */
+/** View Uploads * 4, send_link and close_case->action->download are not giving proper outputs */
 /**Admin Request Support */
 router.put("/dashboard/requests/requestsupport", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.request_support)(req, res, next);
@@ -109,7 +110,7 @@ router.get("/dashboard/requests/admin_profile/view", middlewares_1.authmiddlewar
 router.put("/dashboard/requests/admin_profile/resetpassword", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.admin_profile_reset_password)(req, res, next);
 });
-router.post("/dashboard/requests/admin_profile/editadmininfo", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/admin_profile/editadmininfo", middlewares_1.authmiddleware, middlewares_1.admin_profile_info_edit_middleware, (req, res, next) => {
     (0, controllers_1.admin_profile_admin_info_edit)(req, res, next);
 });
 router.post("/dashboard/requests/admin_profile/editbillingfinfo", middlewares_1.authmiddleware, (req, res, next) => {
