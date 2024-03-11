@@ -769,7 +769,7 @@ export const requests_by_request_state = async (
         }
 
         return res.status(200).json({
-          status:true,
+          status: true,
           ...formattedResponse,
           totalPages: Math.ceil(requests.count / limit),
           currentPage: pageNumber,
@@ -795,52 +795,77 @@ export const view_case_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-    if (
-      state === "new" ||
-      "active" ||
-      " pending" ||
-      "conclude" ||
-      "toclose" ||
-      "unpaid"
-    ) {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          block_status: "no",
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        block_status: "no",
+      },
+      attributes: ["request_id", "request_state", "confirmation_no"],
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: [
+            "firstname",
+            "lastname",
+            "dob",
+            "mobile_no",
+            "email",
+            "state",
+            "business_name",
+            "address_1",
+          ],
+          where: {
+            type_of_user: "patient",
+          },
         },
-        attributes: ["request_id", "request_state", "confirmation_no"],
-        include: [
-          {
-            model: User,
-            attributes: [
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "email",
-              "state",
-              "business_name",
-              "address_1",
-            ],
-            where: {
-              type_of_user: "patient",
-            },
+        {
+          model: Notes,
+          attributes: ["requestId", "noteId", "description", "typeOfNote"],
+          where: {
+            typeOfNote: "patient_notes",
           },
-          {
-            model: Notes,
-            attributes: ["requestId", "noteId", "description", "typeOfNote"],
-            // where: {
-            //   typeOfNote: "patient_notes",
-            // },
-          },
-        ],
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      res.json({ request });
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+      // requested_date: request.requested_date.toISOString().split("T")[0],
+      patient_data: {
+        user_id: request.Patient.user_id,
+        patient_notes: request.Notes?.map((note) => ({
+          note_id: note.noteId,
+          type_of_note: note.typeOfNote,
+          description: note.description,
+        })),
+        first_name: request.Patient.firstname,
+        last_name: request.Patient.lastname,
+        DOB: request.Patient.dob.toISOString().split("T")[0],
+        mobile_no: request.Patient.mobile_no,
+        email: request.Patient.email,
+        location_information: {
+          region: request.Patient.state,
+          business_name: request.Patient.business_name,
+          room: request.Patient.address_1 + " " + request.Patient.address_2,
+        },
+      },
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
