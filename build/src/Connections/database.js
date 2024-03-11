@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import { Sequelize } from "sequelize";
 const sequelize_typescript_1 = require("sequelize-typescript");
 const dotenv_1 = __importDefault(require("dotenv"));
 const user_2_1 = __importDefault(require("../db/models/user_2"));
@@ -25,7 +24,7 @@ const profession_2_1 = __importDefault(require("../db/models/profession_2"));
 const region_2_1 = __importDefault(require("../db/models/region_2"));
 dotenv_1.default.config({ path: "config.env" });
 // const sequelize = new Sequelize(
-//   "hallodoc",
+//   "hallodoc_ngrok",
 //   process.env.DB_USER as string,
 //   process.env.DB_PASS,
 //   {
@@ -37,11 +36,7 @@ dotenv_1.default.config({ path: "config.env" });
 //   }
 // );
 const sequelize = new sequelize_typescript_1.Sequelize({
-<<<<<<< HEAD
     database: "hallodoc_ngrok",
-=======
-    database: "hallodoc",
->>>>>>> 292bceb8af76c63cc6c7c7e927e3be541c792837
     host: "localhost",
     dialect: "mysql",
     username: process.env.DB_USER,
@@ -85,7 +80,7 @@ function connectToDatabase() {
         }
         catch (error) {
             console.error("Error connecting to database:", error);
-            process.exit(1);
+            process.exit(1); // Exit the process on failure
         }
     });
 }
