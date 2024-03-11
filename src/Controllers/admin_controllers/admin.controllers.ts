@@ -277,6 +277,8 @@ export const requests_by_request_state = async (
 
         const { count, rows: requests } = await RequestModel.findAndCountAll({
           where: {
+            cancellation_status: "no",
+            block_status: "no",
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -366,6 +368,8 @@ export const requests_by_request_state = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
+            cancellation_status: "no",
+            block_status: "no",
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -479,13 +483,15 @@ export const requests_by_request_state = async (
           currentPage: pageNumber,
         });
       }
-      case "conslude": {
+      case "conlude": {
         const formattedResponse: any = {
           status: true,
           data: [],
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
+            cancellation_status: "no",
+            block_status: "no",
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -585,6 +591,8 @@ export const requests_by_request_state = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
+            cancellation_status: "no",
+            block_status: "no",
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -692,6 +700,8 @@ export const requests_by_request_state = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
+            cancellation_status: "no",
+            block_status: "no",
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -804,6 +814,7 @@ export const view_case_for_request = async (
       where: {
         confirmation_no: confirmation_no,
         block_status: "no",
+        cancellation_status: "no",
       },
       attributes: ["request_id", "request_state", "confirmation_no"],
       include: [
@@ -886,6 +897,7 @@ export const view_notes_for_request = async (
       where: {
         confirmation_no: confirmation_no,
         block_status: "no",
+        cancellation_status: "no",
       },
     });
     if (!request) {
@@ -958,6 +970,7 @@ export const save_view_notes_for_request = async (
       where: {
         confirmation_no: confirmation_no,
         block_status: "no",
+        cancellation_status: "no",
       },
     });
     if (!request) {
@@ -1002,36 +1015,45 @@ export const cancel_case_for_request_view_data = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
-    if (state == "new") {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-          cancellation_status: "no",
-        },
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "new",
+        block_status: "no",
+        cancellation_status: "no",
+      },
 
-        include: [
-          {
-            model: User,
-            attributes: ["firstname", "lastname"],
-            where: {
-              type_of_user: "patient",
-            },
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: ["firstname", "lastname"],
+          where: {
+            type_of_user: "patient",
           },
-        ],
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        request,
-      });
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+
+    const formattedRequest: any = {
+      patient_data: {
+        first_name: request.Patient.firstname,
+        last_name: request.Patient.lastname,
+      },
+    };
+
+    formattedResponse.data.push(formattedRequest);
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1043,64 +1065,66 @@ export const cancel_case_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { reason, additional_notes } = req.body;
-    if (state == "new") {
-      const request = await RequestModel.findOne({
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_state: "new",
+        block_status: "no",
+        cancellation_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    await RequestModel.update(
+      {
+        cancellation_status: "yes",
+      },
+      {
         where: {
+          request_id: request.request_id,
           confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-          cancellation_status: "no",
         },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
       }
-      await RequestModel.update(
+    );
+    const notes_status = await Notes.findOne({
+      where: {
+        requestId: request.request_id,
+        typeOfNote: "admin_cancellation_notes",
+      },
+    });
+    if (notes_status) {
+      Notes.update(
         {
-          cancellation_status: "yes",
+          description: additional_notes,
+          reason: reason,
         },
         {
           where: {
-            request_id: request.request_id,
-            request_state: state,
+            requestId: request.request_id,
+            typeOfNote: "admin_cancellation_notes",
           },
         }
       );
-      const find_note = await Notes.findOne({
-        where: {
-          requestId: request.request_id,
-          typeOfNote: "admin_cancellation_notes",
-        },
-      });
-      if (find_note) {
-        Notes.update(
-          {
-            description: additional_notes,
-            reason: reason,
-          },
-          {
-            where: {
-              requestId: request.request_id,
-              typeOfNote: "admin_cancellation_notes",
-            },
-          }
-        );
-      } else {
-        Notes.create({
-          requestId: request.request_id,
-          typeOfNote: "admin_cancellation_notes",
-          description: additional_notes,
-          reason: reason,
-        });
-      }
-
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
+    } else {
+      Notes.create({
+        requestId: request.request_id,
+        typeOfNote: "admin_cancellation_notes",
+        description: additional_notes,
+        reason: reason,
       });
     }
+
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });

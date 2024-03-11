@@ -31,10 +31,10 @@ router.get("/dashboard/requests/:confirmation_no/actions/viewnotes", middlewares
 router.post("/dashboard/requests/:confirmation_no/actions/viewnotes", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.save_view_notes_for_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/viewcancelcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/viewcancelcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.cancel_case_for_request_view_data)(req, res, next);
 });
-router.put("/dashboard/requests/:state/:confirmation_no/actions/cancelcase", middlewares_1.authmiddleware, (req, res, next) => {
+router.put("/dashboard/requests/:confirmation_no/actions/cancelcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.cancel_case_for_request)(req, res, next);
 });
 router.get("/dashboard/requests/:state/:confirmation_no/actions/assignrequestregionphysician/:region", middlewares_1.authmiddleware, (req, res, next) => {

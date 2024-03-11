@@ -101,14 +101,14 @@ router.post(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewcancelcase",
+  "/dashboard/requests/:confirmation_no/actions/viewcancelcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     cancel_case_for_request_view_data(req, res, next);
   }
 );
 router.put(
-  "/dashboard/requests/:state/:confirmation_no/actions/cancelcase",
+  "/dashboard/requests/:confirmation_no/actions/cancelcase",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     cancel_case_for_request(req, res, next);

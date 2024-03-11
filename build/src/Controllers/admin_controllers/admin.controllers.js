@@ -232,7 +232,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     data: [],
                 };
                 const { count, rows: requests } = yield request_2_1.default.findAndCountAll({
-                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    where: Object.assign({ cancellation_status: "no", block_status: "no", request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_id",
                         "request_state",
@@ -310,7 +310,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     data: [],
                 };
                 const requests = yield request_2_1.default.findAndCountAll({
-                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    where: Object.assign({ cancellation_status: "no", block_status: "no", request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_id",
                         "request_state",
@@ -417,7 +417,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     data: [],
                 };
                 const requests = yield request_2_1.default.findAndCountAll({
-                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    where: Object.assign({ cancellation_status: "no", block_status: "no", request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_id",
                         "request_state",
@@ -504,7 +504,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     data: [],
                 };
                 const requests = yield request_2_1.default.findAndCountAll({
-                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    where: Object.assign({ cancellation_status: "no", block_status: "no", request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_id",
                         "request_state",
@@ -599,7 +599,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                     data: [],
                 };
                 const requests = yield request_2_1.default.findAndCountAll({
-                    where: Object.assign({ request_state: state }, (requestor ? { requested_by: requestor } : {})),
+                    where: Object.assign({ cancellation_status: "no", block_status: "no", request_state: state }, (requestor ? { requested_by: requestor } : {})),
                     attributes: [
                         "request_id",
                         "request_state",
@@ -698,6 +698,7 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
             where: {
                 confirmation_no: confirmation_no,
                 block_status: "no",
+                cancellation_status: "no",
             },
             attributes: ["request_id", "request_state", "confirmation_no"],
             include: [
@@ -774,6 +775,7 @@ const view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
             where: {
                 confirmation_no: confirmation_no,
                 block_status: "no",
+                cancellation_status: "no",
             },
         });
         if (!request) {
@@ -841,6 +843,7 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
             where: {
                 confirmation_no: confirmation_no,
                 block_status: "no",
+                cancellation_status: "no",
             },
         });
         if (!request) {
@@ -881,34 +884,40 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
 exports.save_view_notes_for_request = save_view_notes_for_request;
 const cancel_case_for_request_view_data = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
-        if (state == "new") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                    cancellation_status: "no",
-                },
-                include: [
-                    {
-                        model: user_2_1.default,
-                        attributes: ["firstname", "lastname"],
-                        where: {
-                            type_of_user: "patient",
-                        },
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "new",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+            include: [
+                {
+                    as: "Patient",
+                    model: user_2_1.default,
+                    attributes: ["firstname", "lastname"],
+                    where: {
+                        type_of_user: "patient",
                     },
-                ],
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                request,
-            });
+                },
+            ],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const formattedRequest = {
+            patient_data: {
+                first_name: request.Patient.firstname,
+                last_name: request.Patient.lastname,
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -918,58 +927,60 @@ const cancel_case_for_request_view_data = (req, res, next) => __awaiter(void 0, 
 exports.cancel_case_for_request_view_data = cancel_case_for_request_view_data;
 const cancel_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { reason, additional_notes } = req.body;
-        if (state == "new") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                    cancellation_status: "no",
-                },
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            yield request_2_1.default.update({
-                cancellation_status: "yes",
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                request_state: "new",
+                block_status: "no",
+                cancellation_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
+        }
+        yield request_2_1.default.update({
+            cancellation_status: "yes",
+        }, {
+            where: {
+                request_id: request.request_id,
+                confirmation_no: confirmation_no,
+            },
+        });
+        const notes_status = yield notes_2_1.default.findOne({
+            where: {
+                requestId: request.request_id,
+                typeOfNote: "admin_cancellation_notes",
+            },
+        });
+        if (notes_status) {
+            notes_2_1.default.update({
+                description: additional_notes,
+                reason: reason,
             }, {
                 where: {
-                    request_id: request.request_id,
-                    request_state: state,
-                },
-            });
-            const find_note = yield notes_2_1.default.findOne({
-                where: {
                     requestId: request.request_id,
                     typeOfNote: "admin_cancellation_notes",
                 },
-            });
-            if (find_note) {
-                notes_2_1.default.update({
-                    description: additional_notes,
-                    reason: reason,
-                }, {
-                    where: {
-                        requestId: request.request_id,
-                        typeOfNote: "admin_cancellation_notes",
-                    },
-                });
-            }
-            else {
-                notes_2_1.default.create({
-                    requestId: request.request_id,
-                    typeOfNote: "admin_cancellation_notes",
-                    description: additional_notes,
-                    reason: reason,
-                });
-            }
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
             });
         }
+        else {
+            notes_2_1.default.create({
+                requestId: request.request_id,
+                typeOfNote: "admin_cancellation_notes",
+                description: additional_notes,
+                reason: reason,
+            });
+        }
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
         console.error("Error fetching request:", error);
