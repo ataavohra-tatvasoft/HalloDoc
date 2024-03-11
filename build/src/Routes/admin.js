@@ -25,10 +25,10 @@ router.get("/dashboard/requests", middlewares_1.authmiddleware, (req, res, next)
 router.get("/dashboard/requests/:confirmation_no/actions/viewcase", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.view_case_for_request)(req, res, next);
 });
-router.get("/dashboard/requests/:state/:confirmation_no/actions/viewnotes/:notes_for", middlewares_1.authmiddleware, (req, res, next) => {
+router.get("/dashboard/requests/:confirmation_no/actions/viewnotes", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.view_notes_for_request)(req, res, next);
 });
-router.post("/dashboard/requests/:state/:confirmation_no/actions/viewnotes", middlewares_1.authmiddleware, (req, res, next) => {
+router.post("/dashboard/requests/:confirmation_no/actions/viewnotes", middlewares_1.authmiddleware, (req, res, next) => {
     (0, controllers_1.save_view_notes_for_request)(req, res, next);
 });
 router.get("/dashboard/requests/:state/:confirmation_no/actions/viewcancelcase", middlewares_1.authmiddleware, (req, res, next) => {

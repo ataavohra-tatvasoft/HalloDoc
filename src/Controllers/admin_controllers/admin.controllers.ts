@@ -877,38 +877,69 @@ export const view_notes_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state, notes_for } = req.params;
-    if (
-      state === "new" ||
-      "active" ||
-      "pending" ||
-      "conclude" ||
-      "toclose" ||
-      "unpaid"
-    ) {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      const list = await Notes.findAll({
-        where: {
-          requestId: request.request_id,
-          typeOfNote: notes_for,
-        },
-        attributes: ["description"],
-      });
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        list,
-      });
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        block_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
     }
+    const transfer_notes_list = await Notes.findAll({
+      where: {
+        requestId: request.request_id,
+        typeOfNote: "transfer_notes",
+      },
+      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+    });
+    const physician_notes_list = await Notes.findAll({
+      where: {
+        requestId: request.request_id,
+        typeOfNote: "physician_notes",
+      },
+      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+    });
+    const admin_notes_list = await Notes.findAll({
+      where: {
+        requestId: request.request_id,
+        typeOfNote: "admin_notes",
+      },
+      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+    });
+    const formattedRequest: any = {
+      transfer_notes: {
+        notes: transfer_notes_list?.map((note) => ({
+          note_id: note.noteId,
+          type_of_note: note.typeOfNote,
+          description: note.description,
+        })),
+      },
+      physician_notes: {
+        notes: physician_notes_list?.map((note) => ({
+          note_id: note.noteId,
+          type_of_note: note.typeOfNote,
+          description: note.description,
+        })),
+      },
+      admin_notes: {
+        notes: admin_notes_list?.map((note) => ({
+          note_id: note.noteId,
+          type_of_note: note.typeOfNote,
+          description: note.description,
+        })),
+      },
+    };
+
+    formattedResponse.data.push(formattedRequest);
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -920,27 +951,26 @@ export const save_view_notes_for_request = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no, state } = req.params;
+    const { confirmation_no } = req.params;
     const { new_note } = req.body;
-    if (
-      state === "new" ||
-      "active" ||
-      " pending" ||
-      "conclude" ||
-      "toclose" ||
-      "unpaid"
-    ) {
-      const request = await RequestModel.findOne({
-        where: {
-          confirmation_no: confirmation_no,
-          request_state: state,
-          block_status: "no",
-        },
-      });
-      if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-      }
-      const list = await Notes.update(
+    var status;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        block_status: "no",
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const notes_status = await Notes.findOne({
+      where: {
+        requestId: request.request_id,
+        typeOfNote: "admin_notes",
+      },
+    });
+    if (notes_status) {
+      status = await Notes.update(
         {
           description: new_note,
         },
@@ -951,12 +981,17 @@ export const save_view_notes_for_request = async (
           },
         }
       );
-      return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
-        list,
+    } else {
+      status = await Notes.create({
+        requestId: request.request_id,
+        typeOfNote: "admin_notes",
+        description: new_note,
       });
     }
+    return res.status(200).json({
+      status: true,
+      message: "Successfull !!!",
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }

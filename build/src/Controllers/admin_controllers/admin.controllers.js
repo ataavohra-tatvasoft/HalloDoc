@@ -765,36 +765,66 @@ const view_case_for_request = (req, res, next) => __awaiter(void 0, void 0, void
 exports.view_case_for_request = view_case_for_request;
 const view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state, notes_for } = req.params;
-        if (state === "new" ||
-            "active" ||
-            "pending" ||
-            "conclude" ||
-            "toclose" ||
-            "unpaid") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                },
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            const list = yield notes_2_1.default.findAll({
-                where: {
-                    requestId: request.request_id,
-                    typeOfNote: notes_for,
-                },
-                attributes: ["description"],
-            });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                list,
-            });
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                block_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
         }
+        const transfer_notes_list = yield notes_2_1.default.findAll({
+            where: {
+                requestId: request.request_id,
+                typeOfNote: "transfer_notes",
+            },
+            attributes: ["requestId", "noteId", "description", "typeOfNote"],
+        });
+        const physician_notes_list = yield notes_2_1.default.findAll({
+            where: {
+                requestId: request.request_id,
+                typeOfNote: "physician_notes",
+            },
+            attributes: ["requestId", "noteId", "description", "typeOfNote"],
+        });
+        const admin_notes_list = yield notes_2_1.default.findAll({
+            where: {
+                requestId: request.request_id,
+                typeOfNote: "admin_notes",
+            },
+            attributes: ["requestId", "noteId", "description", "typeOfNote"],
+        });
+        const formattedRequest = {
+            transfer_notes: {
+                notes: transfer_notes_list === null || transfer_notes_list === void 0 ? void 0 : transfer_notes_list.map((note) => ({
+                    note_id: note.noteId,
+                    type_of_note: note.typeOfNote,
+                    description: note.description,
+                })),
+            },
+            physician_notes: {
+                notes: physician_notes_list === null || physician_notes_list === void 0 ? void 0 : physician_notes_list.map((note) => ({
+                    note_id: note.noteId,
+                    type_of_note: note.typeOfNote,
+                    description: note.description,
+                })),
+            },
+            admin_notes: {
+                notes: admin_notes_list === null || admin_notes_list === void 0 ? void 0 : admin_notes_list.map((note) => ({
+                    note_id: note.noteId,
+                    type_of_note: note.typeOfNote,
+                    description: note.description,
+                })),
+            },
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -804,25 +834,26 @@ const view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
 exports.view_notes_for_request = view_notes_for_request;
 const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { confirmation_no, state } = req.params;
+        const { confirmation_no } = req.params;
         const { new_note } = req.body;
-        if (state === "new" ||
-            "active" ||
-            " pending" ||
-            "conclude" ||
-            "toclose" ||
-            "unpaid") {
-            const request = yield request_2_1.default.findOne({
-                where: {
-                    confirmation_no: confirmation_no,
-                    request_state: state,
-                    block_status: "no",
-                },
-            });
-            if (!request) {
-                return res.status(404).json({ error: "Request not found" });
-            }
-            const list = yield notes_2_1.default.update({
+        var status;
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no: confirmation_no,
+                block_status: "no",
+            },
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
+        }
+        const notes_status = yield notes_2_1.default.findOne({
+            where: {
+                requestId: request.request_id,
+                typeOfNote: "admin_notes",
+            },
+        });
+        if (notes_status) {
+            status = yield notes_2_1.default.update({
                 description: new_note,
             }, {
                 where: {
@@ -830,12 +861,18 @@ const save_view_notes_for_request = (req, res, next) => __awaiter(void 0, void 0
                     typeOfNote: "admin_notes",
                 },
             });
-            return res.status(200).json({
-                status: true,
-                message: "Successfull !!!",
-                list,
+        }
+        else {
+            status = yield notes_2_1.default.create({
+                requestId: request.request_id,
+                typeOfNote: "admin_notes",
+                description: new_note,
             });
         }
+        return res.status(200).json({
+            status: true,
+            message: "Successfull !!!",
+        });
     }
     catch (error) {
         res.status(500).json({ error: "Internal Server Error" });

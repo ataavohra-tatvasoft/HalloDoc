@@ -87,14 +87,14 @@ router.get(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewnotes/:notes_for",
+  "/dashboard/requests/:confirmation_no/actions/viewnotes",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_notes_for_request(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewnotes",
+  "/dashboard/requests/:confirmation_no/actions/viewnotes",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     save_view_notes_for_request(req, res, next);
