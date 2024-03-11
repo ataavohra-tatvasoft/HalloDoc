@@ -36,11 +36,7 @@ dotenv_1.default.config({ path: "config.env" });
 //   }
 // );
 const sequelize = new sequelize_typescript_1.Sequelize({
-<<<<<<< HEAD
-    database: "hallodoc",
-=======
     database: "hallodoc_ngrok",
->>>>>>> 53d4e4bc9e13ec394ba24e3a31b15820bc188c36
     host: "localhost",
     dialect: "mysql",
     username: process.env.DB_USER,

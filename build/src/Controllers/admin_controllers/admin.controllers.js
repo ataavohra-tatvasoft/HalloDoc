@@ -411,7 +411,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                 }
                 return res.status(200).json(Object.assign(Object.assign({}, formattedResponse), { totalPages: Math.ceil(requests.count / limit), currentPage: pageNumber }));
             }
-            case "conslude": {
+            case "conclude": {
                 const formattedResponse = {
                     status: true,
                     data: [],
@@ -605,6 +605,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         "request_state",
                         "confirmation_no",
                         "requested_date",
+                        "requested_by",
                         "date_of_service",
                         "physician_id",
                         "patient_id",
@@ -649,6 +650,7 @@ const requests_by_request_state = (req, res, next) => __awaiter(void 0, void 0, 
                         sr_no: i,
                         request_id: request.request_id,
                         request_state: request.request_state,
+                        requestor: request.requested_by,
                         confirmationNo: request.confirmation_no,
                         requested_date: request.requested_date.toISOString().split("T")[0],
                         date_of_service: request.date_of_service
