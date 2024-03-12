@@ -8,16 +8,14 @@ import {
   access_useraccess_edit,
   access_useraccess_edit_save,
 } from "../../controllers";
-import {
-  authmiddleware,
-} from "../../middlewares";
+import { authmiddleware } from "../../middlewares";
 import path from "path";
 
 const router: Router = express.Router();
 
 /**                             Admin in Access Roles                                     */
 /** Admin Account Access */
-router.get("/access/accountaccess", authmiddleware, access_accountaccess);
+router.get("/access/accountaccess/:page/:pageSize", authmiddleware, access_accountaccess);
 router.get(
   "/access/accountaccess/:account_id/edit",
   authmiddleware,
