@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import routes from "./src/routes";
 import dotenv from "dotenv";
 import multer from "multer";
+import fileUpload from "express-fileupload";
 
 dotenv.config({ path: "config.env" });
 /** Constants */
@@ -45,6 +46,10 @@ app.use(routes);
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
+app.use(fileUpload({
+  limits: { fileSize: 5000000 }, 
+  useTempFiles: true // Ensure temporary files are used during upload
+}));
 // sequelize
 //   .sync({ alter: true })
 //   .then(() => {

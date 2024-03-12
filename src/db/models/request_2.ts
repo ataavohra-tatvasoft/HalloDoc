@@ -188,7 +188,7 @@ export default class Request extends Model<
   @HasOne(() => Order, { foreignKey: "requestId" })
   Order: Order[];
 
-  @HasMany(() => Documents, { foreignKey: "request_id" })
+  @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })
   Documents: Documents[];
   // @HasMany(() => User)
   // Patient: User[];

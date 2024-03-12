@@ -16,6 +16,7 @@ import { Op } from "sequelize";
 import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -274,7 +275,6 @@ export const requests_by_request_state = async (
           status: true,
           data: [],
         };
-
         const { count, rows: requests } = await RequestModel.findAndCountAll({
           where: {
             cancellation_status: "no",
@@ -1364,17 +1364,21 @@ export const view_uploads_view_data = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no } = req.params;
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        request_state: state,
         block_status: "no",
         cancellation_status: "no",
       },
 
       include: [
         {
+          as: "Patient",
           model: User,
           attributes: ["firstname", "lastname"],
           where: {
@@ -1395,10 +1399,24 @@ export const view_uploads_view_data = async (
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
+
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmationNo: request.confirmation_no,
+      patient_data: {
+        user_id: request.Patient.user_id,
+        name: request.Patient.firstname + " " + request.Patient.lastname,
+      },
+      notes: request.Documents?.map((document) => ({
+        document_id: document.document_id,
+        document_path: document.document_path,
+        createdAt: document.createdAt.toISOString().split("T")[0],
+      })),
+    };
+    formattedResponse.data.push(formattedRequest);
     return res.status(200).json({
-      status: true,
-      message: "Successfull !!!",
-      request,
+      ...formattedResponse,
     });
   } catch (error) {
     console.error("Error fetching request:", error);
@@ -1411,37 +1429,42 @@ export const view_uploads_upload = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no } = req.params;
-    console.log(req.file);
-    const file: any = req.file;
-    const fileURL = file.path;
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const { confirmation_no } = req.params;
+    const file = req.file;
+
     const request = await RequestModel.findOne({
       where: {
-        confirmation_no: confirmation_no,
-        request_state: state,
+        confirmation_no,
         block_status: "no",
         cancellation_status: "no",
       },
     });
+
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
-    const upload_status = await Documents.create({
+
+    const newDocument = await Documents.create({
       request_id: request.request_id,
-      document_path: fileURL,
+      document_path: file.path,
     });
-    if (!upload_status) {
-      return res.status(404).json({ error: "Error while uploading" });
+    if (!newDocument) {
+      return res.status(404).json({ error: "Failed to upload!!!" });
     }
     return res.status(200).json({
       status: true,
-      message: "Successfull !!!",
+      message: "Upload successful",
     });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 export const view_uploads_actions_delete = async (
   req: Request,
   res: Response,
@@ -1496,13 +1519,11 @@ export const view_uploads_actions_download = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no, document_id } = req.params;
+    const { confirmation_no, document_id } = req.params;
 
-    // Find the request and associated document
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        request_state: state,
         block_status: "no",
         cancellation_status: "no",
       },
@@ -1514,37 +1535,38 @@ export const view_uploads_actions_download = async (
       ],
     });
 
+    const document = await Documents.findOne({
+      where: {
+        document_id: document_id,
+      },
+      attributes: ["document_id", "document_path"],
+    });
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
-
-    const document = await Documents.findOne({
-      where: {
-        request_id: request.request_id,
-        document_id: document_id,
-      },
-    });
 
     if (!document) {
       return res.status(404).json({ error: "Document not found" });
     }
 
+    let filePath = document.document_path;
+
     // Handle potential file path issues:
-    var filePath = document.document_path; // Assuming the path is stored correctly
     if (!path.isAbsolute(filePath)) {
-      // If path is relative, prepend a base path (replace with appropriate logic)
-      filePath = path.join(__dirname, "uploads", filePath); // Example base path
+      // Prepend a base path (replace with appropriate logic for your file storage)
+      filePath = path.join(__dirname, "uploads", filePath);
     }
 
-    if (!filePath) {
+    if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: "File not found" });
     }
 
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${document.document_id || "document.ext"}`
+      `attachment; filename=${document.document_path || "document.ext"}`
     );
+
     res.sendFile(filePath, (error) => {
       if (error) {
         console.error("Error sending file:", error);
@@ -1564,36 +1586,123 @@ export const view_uploads_delete_all = async (
   next: NextFunction
 ) => {
   try {
-    const { state, confirmation_no } = req.params;
-    // const fileURL = file.path;
+    const { confirmation_no } = req.params;
     const request = await RequestModel.findOne({
       where: {
-        confirmation_no: confirmation_no,
-        request_state: state,
+        confirmation_no,
         block_status: "no",
         cancellation_status: "no",
       },
     });
+
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
-    const status = await Documents.findAll({
+
+    const deletedCount = await Documents.destroy({
       where: {
         request_id: request.request_id,
       },
     });
-    if (!status) {
-      return res.status(404).json({ error: "Error while deleting" });
+
+    if (deletedCount === 0) {
+      return res.status(200).json({ message: "No documents to delete" });
     }
+
     return res.status(200).json({
       status: true,
-      message: "Successfull !!!",
+      message: `Successfully deleted ${deletedCount} document(s)`,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
+    console.error("Error deleting documents:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const view_uploads_download_all = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        block_status: "no",
+        cancellation_status: "no",
+      },
+      include: [
+        {
+          as: "Documents",
+          model: Documents,
+          attributes: ["document_id", "document_path"],
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    const documents = await Documents.findAll({
+      where: {
+        document_id: request.Documents[0].document_id,
+      },
+    });
+    if (!documents) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (documents.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No documents available for download" });
+    }
+
+    const documentPaths = documents.map((document) => {
+      let filePath = document.document_path;
+
+      if (!path.isAbsolute(filePath)) {
+        filePath = path.join(__dirname, "uploads", filePath); // Example base path
+      }
+
+      return filePath;
+    });
+
+    const validPaths = documentPaths.filter((filePath) =>
+      fs.existsSync(filePath)
+    );
+
+    if (validPaths.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No valid files found for download" });
+    }
+
+    for (const filePath of validPaths) {
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${path.basename(filePath)}`
+      );
+      res.sendFile(filePath, (error) => {
+        if (error) {
+          console.error("Error sending file:", error);
+          res.status(500).json({ error: "Internal Server Error" });
+        }
+      });
+    }
+    
+    return res.status(200).json({
+      message: `Successfully initiated download(s) for ${validPaths.length} document(s)`,
+    });
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 export const professions_for_send_orders = async (
   req: Request,
   res: Response,
@@ -2310,7 +2419,7 @@ export const admin_profile_view = async (
     });
     if (!regions) {
       res.status(500).json({ error: "Error fetching region data" });
-    };
+    }
     const formattedRequest: any = {
       user_id: profile.user_id,
       account_information: {
@@ -2324,8 +2433,8 @@ export const admin_profile_view = async (
         email: profile.email,
         mobile_no: profile.mobile_no,
         regions: regions?.map((region) => ({
-            region_name: region.region_name
-          })),       
+          region_name: region.region_name,
+        })),
       },
       mailing_billing_information: {
         address_1: profile.address_1,

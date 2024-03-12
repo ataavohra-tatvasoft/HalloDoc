@@ -42,6 +42,7 @@ import {
   access_useraccess_edit,
   access_useraccess_edit_save,
   transfer_request_region_physicians,
+  view_uploads_download_all
 } from "../controllers";
 import { authmiddleware, admin_profile_info_edit_middleware } from "../middlewares";
 
@@ -143,38 +144,45 @@ router.put(
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewuploads/viewdata",
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/viewdata",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_uploads_view_data(req, res, next);
   }
 );
 router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewuploads/upload",
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/upload",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_uploads_upload(req, res, next);
   }
 );
 router.delete(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewuploads/delete",
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/delete",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_uploads_actions_delete(req, res, next);
   }
 );
 router.get(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewuploads/download/:document_id",
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/download/:document_id",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_uploads_actions_download(req, res, next);
   }
 );
 router.delete(
-  "/dashboard/requests/:state/:confirmation_no/actions/viewuploads/deleteall",
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/deleteall",
   authmiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     view_uploads_delete_all(req, res, next);
+  }
+);
+router.get(
+  "/dashboard/requests/:confirmation_no/actions/viewuploads/downloadall",
+  authmiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    view_uploads_download_all(req, res, next);
   }
 );
 router.get(
