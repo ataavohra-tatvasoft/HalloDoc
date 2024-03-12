@@ -1,5 +1,4 @@
 build
-build/src
 buildpublic
 node_modules
 src/db/config
