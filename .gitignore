@@ -1,6 +1,6 @@
+build
 node_modules
 src/db/config
 src/connections
 config.env
-
 

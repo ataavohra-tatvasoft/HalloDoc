@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physicians = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
+exports.access_useraccess_edit_save = exports.access_useraccess_edit = exports.access_useraccess = exports.access_accountaccess_delete = exports.access_accountaccess_edit_save = exports.access_accountaccess_edit = exports.access_accountaccess = exports.admin_profile_mailing_billling_info_edit = exports.admin_profile_admin_info_edit = exports.admin_profile_reset_password = exports.admin_profile_view = exports.admin_send_link = exports.request_support = exports.close_case_for_request_actions_download = exports.close_case_for_request_edit = exports.close_case_for_request = exports.close_case_for_request_view_details = exports.update_agreement = exports.send_agreement = exports.clear_case_for_request = exports.transfer_request = exports.transfer_request_region_physicians = exports.send_orders_for_request = exports.professions_for_send_orders = exports.view_uploads_download_all = exports.view_uploads_delete_all = exports.view_uploads_actions_download = exports.view_uploads_actions_delete = exports.view_uploads_upload = exports.view_uploads_view_data = exports.block_case_for_request = exports.block_case_for_request_view = exports.assign_request = exports.assign_request_region_physician = exports.cancel_case_for_request = exports.cancel_case_for_request_view_data = exports.save_view_notes_for_request = exports.view_notes_for_request = exports.view_case_for_request = exports.requests_by_request_state = exports.region_with_thirdparty_API = exports.region_without_thirdparty_API = exports.admin_create_request = exports.admin_signup = void 0;
 const request_2_1 = __importDefault(require("../../db/models/request_2"));
 const user_2_1 = __importDefault(require("../../db/models/user_2"));
 const requestor_2_1 = __importDefault(require("../../db/models/requestor_2"));
@@ -46,12 +46,14 @@ const profession_2_1 = __importDefault(require("../../db/models/profession_2"));
 const status_codes_1 = __importDefault(require("../../public/status_codes"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const twilio_1 = __importDefault(require("twilio"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto = __importStar(require("crypto"));
 const sequelize_1 = require("sequelize");
 const documents_2_1 = __importDefault(require("../../db/models/documents_2"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 /** Configs */
 dotenv_1.default.config({ path: `.env` });
 /**                              Admin in Dashboard                                       */
@@ -1182,17 +1184,22 @@ const block_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
 exports.block_case_for_request = block_case_for_request;
 // Send Mail and Download All remaining in View Uploads
 const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _o;
     try {
-        const { state, confirmation_no } = req.params;
+        const { confirmation_no } = req.params;
+        const formattedResponse = {
+            status: true,
+            data: [],
+        };
         const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
-                request_state: state,
                 block_status: "no",
                 cancellation_status: "no",
             },
             include: [
                 {
+                    as: "Patient",
                     model: user_2_1.default,
                     attributes: ["firstname", "lastname"],
                     where: {
@@ -1213,11 +1220,22 @@ const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, voi
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        return res.status(200).json({
-            status: true,
-            message: "Successfull !!!",
-            request,
-        });
+        const formattedRequest = {
+            request_id: request.request_id,
+            request_state: request.request_state,
+            confirmationNo: request.confirmation_no,
+            patient_data: {
+                user_id: request.Patient.user_id,
+                name: request.Patient.firstname + " " + request.Patient.lastname,
+            },
+            documents: (_o = request.Documents) === null || _o === void 0 ? void 0 : _o.map((document) => ({
+                document_id: document.document_id,
+                document_path: document.document_path,
+                createdAt: document.createdAt.toISOString().split("T")[0],
+            })),
+        };
+        formattedResponse.data.push(formattedRequest);
+        return res.status(200).json(Object.assign({}, formattedResponse));
     }
     catch (error) {
         console.error("Error fetching request:", error);
@@ -1227,14 +1245,15 @@ const view_uploads_view_data = (req, res, next) => __awaiter(void 0, void 0, voi
 exports.view_uploads_view_data = view_uploads_view_data;
 const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no } = req.params;
-        console.log(req.file);
+        const { confirmation_no } = req.params;
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+        console.log("Uploaded file details:", req.file);
         const file = req.file;
-        const fileURL = file.path;
         const request = yield request_2_1.default.findOne({
             where: {
-                confirmation_no: confirmation_no,
-                request_state: state,
+                confirmation_no,
                 block_status: "no",
                 cancellation_status: "no",
             },
@@ -1242,16 +1261,16 @@ const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const upload_status = yield documents_2_1.default.create({
+        const newDocument = yield documents_2_1.default.create({
             request_id: request.request_id,
-            document_path: fileURL,
+            document_path: file.path,
         });
-        if (!upload_status) {
-            return res.status(404).json({ error: "Error while uploading" });
+        if (!newDocument) {
+            return res.status(404).json({ error: "Failed to upload!!!" });
         }
         return res.status(200).json({
             status: true,
-            message: "Successfull !!!",
+            message: "Upload successful",
         });
     }
     catch (error) {
@@ -1262,12 +1281,11 @@ const view_uploads_upload = (req, res, next) => __awaiter(void 0, void 0, void 0
 exports.view_uploads_upload = view_uploads_upload;
 const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no, document_id } = req.params;
+        const { confirmation_no, document_id } = req.params;
         // const fileURL = file.path;
         const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no: confirmation_no,
-                request_state: state,
                 block_status: "no",
                 cancellation_status: "no",
             },
@@ -1308,12 +1326,10 @@ const view_uploads_actions_delete = (req, res, next) => __awaiter(void 0, void 0
 exports.view_uploads_actions_delete = view_uploads_actions_delete;
 const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no, document_id } = req.params;
-        // Find the request and associated document
+        const { confirmation_no, document_id } = req.params;
         const request = yield request_2_1.default.findOne({
             where: {
                 confirmation_no,
-                request_state: state,
                 block_status: "no",
                 cancellation_status: "no",
             },
@@ -1324,30 +1340,28 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
                 },
             ],
         });
+        const document = yield documents_2_1.default.findOne({
+            where: {
+                document_id: document_id,
+            },
+            attributes: ["document_id", "document_path"],
+        });
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const document = yield documents_2_1.default.findOne({
-            where: {
-                request_id: request.request_id,
-                document_id: document_id,
-            },
-        });
         if (!document) {
             return res.status(404).json({ error: "Document not found" });
         }
-        // Handle potential file path issues:
-        var filePath = document.document_path; // Assuming the path is stored correctly
+        let filePath = document.document_path;
         if (!path_1.default.isAbsolute(filePath)) {
-            // If path is relative, prepend a base path (replace with appropriate logic)
-            filePath = path_1.default.join(__dirname, "uploads", filePath); // Example base path
+            filePath = path_1.default.join(__dirname, "uploads", filePath);
         }
-        if (!filePath) {
+        if (!fs_1.default.existsSync(filePath)) {
             return res.status(404).json({ error: "File not found" });
         }
         res.setHeader("Content-Type", "application/octet-stream");
-        res.setHeader("Content-Disposition", `attachment; filename=${document.document_id || "document.ext"}`);
-        res.sendFile(filePath, (error) => {
+        res.setHeader("Content-Disposition", `attachment; filename=${document.document_path}"}`);
+        res.download(filePath, (error) => {
             if (error) {
                 console.error("Error sending file:", error);
                 res.status(500).json({ error: "Internal Server Error" });
@@ -1365,12 +1379,10 @@ const view_uploads_actions_download = (req, res, next) => __awaiter(void 0, void
 exports.view_uploads_actions_download = view_uploads_actions_download;
 const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { state, confirmation_no } = req.params;
-        // const fileURL = file.path;
+        const { confirmation_no } = req.params;
         const request = yield request_2_1.default.findOne({
             where: {
-                confirmation_no: confirmation_no,
-                request_state: state,
+                confirmation_no,
                 block_status: "no",
                 cancellation_status: "no",
             },
@@ -1378,25 +1390,79 @@ const view_uploads_delete_all = (req, res, next) => __awaiter(void 0, void 0, vo
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
-        const status = yield documents_2_1.default.findAll({
+        const deletedCount = yield documents_2_1.default.destroy({
             where: {
                 request_id: request.request_id,
             },
         });
-        if (!status) {
-            return res.status(404).json({ error: "Error while deleting" });
+        if (deletedCount === 0) {
+            return res.status(200).json({ message: "No documents to delete" });
         }
         return res.status(200).json({
             status: true,
-            message: "Successfull !!!",
+            message: `Successfully deleted ${deletedCount} document(s)`,
         });
     }
     catch (error) {
-        console.error("Error fetching request:", error);
+        console.error("Error deleting documents:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.view_uploads_delete_all = view_uploads_delete_all;
+const view_uploads_download_all = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { confirmation_no } = req.params;
+        const request = yield request_2_1.default.findOne({
+            where: {
+                confirmation_no,
+                block_status: "no",
+                cancellation_status: "no",
+            },
+            include: [
+                {
+                    as: "Documents",
+                    model: documents_2_1.default,
+                    attributes: ["document_id", "document_path"],
+                },
+            ],
+        });
+        if (!request) {
+            return res.status(404).json({ error: "Request not found" });
+        }
+        const documents = request.Documents;
+        if (documents.length === 0) {
+            return res
+                .status(200)
+                .json({ message: "No documents available for download" });
+        }
+        const validPaths = documents.filter((file) => fs_1.default.existsSync(file.document_path));
+        if (validPaths.length === 0) {
+            return res
+                .status(404)
+                .json({ error: "No valid files found for download" });
+        }
+        for (const file of validPaths) {
+            const filePath = file.document_path;
+            const filename = path_1.default.basename(filePath);
+            res.setHeader("Content-Type", "application/octet-stream");
+            res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+            res.download(filePath, (error) => {
+                if (error) {
+                    console.error("Error sending file:", error);
+                    // Handle errors appropriately (e.g., log the error, send an error response)
+                }
+            });
+        }
+        res.status(200).json({
+            message: `Successfully initiated download(s) for ${validPaths.length} document(s)`,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching documents:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+exports.view_uploads_download_all = view_uploads_download_all;
 const professions_for_send_orders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const professions = yield profession_2_1.default.findAll({
@@ -1613,7 +1679,7 @@ const clear_case_for_request = (req, res, next) => __awaiter(void 0, void 0, voi
                 message: "Successfull !!!",
             });
         }
-        catch (_o) {
+        catch (_p) {
             res.status(404).json({ error: "Invalid State !!!" });
         }
     }
@@ -1760,7 +1826,7 @@ const update_agreement = (req, res, next) => __awaiter(void 0, void 0, void 0, f
 });
 exports.update_agreement = update_agreement;
 const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p;
+    var _q;
     try {
         const { confirmation_no } = req.params;
         const formattedResponse = {
@@ -1813,7 +1879,7 @@ const close_case_for_request_view_details = (req, res, next) => __awaiter(void 0
                 DOB: request.Patient.dob.toISOString().split("T")[0],
                 mobile_no: request.Patient.mobile_no,
                 email: request.Patient.email,
-                documents: (_p = request.Documents) === null || _p === void 0 ? void 0 : _p.map((document) => ({
+                documents: (_q = request.Documents) === null || _q === void 0 ? void 0 : _q.map((document) => ({
                     document_id: document.document_id,
                     document_path: document.document_path,
                     upload_date: document.createdAt.toISOString().split("T")[0],
@@ -1942,18 +2008,16 @@ const close_case_for_request_actions_download = (req, res, next) => __awaiter(vo
         if (!document) {
             return res.status(404).json({ error: "Document not found" });
         }
-        // Handle potential file path issues:
-        var filePath = document.document_path; // Assuming the path is stored correctly
+        let filePath = document.document_path;
         if (!path_1.default.isAbsolute(filePath)) {
-            // If path is relative, prepend a base path (replace with appropriate logic)
-            filePath = path_1.default.join(__dirname, "uploads", filePath); // Example base path
+            filePath = path_1.default.join(__dirname, "uploads", filePath);
         }
-        if (!filePath) {
+        if (!fs_1.default.existsSync(filePath)) {
             return res.status(404).json({ error: "File not found" });
         }
         res.setHeader("Content-Type", "application/octet-stream");
-        res.setHeader("Content-Disposition", `attachment; filename=${document.document_id || "document.ext"}`);
-        res.sendFile(filePath, (error) => {
+        res.setHeader("Content-Disposition", `attachment; filename=${document.document_path}"}`);
+        res.download(filePath, (error) => {
             if (error) {
                 console.error("Error sending file:", error);
                 res.status(500).json({ error: "Internal Server Error" });
@@ -1993,7 +2057,79 @@ const request_support = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.request_support = request_support;
-/**Admin Profile */
+/**Admin Send Link */
+const admin_send_link = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { firstname, lastname, mobile_no, email } = req.body;
+        const user = yield user_2_1.default.findOne({
+            where: {
+                firstname,
+                lastname,
+                mobile_no,
+                email,
+                type_of_user: "patient",
+            },
+        });
+        if (!user) {
+            return res
+                .status(404)
+                .json({ status: false, message: "User not found!!!" });
+        }
+        const create_request_link = "https://localhost:3000/createRequest";
+        if (email) {
+            const transporter = nodemailer_1.default.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: Number(process.env.EMAIL_PORT),
+                secure: false,
+                debug: true,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+            });
+            const mailContent = `
+      <html>
+      <p>Given below is a create request link for patient</p>
+      </br>
+      </br>
+      </br>
+      <p> ${create_request_link}</p>
+      </form>
+      </html>
+    `;
+            const info = yield transporter.sendMail({
+                from: "vohraatta@gmail.com",
+                to: email,
+                subject: "Create Request Link",
+                html: mailContent,
+            });
+            console.log("Email sent: %s", info.messageId);
+        }
+        if (mobile_no) {
+            const accountSid = "AC755f57f9b0f3440c6d2a207bd5678bdd";
+            const authToken = "a795f37433f7542bea73622828e66841";
+            const client = (0, twilio_1.default)(accountSid, authToken);
+            client.messages
+                .create({
+                body: `Link for creating request for patient. Link :- ${create_request_link}`,
+                from: "+15187597839",
+                to: "+91" + mobile_no,
+            })
+                .then((message) => console.log(message.sid))
+                .catch((error) => console.error(error));
+        }
+        return res.status(200).json({
+            status: true,
+            message: "Create Request link sent successfully"
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.admin_send_link = admin_send_link;
+/**Admin in My Profile */
 const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { authorization } = req.headers;
@@ -2034,7 +2170,6 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
         if (!regions) {
             res.status(500).json({ error: "Error fetching region data" });
         }
-        ;
         const formattedRequest = {
             user_id: profile.user_id,
             account_information: {
@@ -2048,7 +2183,7 @@ const admin_profile_view = (req, res, next) => __awaiter(void 0, void 0, void 0,
                 email: profile.email,
                 mobile_no: profile.mobile_no,
                 regions: regions === null || regions === void 0 ? void 0 : regions.map((region) => ({
-                    region_name: region.region_name
+                    region_name: region.region_name,
                 })),
             },
             mailing_billing_information: {

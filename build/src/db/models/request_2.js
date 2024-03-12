@@ -193,7 +193,7 @@ __decorate([
     __metadata("design:type", Array)
 ], Request.prototype, "Order", void 0);
 __decorate([
-    (0, sequelize_typescript_1.HasMany)(() => documents_2_1.default, { foreignKey: "request_id" }),
+    (0, sequelize_typescript_1.HasMany)(() => documents_2_1.default, { as: "Documents", foreignKey: "request_id" }),
     __metadata("design:type", Array)
 ], Request.prototype, "Documents", void 0);
 Request = __decorate([
