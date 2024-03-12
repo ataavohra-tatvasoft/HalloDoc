@@ -16,4 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./login_controllers/login"), exports);
 __exportStar(require("./login_controllers/recover_password"), exports);
-__exportStar(require("./admin_controllers/admin.controllers"), exports);
+__exportStar(require("./admin_controllers/admin_access_roles"), exports);
+__exportStar(require("./admin_controllers/admin_dashboard"), exports);
+__exportStar(require("./admin_controllers/admin_myprofile"), exports);
+__exportStar(require("./admin_controllers/admin_provider_menu"), exports);
