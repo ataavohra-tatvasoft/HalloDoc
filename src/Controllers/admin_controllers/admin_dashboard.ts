@@ -1836,10 +1836,12 @@ export const transfer_request_region_physicians = async (
   next: NextFunction
 ) => {
   try {
-    const { region } = req.query as { region: string };
+    const {confirmation_no} = req.params;
+    const { region  } = req.query as { region: string };
     var i = 1;
     const formattedResponse: any = {
       status: true,
+      confirmation_no: confirmation_no,
       data: [],
     };
     const physicians = await User.findAll({
@@ -1860,8 +1862,9 @@ export const transfer_request_region_physicians = async (
     for (const physician of physicians) {
       const formattedRequest: any = {
         sr_no: i,
-        firstname: physician.firstname,
-        lastname: physician.lastname,
+        // firstname: physician.firstname,
+        // lastname: physician.lastname,
+        physician_name:  physician.firstname + " " + physician.lastname
       };
       i++;
       formattedResponse.data.push(formattedRequest);

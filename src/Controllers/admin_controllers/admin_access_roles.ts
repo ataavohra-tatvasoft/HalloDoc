@@ -222,7 +222,7 @@ export const access_accountaccess_delete = async (req: Request, res: Response, n
       if (!relatedNotes) {
         return res.status(400).json({ error: "Error while deleting account" });
       }
-      
+
       // Option 2: Cascade deletion (use with caution)
       await RequestModel.destroy({ where: { patient_id: user_id } });
    
@@ -248,27 +248,26 @@ export const access_useraccess = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname } = req.query; // Get search parameters from query string
+    const { role } = req.query; // Get search parameters from query string
     const whereClause: { [key: string]: any } = {};
-
-    if (firstname) {
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    if (role) {
       whereClause.firstname = {
-        [Op.like]: `%${firstname}%`, // Use LIKE operator for partial matching
-      };
-    }
-    if (lastname) {
-      whereClause.lastname = {
-        [Op.like]: `%${lastname}%`,
+        [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
       };
     }
 
     const accounts = await User.findAll({
       attributes: [
+        "role",
         "firstname",
         "lastname",
-        "type_of_user",
         "mobile_no",
         "status",
+        "open_requests"
       ],
       where: whereClause, // Apply constructed search criteria
     });
@@ -276,8 +275,16 @@ export const access_useraccess = async (
     if (!accounts) {
       return res.status(404).json({ error: "No matching users found" });
     }
+   for(const account of accounts){
+    const formattedRequest: any = {
+     account_type :accounts.account.role,
 
-    res.status(200).json({ accounts });
+    };
+    formattedResponse.data.push(formattedRequest);
+  }
+  return res.status(200).json({
+    ...formattedResponse,
+  });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Internal Server Error" });

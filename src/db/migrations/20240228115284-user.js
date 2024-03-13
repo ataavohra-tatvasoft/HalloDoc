@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.ENUM("admin", "patient", "provider"),
         allowNull: false,
       },
-  
+
       // Common fields
       firstname: {
         type: Sequelize.STRING,
@@ -46,8 +46,8 @@ module.exports = {
         allowNull: true,
       },
       address_1: {
-          type: Sequelize.STRING,
-          allowNull: true,
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       address_2: {
         type: Sequelize.STRING,
@@ -69,7 +69,12 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-  
+      role: {
+        type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
+        allowNull: true,
+        defaultValue: null,
+      },
+
       // Admin-specific fields
       billing_mobile_no: {
         type: Sequelize.INTEGER,
@@ -80,17 +85,18 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      role: {
-        type: Sequelize.STRING,
-        allowNull: true // Removed redundant "admin" role field
-      },
-  
+
+      // role: {
+      //   type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
+      //   allowNull: true,
+      // },
+
       // Patient-specific fields
       dob: {
         type: Sequelize.DATE,
         allowNull: true,
       },
-  
+
       // Provider-specific fields
       medical_licence: {
         type: Sequelize.STRING,
@@ -105,6 +111,7 @@ module.exports = {
         allowNull: true,
         unique: true,
       },
+
       //Common attributes between Patient and Provider
       business_name: {
         type: Sequelize.STRING,
@@ -114,7 +121,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-  
+
+      //Common attributes between Admin and Provider
+      open_requests: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+      },
+
       // Additional attributes
       tax_id: {
         type: Sequelize.STRING,
@@ -134,9 +148,9 @@ module.exports = {
         allowNull: true,
       },
       scheduled_status: {
-        type: Sequelize.ENUM("yes","no"),
+        type: Sequelize.ENUM("yes", "no"),
         allowNull: false,
-        defaultValue: "no"
+        defaultValue: "no",
       },
       support_message: {
         type: Sequelize.STRING,

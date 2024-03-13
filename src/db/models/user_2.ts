@@ -107,6 +107,13 @@ export default class User extends Model<
   })
   zip: number;
 
+  @Column({
+    type: DataType.ENUM("admin", "patient", "physician", "clinical"),
+    allowNull: true,
+    defaultValue: null,
+  })
+  role: string;
+
   // Admin-specific fields (Assuming redundant role field is removed from the table)
   @Column({
     type: DataType.STRING,
@@ -119,12 +126,6 @@ export default class User extends Model<
     allowNull: true,
   })
   status: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  role: string;
 
   // Patient-specific fields
   @Column({
@@ -165,6 +166,14 @@ export default class User extends Model<
     allowNull: true,
   })
   street: string;
+
+  //Common attributes between Admin and Provider
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+    defaultValue: 0,
+  })
+  open_requests: number;
 
   // Additional attributes
   @Column({
