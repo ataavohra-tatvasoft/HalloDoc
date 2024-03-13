@@ -203,13 +203,11 @@ export const region_without_thirdparty_API = async (
     if (!regions) {
       res.status(500).json({ error: "Error fetching region data" });
     }
-    return res
-      .status(200)
-      .json({
-        status: "Successfull",
-        regions: regions,
-        confirmation_no: confirmation_no,
-      });
+    return res.status(200).json({
+      status: "Successfull",
+      regions: regions,
+      confirmation_no: confirmation_no,
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -366,6 +364,7 @@ export const requests_by_request_state = async (
           ...formattedResponse,
           totalPages: Math.ceil(count / limit),
           currentPage: pageNumber,
+          total_count: count,
         });
       }
       case "pending":
@@ -489,6 +488,7 @@ export const requests_by_request_state = async (
           ...formattedResponse,
           totalPages: Math.ceil(requests.count / limit),
           currentPage: pageNumber,
+          total_count: requests.count,
         });
       }
       case "conclude": {
@@ -590,6 +590,7 @@ export const requests_by_request_state = async (
           ...formattedResponse,
           totalPages: Math.ceil(requests.count / limit),
           currentPage: pageNumber,
+          total_count: requests.count,
         });
       }
       case "toclose": {
@@ -699,6 +700,7 @@ export const requests_by_request_state = async (
           ...formattedResponse,
           totalPages: Math.ceil(requests.count / limit),
           currentPage: pageNumber,
+          total_count: requests.count,
         });
       }
       case "unpaid": {
@@ -793,6 +795,7 @@ export const requests_by_request_state = async (
           ...formattedResponse,
           totalPages: Math.ceil(requests.count / limit),
           currentPage: pageNumber,
+          total_count: requests.count,
         });
         // return res.status(200).json({
         //   formattedResponse,
@@ -1636,7 +1639,7 @@ export const view_uploads_delete_all = async (
     });
   } catch (error) {
     console.error("Error deleting documents:", error);
-   return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -1704,7 +1707,7 @@ export const view_uploads_download_all = async (
     });
   } catch (error) {
     console.error("Error fetching documents:", error);
-   return  res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -1724,7 +1727,7 @@ export const professions_for_send_orders = async (
       .status(200)
       .json({ status: "Successfull", professions: professions });
   } catch (error) {
-   return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 export const send_orders_for_request = async (
@@ -1861,7 +1864,7 @@ export const transfer_request_region_physicians = async (
     });
   } catch (error) {
     console.error("Error in fetching Physicians:", error);
-   return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 export const transfer_request = async (
