@@ -76,12 +76,12 @@ router.post(
     admin_create_request
   );
   router.get(
-    "/dashboard/requests/:confirmation_no/region",
+    "/dashboard/requests/region",
     authmiddleware,
     region_without_thirdparty_API
   );
   router.get(
-    "/dashboard/requests/:confirmation_no/regions",
+    "/dashboard/requests/regions",
     authmiddleware,
     region_with_thirdparty_API
   );

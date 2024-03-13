@@ -196,7 +196,7 @@ export const region_without_thirdparty_API = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no } = req.params;
+    // const { confirmation_no } = req.params;
     const regions = await Region.findAll({
       attributes: ["region_name"],
     });
@@ -206,7 +206,6 @@ export const region_without_thirdparty_API = async (
     return res.status(200).json({
       status: "Successfull",
       regions: regions,
-      confirmation_no: confirmation_no,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -218,7 +217,7 @@ export const region_with_thirdparty_API = async (
   next: NextFunction
 ) => {
   try {
-    const { confirmation_no } = req.params;
+    // const { confirmation_no } = req.params;
     var headers = new Headers();
     headers.append("X-CSCAPI-KEY", "API_KEY");
 
@@ -238,7 +237,6 @@ export const region_with_thirdparty_API = async (
         const states = result;
         res.status(200).json({
           status: "Successful",
-          confirmation_no: confirmation_no,
           data: states,
         });
       })

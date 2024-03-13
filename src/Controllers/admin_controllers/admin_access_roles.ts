@@ -40,11 +40,11 @@ export const access_accountaccess = async (
       status: true,
       data: [],
     };
-    const { count, rows: accounts }  = await User.findAndCountAll({
+    const { count, rows: accounts } = await User.findAndCountAll({
       where: {
         status: "active",
       },
-      attributes: ["user_id","firstname", "lastname", "type_of_user"],
+      attributes: ["user_id", "firstname", "lastname", "type_of_user"],
       limit,
       offset,
     });
@@ -59,7 +59,7 @@ export const access_accountaccess = async (
         sr_no: i,
         user_id: account.user_id,
         name: account.firstname + " " + account.lastname,
-        account_type: account.type_of_user 
+        account_type: account.type_of_user,
       };
       formattedResponse.data.push(formattedRequest);
       i++;
@@ -111,23 +111,23 @@ export const access_accountaccess_edit = async (
     }
     const formattedRequest: any = {
       user_id: account.user_id,
-      firstname: account.firstname ,
-      lastname:account.lastname,
-      mobile_no:account.mobile_no,
-      address_1:account.address_1,
-      address_2:account.address_2,
-      city:account.city,
-      region:account.state,
-      zip:account.zip,
-      dob:account.dob.toISOString().split("T")[0],
-      state:account.state,
-      account_type: account.type_of_user 
+      firstname: account.firstname,
+      lastname: account.lastname,
+      mobile_no: account.mobile_no,
+      address_1: account.address_1,
+      address_2: account.address_2,
+      city: account.city,
+      region: account.state,
+      zip: account.zip,
+      dob: account.dob.toISOString().split("T")[0],
+      state: account.state,
+      account_type: account.type_of_user,
     };
     formattedResponse.data.push(formattedRequest);
 
-  return res.status(200).json({
-    ...formattedResponse,
-  });
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -190,13 +190,17 @@ export const access_accountaccess_edit_save = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-export const access_accountaccess_delete = async (req: Request, res: Response, next: NextFunction) => {
+export const access_accountaccess_delete = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { user_id } = req.params;
     const account = await User.findOne({
       where: {
         user_id,
-        status: "active", 
+        status: "active",
       },
     });
 
@@ -209,7 +213,6 @@ export const access_accountaccess_delete = async (req: Request, res: Response, n
     });
 
     if (relatedRequests.length > 0) {
-      
       // Option 1: Prevent deletion with informative error
       // return res.status(409).json({
       //   error: "Cannot delete account as it has associated requests. Please handle these requests first."
@@ -217,7 +220,9 @@ export const access_accountaccess_delete = async (req: Request, res: Response, n
 
       // Assuming a one-to-many relationship between requests and notes:
       const relatedNotes = await Notes.destroy({
-        where: { requestId: relatedRequests.map(request => request.request_id) }
+        where: {
+          requestId: relatedRequests.map((request) => request.request_id),
+        },
       });
       if (!relatedNotes) {
         return res.status(400).json({ error: "Error while deleting account" });
@@ -225,7 +230,6 @@ export const access_accountaccess_delete = async (req: Request, res: Response, n
 
       // Option 2: Cascade deletion (use with caution)
       await RequestModel.destroy({ where: { patient_id: user_id } });
-   
     }
 
     const deletedAccount = await User.destroy({ where: { user_id } });
@@ -234,7 +238,9 @@ export const access_accountaccess_delete = async (req: Request, res: Response, n
       return res.status(400).json({ error: "Error while deleting account" });
     }
 
-    return res.status(200).json({ status: true, message: "Deleted Successfully!" });
+    return res
+      .status(200)
+      .json({ status: true, message: "Deleted Successfully!" });
   } catch (error) {
     console.error("Error deleting account:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -267,7 +273,7 @@ export const access_useraccess = async (
         "lastname",
         "mobile_no",
         "status",
-        "open_requests"
+        "open_requests",
       ],
       where: whereClause, // Apply constructed search criteria
     });
@@ -275,16 +281,19 @@ export const access_useraccess = async (
     if (!accounts) {
       return res.status(404).json({ error: "No matching users found" });
     }
-   for(const account of accounts){
-    const formattedRequest: any = {
-     account_type :accounts.account.role,
-
-    };
-    formattedResponse.data.push(formattedRequest);
-  }
-  return res.status(200).json({
-    ...formattedResponse,
-  });
+    for (const account of accounts) {
+      const formattedRequest: any = {
+        account_type: account.role,
+        account_poc: account.firstname + " " + account.lastname,
+        phone: account.mobile_no,
+        status: account.status,
+        open_requests: account.open_requests,
+      };
+      formattedResponse.data.push(formattedRequest);
+    }
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -296,10 +305,14 @@ export const access_useraccess_edit = async (
   next: NextFunction
 ) => {
   try {
-    const { admin_id } = req.params;
+    const { user_id } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
     const account = await User.findOne({
       where: {
-        user_id: admin_id,
+        user_id: user_id,
       },
       attributes: [
         "firstname",
@@ -311,15 +324,32 @@ export const access_useraccess_edit = async (
         "state",
         "zip",
         "dob",
-        "region",
-        "type_of_user",
+        "role",
         "status",
       ],
     });
     if (!account) {
       return res.status(404).json({ error: "Account not found" });
     }
-    res.status(200).json({ account });
+
+    const formattedRequest: any = {
+      firstname: account.firstname,
+      lastname: account.lastname,
+      phone: account.mobile_no,
+      address_1: account.address_1,
+      address_2: account.address_2,
+      city: account.city,
+      region: account.state,
+      zip: account.zip,
+      DOB: account.dob,
+      account_type: account.role,
+      status: account.status,
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
   } catch (error) {
     console.error("Error fetching request:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -331,7 +361,7 @@ export const access_useraccess_edit_save = async (
   next: NextFunction
 ) => {
   try {
-    const { admin_id } = req.params;
+    const { user_id } = req.params;
     const {
       firstname,
       lastname,
@@ -342,11 +372,10 @@ export const access_useraccess_edit_save = async (
       region,
       zip,
       dob,
-      type_of_user,
     } = req.body;
     const account = await User.findOne({
       where: {
-        user_id: admin_id,
+        user_id: user_id,
       },
     });
     if (!account) {
@@ -363,11 +392,10 @@ export const access_useraccess_edit_save = async (
         state: region,
         zip,
         dob,
-        type_of_user,
       },
       {
         where: {
-          user_id: admin_id,
+          user_id: user_id,
         },
       }
     );
@@ -383,3 +411,4 @@ export const access_useraccess_edit_save = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
