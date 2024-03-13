@@ -190,36 +190,53 @@ export const access_accountaccess_edit_save = async (
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-export const access_accountaccess_delete = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const access_accountaccess_delete = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id } = req.params;
     const account = await User.findOne({
       where: {
-        user_id: user_id,
-        status: "active",
+        user_id,
+        status: "active", 
       },
     });
+
     if (!account) {
       return res.status(404).json({ error: "Account not found" });
     }
-    const delete_account = await User.destroy({
-      where: {
-        user_id: user_id,
-      },
+
+    const relatedRequests = await RequestModel.findAll({
+      where: { patient_id: user_id },
     });
-    if (!delete_account) {
-      return res.status(404).json({ error: "Error while deleting account" });
+
+    if (relatedRequests.length > 0) {
+      
+      // Option 1: Prevent deletion with informative error
+      // return res.status(409).json({
+      //   error: "Cannot delete account as it has associated requests. Please handle these requests first."
+      // });
+
+      // Assuming a one-to-many relationship between requests and notes:
+      const relatedNotes = await Notes.destroy({
+        where: { requestId: relatedRequests.map(request => request.request_id) }
+      });
+      if (!relatedNotes) {
+        return res.status(400).json({ error: "Error while deleting account" });
+      }
+      
+      // Option 2: Cascade deletion (use with caution)
+      await RequestModel.destroy({ where: { patient_id: user_id } });
+   
     }
-    return res.status(200).json({
-      status: true,
-      message: "Deleted Successfully !!!",
-    });
+
+    const deletedAccount = await User.destroy({ where: { user_id } });
+
+    if (!deletedAccount) {
+      return res.status(400).json({ error: "Error while deleting account" });
+    }
+
+    return res.status(200).json({ status: true, message: "Deleted Successfully!" });
   } catch (error) {
-    console.error("Error fetching request:", error);
+    console.error("Error deleting account:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
