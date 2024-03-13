@@ -81,14 +81,14 @@ export const access_accountaccess_edit = async (
   next: NextFunction
 ) => {
   try {
-    const { account_id } = req.params;
+    const { user_id } = req.params;
     const formattedResponse: any = {
       status: true,
       data: [],
     };
     const account = await User.findOne({
       where: {
-        user_id: account_id,
+        user_id: user_id,
         status: "active",
       },
       attributes: [
@@ -139,7 +139,7 @@ export const access_accountaccess_edit_save = async (
   next: NextFunction
 ) => {
   try {
-    const { admin_id } = req.params;
+    const { user_id } = req.params;
     const {
       firstname,
       lastname,
@@ -153,7 +153,7 @@ export const access_accountaccess_edit_save = async (
     } = req.body;
     const account = await User.findOne({
       where: {
-        user_id: admin_id,
+        user_id: user_id,
         status: "active",
       },
     });
@@ -174,7 +174,7 @@ export const access_accountaccess_edit_save = async (
       },
       {
         where: {
-          user_id: admin_id,
+          user_id: user_id,
         },
       }
     );

@@ -69,7 +69,7 @@ export default class User extends Model<
     type: DataType.BIGINT,
     allowNull: true,
   })
-  reset_token_expiry: number;
+  reset_token_expiry: bigint;
 
   @Column({
     type: DataType.STRING,

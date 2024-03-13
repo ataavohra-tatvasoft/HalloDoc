@@ -15,19 +15,19 @@ const router: Router = express.Router();
 
 /**                             Admin in Access Roles                                     */
 /** Admin Account Access */
-router.get("/access/accountaccess/:page/:pageSize", authmiddleware, access_accountaccess);
+router.get("/access/accountaccess", authmiddleware, access_accountaccess);
 router.get(
-  "/access/accountaccess/:account_id/edit",
+  "/access/accountaccess/:user_id/edit",
   authmiddleware,
   access_accountaccess_edit
 );
 router.put(
-  "/access/accountaccess/:account_id/edit/save",
+  "/access/accountaccess/:user_id/edit/save",
   authmiddleware,
   access_accountaccess_edit_save
 );
 router.delete(
-  "/access/accountaccess/:account_id/delete",
+  "/access/accountaccess/:user_id/delete",
   authmiddleware,
   access_accountaccess_delete
 );
@@ -35,12 +35,12 @@ router.delete(
 /** Admin User Access */
 router.get("/access/useraccess", authmiddleware, access_useraccess);
 router.get(
-  "/access/useraccess/:account_id/edit",
+  "/access/useraccess/:user_id/edit",
   authmiddleware,
   access_useraccess_edit
 );
 router.put(
-  "/access/useraccess/:account_id/edit/save",
+  "/access/useraccess/:user_id/edit/save",
   authmiddleware,
   access_useraccess_edit_save
 );
