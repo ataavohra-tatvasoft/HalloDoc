@@ -875,13 +875,16 @@ export const view_case_for_request = async (
         })),
         first_name: request.Patient.firstname,
         last_name: request.Patient.lastname,
+        // DOB: request.Patient.dob
+        //   .toISOString()
+        //   .split("T")[0]
+        //   .split("-")
+        //   .map(Number)
+        //   .reverse()
+        //   .join("-"),
         DOB: request.Patient.dob
-          .toISOString()
-          .split("T")[0]
-          .split("-")
-          .map(Number)
-          .reverse()
-          .join("-"),
+        .toISOString()
+        .split("T")[0],
         mobile_no: request.Patient.mobile_no,
         email: request.Patient.email,
         location_information: {
