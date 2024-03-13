@@ -76,12 +76,12 @@ router.post(
     admin_create_request
   );
   router.get(
-    "/dashboard/requests/region",
+    "/dashboard/requests/region/:confirmation_no",
     authmiddleware,
     region_without_thirdparty_API
   );
   router.get(
-    "/dashboard/requests/regions",
+    "/dashboard/requests/regions/:confirmation_no",
     authmiddleware,
     region_with_thirdparty_API
   );
@@ -114,7 +114,7 @@ router.post(
     cancel_case_for_request
   );
   router.get(
-    "/dashboard/requests/actions/assignrequestphysicians",
+    "/dashboard/requests/:confirmation_no/actions/assignrequestphysicians",
     authmiddleware,
     assign_request_region_physician
   );

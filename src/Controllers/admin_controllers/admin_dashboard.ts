@@ -197,13 +197,14 @@ export const admin_signup = async (
     next: NextFunction
   ) => {
     try {
+      const {confirmation_no} = req.params;
       const regions = await Region.findAll({
         attributes: ["region_name"],
       });
       if (!regions) {
         res.status(500).json({ error: "Error fetching region data" });
       }
-      return res.status(200).json({ status: "Successfull", regions: regions });
+      return res.status(200).json({ status: "Successfull", regions: regions, confirmation_no: confirmation_no });
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
     }
@@ -214,6 +215,7 @@ export const admin_signup = async (
     next: NextFunction
   ) => {
     try {
+      const {confirmation_no} = req.params;
       var headers = new Headers();
       headers.append("X-CSCAPI-KEY", "API_KEY");
   
@@ -233,6 +235,7 @@ export const admin_signup = async (
           const states = result;
           res.status(200).json({
             status: "Successful",
+            confirmation_no: confirmation_no ,
             data: states,
           });
         })
@@ -1046,6 +1049,7 @@ export const admin_signup = async (
       }
   
       const formattedRequest: any = {
+        confirmation_no: request.confirmation_no,
         patient_data: {
           first_name: request.Patient.firstname,
           last_name: request.Patient.lastname,
@@ -1175,10 +1179,13 @@ export const admin_signup = async (
     next: NextFunction
   ) => {
     try {
-      const { region } = req.query as { region: string };
+      const {confirmation_no} = req.params;
+      const { region} = req.query as { region: string };
       var i = 1;
       const formattedResponse: any = {
         status: true,
+        message: "Successfull !!!",
+        confirmation_no: confirmation_no,
         data: [],
       };
       const physicians = await User.findAll({
@@ -1206,8 +1213,6 @@ export const admin_signup = async (
         formattedResponse.data.push(formattedRequest);
       }
       return res.status(200).json({
-        status: true,
-        message: "Successfull !!!",
         ...formattedResponse,
       });
     } catch (error) {
@@ -1275,6 +1280,7 @@ export const admin_signup = async (
       const { confirmation_no } = req.params;
       const formattedResponse: any = {
         status: true,
+        confirmation_no: confirmation_no,
         data: [],
       };
       const request = await RequestModel.findOne({
