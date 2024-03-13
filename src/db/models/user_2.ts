@@ -154,6 +154,13 @@ export default class User extends Model<
   })
   alternative_mobile_no: string;
 
+  @Column({
+    type: DataType.ENUM("yes", "no"),
+    allowNull: true,
+    defaultValue:"no",
+  })
+  stop_notification_status: string;
+
   // Common attributes between Patient and Provider
   @Column({
     type: DataType.STRING,

@@ -21,5 +21,27 @@ import fs from "fs";
 /** Configs */
 dotenv.config({ path: `.env` });
 
-
 /**                             Admin in Provider Menu                                    */
+export const provider_list = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {region, page, pageSize } = req.query as { region: string ; page: string; pageSize: string;};
+    const pageNumber = parseInt(page) || 1;
+    const limit = parseInt(pageSize) || 10;
+    const offset = (pageNumber - 1) * limit; 
+    const providers = await User.findAll({
+        attributes:["stop_notification_status","firstname", "lastname" , "role", "on_call_status", "status", ],
+        where:{
+            ...(region && { state: region }),
+            type_of_user: "provider"
+        }
+    })
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

@@ -112,6 +112,12 @@ module.exports = {
         unique: true,
       },
 
+      stop_notification_status: {
+        type: DataType.ENUM("yes", "no"),
+        allowNull: true,
+        defaultValue: "no",
+      },
+
       //Common attributes between Patient and Provider
       business_name: {
         type: Sequelize.STRING,
