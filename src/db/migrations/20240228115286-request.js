@@ -48,7 +48,7 @@ module.exports = {
       },
       patient_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "User",
           key: "user_id",

@@ -196,10 +196,10 @@ export const access_accountaccess_delete = async (
   next: NextFunction
 ) => {
   try {
-    const { admin_id } = req.params;
+    const { user_id } = req.params;
     const account = await User.findOne({
       where: {
-        user_id: admin_id,
+        user_id: user_id,
         status: "active",
       },
     });
@@ -208,7 +208,7 @@ export const access_accountaccess_delete = async (
     }
     const delete_account = await User.destroy({
       where: {
-        user_id: admin_id,
+        user_id: user_id,
       },
     });
     if (!delete_account) {
