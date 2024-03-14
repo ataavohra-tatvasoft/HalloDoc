@@ -809,6 +809,189 @@ export const requests_by_request_state = async (
   }
 };
 
+export const requests_by_request_state_refactored = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, firstname, lastname, region, requestor, page, pageSize } =
+      req.query as {
+        state: string;
+        firstname: string;
+        lastname: string;
+        region: string;
+        requestor: string;
+        page: string;
+        pageSize: string;
+      };
+    const pageNumber = parseInt(page) || 1;
+    const limit = parseInt(pageSize) || 10;
+    const offset = (pageNumber - 1) * limit;
+
+    const whereClause_patient = {
+      type_of_user: "patient",
+      ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
+      ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
+      ...(region && { state: region }),
+    };
+
+    const handleRequestState = async (additionalAttributes?: any) => {
+      const formattedResponse: any = {
+        status: true,
+        data: [],
+      };
+      const { count, rows: requests } = await RequestModel.findAndCountAll({
+        where: {
+          cancellation_status: "no",
+          block_status: "no",
+          request_state: state,
+          ...(requestor ? { requested_by: requestor } : {}),
+        },
+        attributes: [
+          "request_id",
+          "request_state",
+          "confirmation_no",
+          "requested_by",
+          "requested_date",
+          "date_of_service",
+          "physician_id",
+          "patient_id",
+          ...(additionalAttributes || []),
+        ],
+        include: [
+          {
+            as: "Patient",
+            model: User,
+            attributes: [
+              "user_id",
+              "type_of_user",
+              "firstname",
+              "lastname",
+              "dob",
+              "mobile_no",
+              "address_1",
+              "state",
+            ],
+            where: whereClause_patient,
+          },
+          ...(state !== "new"
+            ? [
+                {
+                  as: "Physician",
+                  model: User,
+                  attributes: [
+                    "user_id",
+                    "type_of_user",
+                    "firstname",
+                    "lastname",
+                    "dob",
+                    "mobile_no",
+                    "address_1",
+                    "address_2",
+                  ],
+                  where: {
+                    type_of_user: "provider",
+                    role: "physician",
+                  },
+                },
+              ]
+            : []),
+          {
+            model: Requestor,
+            attributes: ["user_id", "first_name", "last_name"],
+          },
+          {
+            model: Notes,
+            attributes: ["noteId", "typeOfNote", "description"],
+          },
+        ],
+        limit,
+        offset,
+      });
+
+      var i = offset + 1;
+      for (const request of requests) {
+        const formattedRequest: any = {
+          sr_no: i,
+          request_id: request.request_id,
+          request_state: request.request_state,
+          confirmationNo: request.confirmation_no,
+          requestor: request.requested_by,
+          requested_date: request.requested_date.toISOString().split("T")[0],
+          ...(state !== "new"
+            ? { date_of_service: request.date_of_service.toISOString().split("T")[0] }
+            : {}),
+          patient_data: {
+            user_id: request.Patient.user_id,
+            name: request.Patient.firstname + " " + request.Patient.lastname,
+            DOB: request.Patient.dob.toISOString().split("T")[0],
+            mobile_no: request.Patient.mobile_no,
+            address: request.Patient.address_1 + " " + request.Patient.address_2,
+            ...(state === "toclose" ? { region: request.Patient.state } : {}),
+          },
+          ...(state !== "new"
+            ? {
+                physician_data: {
+                  user_id: request.Physician.user_id,
+                  name:
+                    request.Physician.firstname + " " + request.Physician.lastname,
+                  DOB: request.Physician.dob.toISOString().split("T")[0],
+                  mobile_no: request.Physician.mobile_no,
+                  address: request.Physician.address_1 + " " + request.Physician.address_2,
+                },
+              }
+            : {}),
+          requestor_data: {
+            user_id: request.Requestor?.user_id || null,
+            first_name:
+              request.Requestor?.first_name ||
+              null + " " + request.Requestor?.last_name || null,
+            last_name: request.Requestor?.last_name || null,
+          },
+          notes: request.Notes?.map((note) => ({
+            note_id: note.noteId,
+            type_of_note: note.typeOfNote,
+            description: note.description,
+          })),
+        };
+        i++;
+        formattedResponse.data.push(formattedRequest);
+      }
+
+      return res.status(200).json({
+        ...formattedResponse,
+        totalPages: Math.ceil(count / limit),
+        currentPage: pageNumber,
+        total_count: count,
+      });
+    };
+
+    switch (state) {
+      case "new":
+        return await handleRequestState();
+      case "pending":
+      case "active":
+      case "conclude":
+        return await handleRequestState();
+      case "toclose":
+        return await handleRequestState();
+      case "unpaid":
+        return await handleRequestState([
+          "date_of_service",
+          "physician_id",
+          "patient_id",
+        ]);
+      default:
+        return res.status(500).json({ message: "Invalid State !!!" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 /**Admin Request Actions */
 export const view_case_for_request = async (
   req: Request,
