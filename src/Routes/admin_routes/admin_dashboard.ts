@@ -1,4 +1,6 @@
 import express, { Router } from "express";
+const { celebrate, Joi } = require('celebrate');
+import {manageRequestsByStateValidation} from "../../validations"
 import {
   admin_create_request,
   region_with_thirdparty_API,
@@ -6,6 +8,7 @@ import {
   view_case_for_request,
   view_notes_for_request,
   save_view_notes_for_request,
+  viewAndCancelCaseForRequest,
   cancel_case_for_request_view_data,
   cancel_case_for_request,
   assign_request_region_physician,
@@ -34,6 +37,7 @@ import {
   transfer_request_region_physicians,
   view_uploads_download_all,
   admin_send_link,
+  manageRequestsByState,
   requests_by_request_state_refactored,
   requests_by_request_state_counts,
   region_for_request_states
@@ -43,7 +47,6 @@ import multer, { diskStorage } from "multer";
 import path from "path";
 import {requests_by_request_state_validation,
   cancel_case_validation
-
 } from "../../middlewares/index";
 
 const router: Router = express.Router();
@@ -104,6 +107,15 @@ router.get(
   requests_by_request_state_validation,
   requests_by_request_state_refactored
 );
+router.get(
+  "/dashboard/requests",
+  authmiddleware,
+  celebrate({
+    query: manageRequestsByStateValidation,
+  }),
+  manageRequestsByState,
+);
+
 
 /**Admin Request Actions */
 router.get(
@@ -120,6 +132,18 @@ router.put(
   "/dashboard/requests/:confirmation_no/actions/viewnotes",
   authmiddleware,
   save_view_notes_for_request
+);
+router.get(
+  "/dashboard/requests/:confirmation_no/actions/viewcancelcase",
+  authmiddleware,
+  viewAndCancelCaseForRequest
+);
+
+router.put(
+  "/dashboard/requests/:confirmation_no/actions/cancelcase",
+  authmiddleware,
+  cancel_case_validation,
+  viewAndCancelCaseForRequest
 );
 router.get(
   "/dashboard/requests/:confirmation_no/actions/viewcancelcase",

@@ -6,6 +6,13 @@ import User from "../../db/models/previous_models/user";
 import dotenv from "dotenv";
 dotenv.config();
 
+/**
+ * @description Handles user login authentication.
+ * @param {Request} req - The request object containing user email and password.
+ * @param {Response} res - The response object to send the authentication result.
+ * @param {NextFunction} next - The next middleware function in the request-response cycle.
+ * @returns {Response} A JSON response indicating the authentication status and JWT token upon successful login.
+ */
 export const login = async (
   req: Request,
   res: Response,

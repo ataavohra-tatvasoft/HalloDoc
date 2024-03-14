@@ -10,144 +10,111 @@ import statusCodes from "../../public/status_codes";
 dotenv.config();
 const Op = Sequelize.Op;
 
-export const forgot_password = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { email } = req.body;
+/**
+ * @description Handles the process of initiating a password reset by sending a reset link to the user's email address.
+ * @param {Request} req - The request object containing the user's email address.
+ * @param {Response} res - The response object to send the status of the password reset initiation.
+ * @param {NextFunction} next - The next middleware function in the request-response cycle.
+ * @returns {Response} A JSON response indicating the success or failure of the password reset initiation.
+ */
+  export const forgot_password = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({ where: { email } });
 
-    if (!user) {
-      return res.status(400).json({
-        message: "Invalid email address",
-        errormessage: statusCodes[400],
-      });
-    }
+      if (!user) {
+        return res.status(400).json({
+          message: "Invalid email address",
+          errormessage: statusCodes[400],
+        });
+      }
 
-    const reset_token = crypto.createHash("sha256").update(email).digest("hex");
-    const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
+      const reset_token = crypto.createHash("sha256").update(email).digest("hex");
+      const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
 
-    if (user) {
-      await User.update(
-        { reset_token: reset_token, reset_token_expiry: expireTime },
-        { where: { email } }
-      );
-    }
+      if (user) {
+        await User.update(
+          { reset_token: reset_token, reset_token_expiry: expireTime },
+          { where: { email } }
+        );
+      }
 
-    // const resetUrl = `http://localhost:8080/recoverpassword/user_resetpassword`;
-    const mailContent = `
-      <html>
-      <p>You requested a password reset for your account.</p>
-      </br>
-      <p>Click the link below to reset your password:</p>
-      </br>
-      </br>
-      <button> <a href = " http://localhost:3000/resetPassword/${reset_token}"> Reset Password </a></button>
-      </br>
-      </br>
-      <p>This link will expire in 1 hour.</p>
-      </form>
-      </html>
-    `;
+      // const resetUrl = `http://localhost:8080/recoverpassword/user_resetpassword`;
+      const mailContent = `
+        <html>
+        <p>You requested a password reset for your account.</p>
+        </br>
+        <p>Click the link below to reset your password:</p>
+        </br>
+        </br>
+        <button> <a href = " http://localhost:3000/resetPassword/${reset_token}"> Reset Password </a></button>
+        </br>
+        </br>
+        <p>This link will expire in 1 hour.</p>
+        </form>
+        </html>
+      `;
 
-    /**      <html>
-      <form action = "${resetUrl}" method="POST"> 
-      <p>You requested a password reset for your account.</p>
-      <p>Click the link below to reset your password:</p>
-      <p>Your token is: ${resetToken}</p>
-      <label for="ResetToken">Token:</label>
-      <input type="text" id="ResetToken" name="ResetToken" required>
-      <br>
-      <label for="Password">Password:</label>
-      <input type="password" id="Password" name="Password" required>
-      <br>
-      <button type = "submit">Reset Password</button>
-      <p>This link will expire in 1 hour.</p>
-      </form>
-      </html> 
-*/
+      /**      <html>
+        <form action = "${resetUrl}" method="POST"> 
+        <p>You requested a password reset for your account.</p>
+        <p>Click the link below to reset your password:</p>
+        <p>Your token is: ${resetToken}</p>
+        <label for="ResetToken">Token:</label>
+        <input type="text" id="ResetToken" name="ResetToken" required>
+        <br>
+        <label for="Password">Password:</label>
+        <input type="password" id="Password" name="Password" required>
+        <br>
+        <button type = "submit">Reset Password</button>
+        <p>This link will expire in 1 hour.</p>
+        </form>
+        </html> 
+  */
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false,
-      debug: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const info = await transporter.sendMail({
-      from: "vohraatta@gmail.com",
-      to: email,
-      subject: "Password Reset Request",
-      html: mailContent,
-    });
-
-    console.log("Email sent: %s", info.messageId);
-
-    res.status(200).json({
-      message: "Reset password link sent to your email",
-      response_message: statusCodes[200],
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Error sending reset password link",
-      errormessage: statusCodes[500],
-    });
-  }
-};
-
-export const reset_password = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // const { reset_token} = req.params;
-    const { password, reset_token } = req.body;
-    // console.log(ResetToken, Password);
-    // Validate reset token and expiry
-    const user = await User.findOne({
-      where: {
-        reset_token: reset_token,
-        reset_token_expiry: { [Op.gt]: Date.now() },
-      },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        message: "Invalid or expired reset token",
-        errormessage: statusCodes[400],
-      });
-    }
-
-    const hashedPassword = await brcypt.hash(password, 10);
-    if (user) {
-      await User.update(
-        {
-          password: hashedPassword,
-          reset_token: null,
-          reset_token_expiry: null,
+      const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT),
+        secure: false,
+        debug: true,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
         },
-        { where: { user_id: user.user_id } }
-      );
+      });
+
+      const info = await transporter.sendMail({
+        from: "vohraatta@gmail.com",
+        to: email,
+        subject: "Password Reset Request",
+        html: mailContent,
+      });
+
+      console.log("Email sent: %s", info.messageId);
 
       res.status(200).json({
-        message: "Password reset successfully",
-        errormessage: statusCodes[200],
+        message: "Reset password link sent to your email",
+        response_message: statusCodes[200],
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: "Error sending reset password link",
+        errormessage: statusCodes[500],
       });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Error resetting password",
-      errormessage: statusCodes[500],
-    });
-  }
-};
+  };
+
+/**
+ * @description Handles the process of resetting the user's password using the provided reset token.
+ * @param {Request} req - The request object containing the new password and reset token.
+ * @param {Response} res - The response object to send the status of the password reset operation.
+ * @param {NextFunction} next - The next middleware function in the request-response cycle.
+ * @returns {Response} A JSON response indicating the success or failure of the password reset operation.
+ */
+  
