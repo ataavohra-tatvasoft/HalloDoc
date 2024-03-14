@@ -113,7 +113,7 @@ module.exports = {
       },
 
       stop_notification_status: {
-        type: DataType.ENUM("yes", "no"),
+        type: Sequelize.ENUM("yes", "no"),
         allowNull: true,
         defaultValue: "no",
       },

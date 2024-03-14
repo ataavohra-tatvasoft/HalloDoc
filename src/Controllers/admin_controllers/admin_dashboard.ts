@@ -808,7 +808,47 @@ export const requests_by_request_state = async (
     res.status(500).json({ message: "Internal server error" });
   }
 };
+export const requests_by_request_state_counts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const request_state = [
+      "new",
+      "pending",
+      "active",
+      "conclude",
+      "toclose",
+      "unpaid",
+    ];
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    for (const state of request_state) {
+      const { count } = await RequestModel.findAndCountAll({
+        where: {
+          cancellation_status: "no",
+          block_status: "no",
+          request_state: state,
+        },
+      });
+      console.log(count);
+      const formattedRequest: any = {
+        request_state: state,
+        counts: count,
+      };
+      formattedResponse.data.push(formattedRequest);
+    }
 
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export const requests_by_request_state_refactored = async (
   req: Request,
   res: Response,
@@ -920,14 +960,19 @@ export const requests_by_request_state_refactored = async (
           requestor: request.requested_by,
           requested_date: request.requested_date.toISOString().split("T")[0],
           ...(state !== "new"
-            ? { date_of_service: request.date_of_service.toISOString().split("T")[0] }
+            ? {
+                date_of_service: request.date_of_service
+                  .toISOString()
+                  .split("T")[0],
+              }
             : {}),
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,
             DOB: request.Patient.dob.toISOString().split("T")[0],
             mobile_no: request.Patient.mobile_no,
-            address: request.Patient.address_1 + " " + request.Patient.address_2,
+            address:
+              request.Patient.address_1 + " " + request.Patient.address_2,
             ...(state === "toclose" ? { region: request.Patient.state } : {}),
           },
           ...(state !== "new"
@@ -935,10 +980,15 @@ export const requests_by_request_state_refactored = async (
                 physician_data: {
                   user_id: request.Physician.user_id,
                   name:
-                    request.Physician.firstname + " " + request.Physician.lastname,
+                    request.Physician.firstname +
+                    " " +
+                    request.Physician.lastname,
                   DOB: request.Physician.dob.toISOString().split("T")[0],
                   mobile_no: request.Physician.mobile_no,
-                  address: request.Physician.address_1 + " " + request.Physician.address_2,
+                  address:
+                    request.Physician.address_1 +
+                    " " +
+                    request.Physician.address_2,
                 },
               }
             : {}),
@@ -946,7 +996,8 @@ export const requests_by_request_state_refactored = async (
             user_id: request.Requestor?.user_id || null,
             first_name:
               request.Requestor?.first_name ||
-              null + " " + request.Requestor?.last_name || null,
+              null + " " + request.Requestor?.last_name ||
+              null,
             last_name: request.Requestor?.last_name || null,
           },
           notes: request.Notes?.map((note) => ({
@@ -990,7 +1041,6 @@ export const requests_by_request_state_refactored = async (
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 /**Admin Request Actions */
 export const view_case_for_request = async (
@@ -1063,9 +1113,7 @@ export const view_case_for_request = async (
         //   .map(Number)
         //   .reverse()
         //   .join("-"),
-        DOB: request.Patient.dob
-        .toISOString()
-        .split("T")[0],
+        DOB: request.Patient.dob.toISOString().split("T")[0],
         mobile_no: request.Patient.mobile_no,
         email: request.Patient.email,
         location_information: {
@@ -2017,12 +2065,12 @@ export const transfer_request_region_physicians = async (
   next: NextFunction
 ) => {
   try {
-    const {confirmation_no} = req.params;
-    const { region  } = req.query as { region: string };
+    // const {confirmation_no} = req.params;
+    const { region } = req.query as { region: string };
     var i = 1;
     const formattedResponse: any = {
       status: true,
-      confirmation_no: confirmation_no,
+      // confirmation_no: confirmation_no,
       data: [],
     };
     const physicians = await User.findAll({
@@ -2045,7 +2093,7 @@ export const transfer_request_region_physicians = async (
         sr_no: i,
         // firstname: physician.firstname,
         // lastname: physician.lastname,
-        physician_name:  physician.firstname + " " + physician.lastname
+        physician_name: physician.firstname + " " + physician.lastname,
       };
       i++;
       formattedResponse.data.push(formattedRequest);

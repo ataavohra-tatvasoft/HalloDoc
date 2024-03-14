@@ -32,6 +32,8 @@ import {
   transfer_request_region_physicians,
   view_uploads_download_all,
   admin_send_link,
+  requests_by_request_state_refactored,
+  requests_by_request_state_counts
 } from "../../controllers";
 import {
   authmiddleware,
@@ -85,8 +87,10 @@ router.post(
     authmiddleware,
     region_with_thirdparty_API
   );
-  router.get("/dashboard/requests", authmiddleware, requests_by_request_state);
-  
+  // router.get("/dashboard/requests", authmiddleware, requests_by_request_state);
+  router.get("/dashboard/requestscount", authmiddleware, requests_by_request_state_counts);
+  router.get("/dashboard/requests", authmiddleware, requests_by_request_state_refactored);
+
   /**Admin Request Actions */
   router.get(
     "/dashboard/requests/:confirmation_no/actions/viewcase",
@@ -98,7 +102,7 @@ router.post(
     authmiddleware,
     view_notes_for_request
   );
-  router.post(
+  router.put(
     "/dashboard/requests/:confirmation_no/actions/viewnotes",
     authmiddleware,
     save_view_notes_for_request
@@ -175,7 +179,7 @@ router.post(
     send_orders_for_request
   );
   router.get(
-    "/dashboard/requests/:confirmation_no/actions/transferrequestphysicians",
+    "/dashboard/requests/actions/transferrequestphysicians",
     authmiddleware,
     transfer_request_region_physicians
   );
