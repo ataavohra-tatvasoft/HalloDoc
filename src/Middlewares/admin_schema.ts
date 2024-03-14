@@ -29,22 +29,6 @@ export const admin_schema_signup = async (
     },
   } = req;
 
-  //
-  // function validateCityState(
-  //   city: string,
-  //   state: string,
-  //   countryCode: string
-  // ): boolean {
-  //   const states: any = countryStateCity.getStatesOfCountry(countryCode);
-  //   const stateExists: boolean = states.some(
-  //     (currentState: any) => currentState.name === state
-  //   );
-  //   const cityExists: boolean = countryStateCity
-  //     .getCitiesOfState(countryCode, state)
-  //     .some((currentCity: any) => currentCity.name === city);
-
-  //   return stateExists && cityExists;
-  // }
   const adminSchema: Schema = Joi.object({
     Email: Joi.string().email({
       minDomainSegments: 2,
@@ -168,10 +152,7 @@ export const admin_schema_signup = async (
     );
 
     next();
-  } catch (error: any) {
-    // throw new Error(error.details.map((detail) => detail.message).join(", "));
-    // console.log(error.details.map((detail) => detail.message).join(", "));
-    // console.log(error.message);
+  } catch (error: any) {   
     return res.status(500).json({
       status: false,
       errormessage: error.message,

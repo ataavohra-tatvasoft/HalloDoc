@@ -41,6 +41,10 @@ import {
 import { authmiddleware } from "../../middlewares";
 import multer, { diskStorage } from "multer";
 import path from "path";
+import {requests_by_request_state_validation,
+  cancel_case_validation
+
+} from "../../middlewares/index";
 
 const router: Router = express.Router();
 const storage = multer.diskStorage({
@@ -97,6 +101,7 @@ router.get(
 router.get(
   "/dashboard/requests",
   authmiddleware,
+  requests_by_request_state_validation,
   requests_by_request_state_refactored
 );
 
@@ -124,6 +129,7 @@ router.get(
 router.put(
   "/dashboard/requests/:confirmation_no/actions/cancelcase",
   authmiddleware,
+  cancel_case_validation,
   cancel_case_for_request
 );
 router.get(

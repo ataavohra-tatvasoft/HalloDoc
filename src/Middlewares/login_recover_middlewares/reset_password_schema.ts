@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/status_codes";
+import statusCodes from "../../public/status_codes";
 
 export const reset_password_schema = async (
   req: Request,
