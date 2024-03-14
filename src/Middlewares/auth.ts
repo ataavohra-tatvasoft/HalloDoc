@@ -20,7 +20,6 @@ export const authmiddleware = async (
       token,
       process.env.JWT_SECRET_KEY as string
     );
-    console.log(verifiedToken);
     const validUser = await User.findOne({
       where: {
         email: verifiedToken.email,

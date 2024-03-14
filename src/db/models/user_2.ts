@@ -34,7 +34,7 @@ export default class User extends Model<
   password: string;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "provider"),
+    type: DataType.ENUM("admin", "patient", "provider", "vendor"),
     allowNull: false,
   })
   type_of_user: string;
@@ -57,7 +57,7 @@ export default class User extends Model<
     allowNull: false,
     unique: true,
   })
-  mobile_no: string;
+  mobile_no: bigint;
 
   @Column({
     type: DataType.STRING,
@@ -108,18 +108,18 @@ export default class User extends Model<
   zip: number;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "physician", "clinical"),
+    type: DataType.ENUM("admin", "patient", "physician", "clinical", "vendor"),
     allowNull: true,
     defaultValue: null,
   })
   role: string;
 
-  // Admin-specific fields (Assuming redundant role field is removed from the table)
+  // Admin-specific fields
   @Column({
-    type: DataType.STRING,
+    type: DataType.BIGINT,
     allowNull: true,
   })
-  billing_mobile_no: string;
+  billing_mobile_no: bigint;
 
   @Column({
     type: DataType.STRING,
@@ -152,22 +152,37 @@ export default class User extends Model<
     allowNull: true,
     unique: true,
   })
-  alternative_mobile_no: string;
+  alternative_mobile_no: bigint;
 
   @Column({
     type: DataType.ENUM("yes", "no"),
     allowNull: true,
-    defaultValue:"no",
+    defaultValue: "no",
   })
   stop_notification_status: string;
 
-  // Common attributes between Patient and Provider
+  // Vendors-specific fields
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  business_name: string;
+  profession: string;
 
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: true,
+    unique: true,
+  })
+  business_contact: bigint;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    // unique: true,
+  })
+  fax_number: number;
+
+  // Common attributes between Patient and Provider
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -182,6 +197,13 @@ export default class User extends Model<
   })
   open_requests: number;
 
+  // Common attributes between Patient and Provider and Vendor
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  business_name: string;
+
   // Additional attributes
   @Column({
     type: DataType.STRING,
@@ -194,6 +216,12 @@ export default class User extends Model<
     allowNull: true,
   })
   profile_picture: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  signature_photo: string;
 
   @Column({
     type: DataType.STRING,

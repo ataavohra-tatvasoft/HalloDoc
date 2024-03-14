@@ -9,19 +9,19 @@ export interface UserAttributes {
   firstname: string;
   lastname: string;
   mobile_no: string;
+  reset_token?: string | null;
+  reset_token_expiry?: number;
   address_1: string;
   address_2?: string | null;
   city: string;
   state: string;
   country_code?: string | null;
   zip: number;
-  reset_token?: string | null;
-  reset_token_expiry?: number;
+  role?: string | null;
 
   // Admin-specific fields (optional)
   billing_mobile_no?: number | null;
   status?: string | null;
-  role?: string | null; // Removed redundant "admin" role field
 
   // Patient-specific fields (optional)
   dob?: Date | null;
@@ -30,14 +30,26 @@ export interface UserAttributes {
   medical_licence?: string | null;
   NPI_no?: number | null;
   alternative_mobile_no?: string | null;
+  stop_notification_status?: string | null;
+
+  // Vendors-specific fields
+  profession?: string | null;
+  business_contact?: number | null;
+  fax_number?: number | null;
 
   //Common attributes between Patient and Provider (optional)
-  business_name?: string | null;
   street?: string | null;
+
+  //Common attributes between Admin and Provider
+  open_requests: number | null;
+
+  // Common attributes between Patient and Provider and Vendor
+  business_name: string | null;
 
   // Additional attributes (optional)
   tax_id?: string | null;
   profile_picture?: string | null;
+  signature_photo: string | null;
   business_website?: string | null;
   on_call_status?: string | null;
   scheduled_status?: string | null;
@@ -51,21 +63,28 @@ export interface UserCreationAttributes
     UserAttributes,
     | "user_id"
     | "password"
-    | "address_2"
     | "country_code"
-    | "reset_token"
     | "reset_token_expiry"
+    | "reset_token"
+    | "address_2"
+    | "zip"
+    | "role"
     | "billing_mobile_no"
     | "status"
-    | "role"
     | "dob"
     | "medical_licence"
     | "NPI_no"
     | "alternative_mobile_no"
+    | "stop_notification_status"
+    | "profession"
+    | "business_contact"
+    | "fax_number"
     | "street"
+    | "open_requests"
     | "business_name"
     | "tax_id"
     | "profile_picture"
+    | "signature_photo"
     | "business_website"
     | "on_call_status"
     | "scheduled_status"

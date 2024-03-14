@@ -13,8 +13,18 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Request",
+          model: "request",
           key: "request_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
+        },
+      },
+      userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "user",
+          key: "user_id",
           onDelete: "SET NULL",
           onUpdate: "CASCADE",
         },
@@ -22,26 +32,6 @@ module.exports = {
       request_state: {
         type: Sequelize.ENUM("active", "conclude", "toclose"),
         allowNull: false,
-      },
-      profession: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      businessName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      businessContact: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      faxNumber: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
       },
       orderDetails: {
         type: Sequelize.STRING,

@@ -19,7 +19,7 @@ module.exports = {
         allowNull: true,
       },
       type_of_user: {
-        type: Sequelize.ENUM("admin", "patient", "provider"),
+        type: Sequelize.ENUM("admin", "patient", "provider", "vendor"),
         allowNull: false,
       },
 
@@ -70,14 +70,20 @@ module.exports = {
         allowNull: true,
       },
       role: {
-        type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
+        type: Sequelize.ENUM(
+          "admin",
+          "patient",
+          "physician",
+          "clinical",
+          "vendor"
+        ),
         allowNull: true,
         defaultValue: null,
       },
 
       // Admin-specific fields
       billing_mobile_no: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: true,
         unique: true,
       },
@@ -85,7 +91,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-
       // role: {
       //   type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
       //   allowNull: true,
@@ -118,11 +123,24 @@ module.exports = {
         defaultValue: "no",
       },
 
-      //Common attributes between Patient and Provider
-      business_name: {
+      // Vendors-specific fields
+      profession: {
         type: Sequelize.STRING,
         allowNull: true,
       },
+
+      business_contact: {
+        type: Sequelize.BIGINT,
+        allowNull: true,
+        unique:true
+      },
+
+      fax_number: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+
+      //Common attributes between Patient and Provider
       street: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -135,6 +153,12 @@ module.exports = {
         defaultValue: 0,
       },
 
+      // Common attributes between Patient and Provider and Vendor
+      business_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+
       // Additional attributes
       tax_id: {
         type: Sequelize.STRING,
@@ -144,7 +168,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      // business_name: { type: DataTypes.STRING, allowNull: false },
+      signature_photo: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       business_website: {
         type: Sequelize.STRING,
         allowNull: true,

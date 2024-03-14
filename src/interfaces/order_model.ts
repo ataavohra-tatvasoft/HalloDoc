@@ -4,12 +4,8 @@ import { Optional } from "sequelize";
 export interface OrderAttributes {
   orderId: number;
   requestId: number;
+  userId: number,
   request_state: string;
-  profession: string;
-  businessName: string;
-  businessContact: number;
-  email: string;
-  faxNumber: number;
   orderDetails: string;
   numberOfRefill: number;
   createdAt: Date;

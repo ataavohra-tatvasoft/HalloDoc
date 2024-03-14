@@ -4,8 +4,6 @@ import User from "../../db/models/user_2";
 import Requestor from "../../db/models/requestor_2";
 import Notes from "../../db/models/notes_2";
 import Order from "../../db/models/order_2";
-import Region from "../../db/models/region_2";
-import Profession from "../../db/models/profession_2";
 import statusCodes from "../../public/status_codes";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -190,27 +188,6 @@ export const admin_create_request = async (
   }
 };
 
-export const region_without_thirdparty_API = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // const { confirmation_no } = req.params;
-    const regions = await Region.findAll({
-      attributes: ["region_name"],
-    });
-    if (!regions) {
-      res.status(500).json({ error: "Error fetching region data" });
-    }
-    return res.status(200).json({
-      status: "Successfull",
-      regions: regions,
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
 export const region_with_thirdparty_API = async (
   req: Request,
   res: Response,
@@ -244,6 +221,43 @@ export const region_with_thirdparty_API = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const region_for_request_states = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const regions = await User.findAll({
+      // attributes: [Sequelize.fn('DISTINCT', Sequelize.col('state'))],
+      attributes: ["state"],
+      where: {
+        type_of_user: "patient",
+      },
+    });
+
+    if (!regions) {
+      return res.status(404).json({ error: "No regions found" });
+    }
+    const uniqueRegions = [...new Set(regions.map((region) => region.state))];
+
+    for (const region of uniqueRegions) {
+      const formattedRequest: any = {
+        region_name: region,
+      };
+      formattedResponse.data.push(formattedRequest);
+    }
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    console.error("Error in fetching regions:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 export const requests_by_request_state = async (
@@ -1955,8 +1969,11 @@ export const professions_for_send_orders = async (
   next: NextFunction
 ) => {
   try {
-    const professions = await Profession.findAll({
-      attributes: ["profession_name"],
+    const professions = await User.findAll({
+      attributes: ["profession"],
+      where: {
+        type_of_user: "vendor",
+      },
     });
     if (!professions) {
       res.status(500).json({ error: "Error fetching region data" });
@@ -1968,6 +1985,70 @@ export const professions_for_send_orders = async (
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const business_name_for_send_orders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const profession = req.query as { profession: string };
+    const whereClause = {
+      type_of_user: "vendor",
+      // profession: profession
+      ...(profession && { profession: profession }),
+    };
+    const businesses = await User.findAll({
+      attributes: ["business_name"],
+      where: whereClause,
+    });
+    if (!businesses) {
+      res.status(500).json({ error: "Error fetching business data" });
+    }
+    return res
+      .status(200)
+      .json({ status: "Successfull", businesses: businesses });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const view_send_orders_for_request = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { profession, business } = req.query as {
+      profession: string;
+      business: string;
+    };
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const vendor = await User.findOne({
+      attributes: ["business_contact", "email", "fax_number"],
+      where: {
+        type_of_user: "vendor",
+        profession: profession,
+        business_name: business,
+      },
+    });
+    if (!vendor) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+    const formattedRequest: any = {
+      business_contact: vendor?.business_contact,
+      email: vendor?.email,
+      fax_number: vendor?.fax_number,
+    };
+    formattedResponse.data.push(formattedRequest);
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export const send_orders_for_request = async (
   req: Request,
   res: Response,
@@ -1975,15 +2056,11 @@ export const send_orders_for_request = async (
 ) => {
   try {
     const { confirmation_no, state } = req.params;
-    const {
-      profession,
-      businessName,
-      businessContact,
-      email,
-      faxNumber,
-      orderDetails,
-      numberOfRefill,
-    } = req.body;
+    const { business_contact, email } = req.query as {
+      business_contact: string;
+      email: string;
+    };
+    const { orderDetails, numberOfRefill } = req.body;
     if (state == "active" || "conclude" || "toclose") {
       const request = await RequestModel.findOne({
         where: {
@@ -1996,14 +2073,19 @@ export const send_orders_for_request = async (
       if (!request) {
         return res.status(404).json({ error: "Request not found" });
       }
+      const vendor = await User.findOne({
+        where: {
+          business_contact,
+          email,
+        },
+      });
+      if (!vendor) {
+        return res.status(404).json({ error: "Vendor not found" });
+      }
       await Order.create({
         requestId: request.request_id,
+        userId: vendor.user_id,
         request_state: state,
-        profession,
-        businessName,
-        businessContact,
-        email,
-        faxNumber,
         orderDetails,
         numberOfRefill,
       });
@@ -2059,6 +2141,42 @@ export const send_orders_for_request = async (
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // };
+
+export const transfer_request_regions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const regions = await User.findAll({
+      // attributes: [Sequelize.fn('DISTINCT', Sequelize.col('state'))],
+      attributes: ["state"],
+    });
+
+    if (!regions) {
+      return res.status(404).json({ error: "No regions found" });
+    }
+    const uniqueRegions = [...new Set(regions.map((region) => region.state))];
+
+    for (const region of uniqueRegions) {
+      const formattedRequest: any = {
+        region_name: region,
+      };
+      formattedResponse.data.push(formattedRequest);
+    }
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    console.error("Error in fetching regions:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 export const transfer_request_region_physicians = async (
   req: Request,
   res: Response,

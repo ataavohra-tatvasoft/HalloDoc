@@ -9,7 +9,6 @@ import {
   authmiddleware,
   admin_profile_info_edit_middleware,
 } from "../../middlewares";
-import multer, { diskStorage } from "multer";
 // import path from "path";
 
 const router: Router = express.Router();
