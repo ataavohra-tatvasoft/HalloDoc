@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import RequestModel from "../../db/models/request_2";
 import User from "../../db/models/user_2";
 import Notes from "../../db/models/notes_2";
+import { Controller } from "../../interfaces/common_interface";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
+import message_constants from "../../public/message_constants";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -11,240 +13,7 @@ dotenv.config({ path: `.env` });
 /**                             Admin in Access Roles                                     */
 /** Admin Account Access */
 
-/**
- * Manages account access based on the specified action.
- * 
- * @param req Express Request object
- * @param res Express Response object
- * @param next Express NextFunction object
- */
-export const manageAccountAccess = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { action } = req.query;
-
-    switch (action) {
-      case "list": {
-        try {
-          const { page, pageSize } = req.query as {
-            page: string;
-            pageSize: string;
-          };
-          const pageNumber = parseInt(page) || 1;
-          const limit = parseInt(pageSize) || 10;
-          const offset = (pageNumber - 1) * limit;
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          const { count, rows: accounts } = await User.findAndCountAll({
-            where: {
-              status: "active",
-            },
-            attributes: ["user_id", "firstname", "lastname", "type_of_user"],
-            limit,
-            offset,
-          });
-
-          if (!accounts) {
-            return res.status(404).json({ error: "Accounts not found" });
-          }
-
-          let i = offset + 1;
-          for (const account of accounts) {
-            const formattedRequest: any = {
-              sr_no: i,
-              user_id: account.user_id,
-              name: `${account.firstname} ${account.lastname}`,
-              account_type: account.type_of_user,
-            };
-            formattedResponse.data.push(formattedRequest);
-            i++;
-          }
-
-          return res.status(200).json({
-            ...formattedResponse,
-            totalPages: Math.ceil(count / limit),
-            currentPage: pageNumber,
-          });
-        } catch (error) {
-          console.error("Error fetching account list:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
-      }
-      case "edit": {
-        try {
-          const { user_id } = req.params;
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          const account = await User.findOne({
-            where: {
-              user_id: user_id,
-              status: "active",
-            },
-            attributes: [
-              "user_id",
-              "firstname",
-              "lastname",
-              "mobile_no",
-              "address_1",
-              "address_2",
-              "city",
-              "state",
-              "zip",
-              "dob",
-              "state",
-              "type_of_user",
-            ],
-          });
-          if (!account) {
-            return res.status(404).json({ error: "Account not found" });
-          }
-          const formattedRequest: any = {
-            user_id: account.user_id,
-            firstname: account.firstname,
-            lastname: account.lastname,
-            mobile_no: account.mobile_no,
-            address_1: account.address_1,
-            address_2: account.address_2,
-            city: account.city,
-            region: account.state,
-            zip: account.zip,
-            dob: account.dob.toISOString().split("T")[0],
-            state: account.state,
-            account_type: account.type_of_user,
-          };
-          formattedResponse.data.push(formattedRequest);
-
-          return res.status(200).json({
-            ...formattedResponse,
-          });
-        } catch (error) {
-          console.error("Error fetching account for editing:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
-      }
-      case "save": {
-        try {
-          const { user_id } = req.params;
-          const {
-            firstname,
-            lastname,
-            mobile_no,
-            address_1,
-            address_2,
-            city,
-            region,
-            zip,
-            dob,
-          } = req.body;
-          const account = await User.findOne({
-            where: {
-              user_id: user_id,
-              status: "active",
-            },
-          });
-          if (!account) {
-            return res.status(404).json({ error: "Account not found" });
-          }
-          const account_data = await User.update(
-            {
-              firstname,
-              lastname,
-              mobile_no,
-              address_1,
-              address_2,
-              city,
-              state: region,
-              zip,
-              dob,
-            },
-            {
-              where: {
-                user_id: user_id,
-              },
-            }
-          );
-          if (!account_data) {
-            return res
-              .status(404)
-              .json({ error: "Error while editing account information" });
-          }
-          return res.status(200).json({
-            status: true,
-            message: "Edited Successfully !!!",
-          });
-        } catch (error) {
-          console.error("Error fetching account for editing:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
-      }
-      case "delete": {
-        try {
-          const { user_id } = req.params;
-          const account = await User.findOne({
-            where: {
-              user_id,
-              status: "active",
-            },
-          });
-
-          if (!account) {
-            return res.status(404).json({ error: "Account not found" });
-          }
-
-          const relatedRequests = await RequestModel.findAll({
-            where: { patient_id: user_id },
-          });
-
-          if (relatedRequests.length > 0) {
-            // Assuming a one-to-many relationship between requests and notes:
-            const relatedNotes = await Notes.destroy({
-              where: {
-                requestId: relatedRequests.map((request) => request.request_id),
-              },
-            });
-            if (!relatedNotes) {
-              return res
-                .status(400)
-                .json({ error: "Error while deleting account" });
-            }
-
-            // Option 2: Cascade deletion (use with caution)
-            await RequestModel.destroy({ where: { patient_id: user_id } });
-          }
-
-          const deletedAccount = await User.destroy({ where: { user_id } });
-
-          if (!deletedAccount) {
-            return res
-              .status(400)
-              .json({ error: "Error while deleting account" });
-          }
-
-          return res
-            .status(200)
-            .json({ status: true, message: "Deleted Successfully!" });
-        } catch (error) {
-          console.error("Error deleting account:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
-      }
-      default:
-        return res.status(400).json({ error: "Invalid action" });
-    }
-  } catch (error) {
-    console.error("Error handling account access:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const access_accountaccess = async (
+export const access_accountaccess: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -271,7 +40,7 @@ export const access_accountaccess = async (
     });
 
     if (!accounts) {
-      return res.status(404).json({ error: "Accounts not found" });
+      return res.status(404).json({ error: message_constants.AcNF});
     }
 
     var i = offset + 1;
@@ -292,11 +61,10 @@ export const access_accountaccess = async (
       currentPage: pageNumber,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_accountaccess_edit = async (
+export const access_accountaccess_edit: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -328,7 +96,7 @@ export const access_accountaccess_edit = async (
       ],
     });
     if (!account) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: message_constants.AcNF });
     }
     const formattedRequest: any = {
       user_id: account.user_id,
@@ -350,11 +118,133 @@ export const access_accountaccess_edit = async (
       ...formattedResponse,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_accountaccess_edit_save = async (
+/**
+ * Manages account access based on the specified action.
+ * 
+ * @param req Express Request object
+ * @param res Express Response object
+ * @param next Express NextFunction object
+ */
+export const manage_account_access : Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { action } = req.query;
+
+    switch (action) {
+      case "list": {
+        try {
+          const { page, pageSize } = req.query as {
+            page: string;
+            pageSize: string;
+          };
+          const pageNumber = parseInt(page) || 1;
+          const limit = parseInt(pageSize) || 10;
+          const offset = (pageNumber - 1) * limit;
+          const formattedResponse: any = {
+            status: true,
+            data: [],
+          };
+          const { count, rows: accounts } = await User.findAndCountAll({
+            where: {
+              status: "active",
+            },
+            attributes: ["user_id", "firstname", "lastname", "type_of_user"],
+            limit,
+            offset,
+          });
+
+          if (!accounts) {
+            return res.status(404).json({ error: message_constants.AcNF });
+          }
+
+          let i = offset + 1;
+          for (const account of accounts) {
+            const formattedRequest: any = {
+              sr_no: i,
+              user_id: account.user_id,
+              name: `${account.firstname} ${account.lastname}`,
+              account_type: account.type_of_user,
+            };
+            formattedResponse.data.push(formattedRequest);
+            i++;
+          }
+
+          return res.status(200).json({
+            ...formattedResponse,
+            totalPages: Math.ceil(count / limit),
+            currentPage: pageNumber,
+          });
+        } catch (error) {
+          res.status(500).json({ error: message_constants.ISE });
+        }
+      }
+      case "view": {
+        try {
+          const { user_id } = req.params;
+          const formattedResponse: any = {
+            status: true,
+            data: [],
+          };
+          const account = await User.findOne({
+            where: {
+              user_id: user_id,
+              status: "active",
+            },
+            attributes: [
+              "user_id",
+              "firstname",
+              "lastname",
+              "mobile_no",
+              "address_1",
+              "address_2",
+              "city",
+              "state",
+              "zip",
+              "dob",
+              "state",
+              "type_of_user",
+            ],
+          });
+          if (!account) {
+            return res.status(404).json({ error: message_constants.AcNF });
+          }
+          const formattedRequest: any = {
+            user_id: account.user_id,
+            firstname: account.firstname,
+            lastname: account.lastname,
+            mobile_no: account.mobile_no,
+            address_1: account.address_1,
+            address_2: account.address_2,
+            city: account.city,
+            region: account.state,
+            zip: account.zip,
+            dob: account.dob.toISOString().split("T")[0],
+            state: account.state,
+            account_type: account.type_of_user,
+          };
+          formattedResponse.data.push(formattedRequest);
+
+          return res.status(200).json({
+            ...formattedResponse,
+          });
+        } catch (error) {
+          res.status(500).json({ error: message_constants.ISE });
+        }
+      }
+      default:
+        return res.status(400).json({ error: "Invalid action" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
+  }
+};
+export const access_account_access_edit_save : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -379,7 +269,7 @@ export const access_accountaccess_edit_save = async (
       },
     });
     if (!account) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: message_constants.AcNF });
     }
     const account_data = await User.update(
       {
@@ -400,18 +290,17 @@ export const access_accountaccess_edit_save = async (
       }
     );
     if (!account_data) {
-      return res.status(404).json({ error: "Error while editing information" });
+      return res.status(404).json({ error: message_constants.EWDI });
     }
     return res.status(200).json({
       status: true,
-      message: "Edited Successfully !!!",
+      message:message_constants.US,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_accountaccess_delete = async (
+export const access_account_access_delete : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -426,7 +315,7 @@ export const access_accountaccess_delete = async (
     });
 
     if (!account) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: message_constants.AcNF });
     }
 
     const relatedRequests = await RequestModel.findAll({
@@ -442,11 +331,11 @@ export const access_accountaccess_delete = async (
       // Assuming a one-to-many relationship between requests and notes:
       const relatedNotes = await Notes.destroy({
         where: {
-          requestId: relatedRequests.map((request) => request.request_id),
+          request_id: relatedRequests.map((request) => request.request_id),
         },
       });
       if (!relatedNotes) {
-        return res.status(400).json({ error: "Error while deleting account" });
+        return res.status(400).json({ error: message_constants.EWDN });
       }
 
       // Option 2: Cascade deletion (use with caution)
@@ -456,15 +345,14 @@ export const access_accountaccess_delete = async (
     const deletedAccount = await User.destroy({ where: { user_id } });
 
     if (!deletedAccount) {
-      return res.status(400).json({ error: "Error while deleting account" });
+      return res.status(400).json({ error: message_constants.EWDA });
     }
 
     return res
       .status(200)
-      .json({ status: true, message: "Deleted Successfully!" });
+      .json({ status: true, message: message_constants.DS });
   } catch (error) {
-    console.error("Error deleting account:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -477,7 +365,7 @@ export const access_accountaccess_delete = async (
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const manageUserAccess = async (
+export const manage_user_access : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -515,7 +403,7 @@ export const manageUserAccess = async (
           });
 
           if (!accounts) {
-            return res.status(404).json({ error: "No matching users found" });
+            return res.status(404).json({ error: message_constants.ANF });
           }
 
           // Format retrieved users for response
@@ -535,8 +423,7 @@ export const manageUserAccess = async (
             ...formattedResponse,
           });
         } catch (error) {
-          console.error("Error fetching users:", error);
-          res.status(500).json({ error: "Internal Server Error" });
+          res.status(500).json({ error: message_constants.ISE });
         }
       }
       // Action to retrieve a user for editing
@@ -567,7 +454,7 @@ export const manageUserAccess = async (
             ],
           });
           if (!account) {
-            return res.status(404).json({ error: "Account not found" });
+            return res.status(404).json({ error: message_constants.ANF });
           }
 
           // Format retrieved user for response
@@ -591,76 +478,18 @@ export const manageUserAccess = async (
             ...formattedResponse,
           });
         } catch (error) {
-          console.error("Error fetching user for editing:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
-      }
-      // Action to save changes made to a user
-      case "save": {
-        try {
-          const { user_id } = req.params; // Get user_id parameter from request parameters
-          const {
-            firstname,
-            lastname,
-            mobile_no,
-            address_1,
-            address_2,
-            city,
-            region,
-            zip,
-            dob,
-          } = req.body; // Extract user data from request body
-          // Retrieve user from the database
-          const account = await User.findOne({
-            where: {
-              user_id: user_id,
-            },
-          });
-          if (!account) {
-            return res.status(404).json({ error: "Account not found" });
-          }
-          // Update user information in the database
-          const account_data = await User.update(
-            {
-              firstname,
-              lastname,
-              mobile_no,
-              address_1,
-              address_2,
-              city,
-              state: region,
-              zip,
-              dob,
-            },
-            {
-              where: {
-                user_id: user_id,
-              },
-            }
-          );
-          if (!account_data) {
-            return res.status(404).json({ error: "Error while editing information" });
-          }
-          // Send success response
-          return res.status(200).json({
-            status: true,
-            message: "Edited Successfully !!!",
-          });
-        } catch (error) {
-          console.error("Error fetching user for editing:", error);
-          res.status(500).json({ error: "Internal Server Error" });
+          res.status(500).json({ error: message_constants.ISE });
         }
       }
       default:
-        return res.status(400).json({ error: "Invalid action" });
+        return res.status(400).json({ error:message_constants.IA });
     }
   } catch (error) {
-    console.error("Error handling user access:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 
-export const access_useraccess = async (
+export const access_useraccess: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -691,7 +520,7 @@ export const access_useraccess = async (
     });
 
     if (!accounts) {
-      return res.status(404).json({ error: "No matching users found" });
+      return res.status(404).json({ error: message_constants.ANF });
     }
     for (const account of accounts) {
       const formattedRequest: any = {
@@ -707,11 +536,10 @@ export const access_useraccess = async (
       ...formattedResponse,
     });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_useraccess_edit = async (
+export const access_useraccess_edit: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -741,7 +569,7 @@ export const access_useraccess_edit = async (
       ],
     });
     if (!account) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: message_constants.ANF });
     }
 
     const formattedRequest: any = {
@@ -763,11 +591,10 @@ export const access_useraccess_edit = async (
       ...formattedResponse,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_useraccess_edit_save = async (
+export const access_useraccess_edit_save : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -791,7 +618,7 @@ export const access_useraccess_edit_save = async (
       },
     });
     if (!account) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: message_constants.ANF });
     }
     const account_data = await User.update(
       {
@@ -812,15 +639,14 @@ export const access_useraccess_edit_save = async (
       }
     );
     if (!account_data) {
-      return res.status(404).json({ error: "Error while editing information" });
+      return res.status(404).json({ error: message_constants.EWEA});
     }
     return res.status(200).json({
       status: true,
-      message: "Edited Successfully !!!",
+      message: message_constants.US,
     });
   } catch (error) {
-    console.error("Error fetching request:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE});
   }
 };
 

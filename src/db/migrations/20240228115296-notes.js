@@ -4,7 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("notes", {
-      requestId: {
+      request_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -14,7 +14,7 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
-      noteId: {
+      note_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -31,7 +31,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      typeOfNote: {
+      type_of_note: {
         type: Sequelize.ENUM(
           "transfer_notes",
           "admin_notes",

@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
 import User from "../../db/models/previous_models/user";
-import nodemailer from "nodemailer";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";
-import statusCodes from "../../public/status_codes";
+import { Controller } from "../../interfaces/common_interface";
+import {transporter} from "../../utils"
+import message_constants from "../../public/message_constants";
 
 dotenv.config();
 const Op = Sequelize.Op;
@@ -17,20 +18,19 @@ const Op = Sequelize.Op;
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the password reset initiation.
  */
-  export const forgot_password = async (
+  export const forgot_password: Controller = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
     try {
       const { email } = req.body;
-
       const user = await User.findOne({ where: { email } });
 
       if (!user) {
         return res.status(400).json({
-          message: "Invalid email address",
-          errormessage: statusCodes[400],
+          message: message_constants.IEA,
+          errormessage: message_constants.NF,
         });
       }
 
@@ -43,8 +43,6 @@ const Op = Sequelize.Op;
           { where: { email } }
         );
       }
-
-      // const resetUrl = `http://localhost:8080/recoverpassword/user_resetpassword`;
       const mailContent = `
         <html>
         <p>You requested a password reset for your account.</p>
@@ -59,35 +57,6 @@ const Op = Sequelize.Op;
         </form>
         </html>
       `;
-
-      /**      <html>
-        <form action = "${resetUrl}" method="POST"> 
-        <p>You requested a password reset for your account.</p>
-        <p>Click the link below to reset your password:</p>
-        <p>Your token is: ${resetToken}</p>
-        <label for="ResetToken">Token:</label>
-        <input type="text" id="ResetToken" name="ResetToken" required>
-        <br>
-        <label for="Password">Password:</label>
-        <input type="password" id="Password" name="Password" required>
-        <br>
-        <button type = "submit">Reset Password</button>
-        <p>This link will expire in 1 hour.</p>
-        </form>
-        </html> 
-  */
-
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: Number(process.env.EMAIL_PORT),
-        secure: false,
-        debug: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
       const info = await transporter.sendMail({
         from: "vohraatta@gmail.com",
         to: email,
@@ -95,17 +64,15 @@ const Op = Sequelize.Op;
         html: mailContent,
       });
 
-      console.log("Email sent: %s", info.messageId);
-
       res.status(200).json({
-        message: "Reset password link sent to your email",
-        response_message: statusCodes[200],
+        message: message_constants.RPLSE,
+        response_message: message_constants.OK,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        message: "Error sending reset password link",
-        errormessage: statusCodes[500],
+        message: message_constants.ESRPL,
+        errormessage: message_constants.ISE,
       });
     }
   };
@@ -117,4 +84,49 @@ const Op = Sequelize.Op;
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the password reset operation.
  */
-  
+export const reset_password: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+
+    const { password, reset_token } = req.body;
+    const user = await User.findOne({
+      where: {
+        reset_token: reset_token,
+        reset_token_expiry: { [Op.gt]: Date.now() },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message:message_constants.IERT,
+        errormessage: message_constants.UA
+      });
+    }
+
+    const hashedPassword = await brcypt.hash(password, 10);
+    if (user) {
+      await User.update(
+        {
+          password: hashedPassword,
+          reset_token: null,
+          reset_token_expiry: null,
+        },
+        { where: { user_id: user.user_id } }
+      );
+
+      res.status(200).json({
+        message: message_constants.PRS,
+        errormessage: message_constants.OK
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: message_constants.ERP,
+      errormessage: message_constants.ISE,
+    });
+  }
+};

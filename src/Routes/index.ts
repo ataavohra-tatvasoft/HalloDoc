@@ -12,9 +12,9 @@ const router: Router = express.Router();
 router.use("/login", login_routes);
 router.use("/signup", signup_routes);
 router.use("/recoverpassword", login_routes);
-router.use("/admin", authmiddleware, admin_dashboard);
-router.use("/admin", authmiddleware, admin_myprofile);
-router.use("/admin", authmiddleware, admin_access_roles);
-router.use("/admin", authmiddleware, admin_provider_menu);
+router.use("/admin", admin_dashboard);
+router.use("/admin", admin_myprofile);
+router.use("/admin", admin_access_roles);
+router.use("/admin", admin_provider_menu);
 
 export default router;

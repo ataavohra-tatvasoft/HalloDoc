@@ -13,19 +13,19 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
     autoIncrement: true,
     primaryKey: true,
   })
-  orderId: number;
+  order_id: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  requestId: number;
+  request_id: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  userId: number;
+  user_id: number;
 
   @Column({
     type: DataType.ENUM("active", "conclude", "toclose"),
@@ -37,23 +37,23 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
     type: DataType.STRING,
     allowNull: false,
   })
-  orderDetails: string;
+  order_details: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
-  numberOfRefill: number;
+  number_of_refill: number;
 
   @BelongsTo(() => Request, {
-    foreignKey: "requestId",
+    foreignKey: "request_id",
     targetKey: "request_id",
   })
   Request: Request;
   
   @BelongsTo(() => User, {
-    foreignKey: "userId",
+    foreignKey: "user_id",
     targetKey: "user_id",
   })
   Vendor: User;

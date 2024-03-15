@@ -1,14 +1,20 @@
 import { Joi } from 'celebrate';
 
-export const forgotPasswordValidationSchema = {
+export const forgot_password_validation_schema = {
   body: {
     email: Joi.string().email().required(),
   },
 };
 
-export const resetPasswordValidationSchema = {
+export const reset_password_validation_schema = {
   body: {
-    password: Joi.string().required(),
+    password: Joi.string()
+    .min(5)
+    .required()
+    .pattern(
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/
+    ),
+    confirm_password: Joi.ref("Password"),
     reset_token: Joi.string().required(),
   },
 };

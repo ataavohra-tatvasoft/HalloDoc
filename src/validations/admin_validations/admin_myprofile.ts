@@ -1,13 +1,13 @@
 import { Joi } from 'celebrate';
 
-export const adminProfileResetPasswordValidationSchema = {
+export const admin_profile_reset_password_validation_schema = {
   body: Joi.object({
     password: Joi.string().required(),
     admin_id: Joi.number().integer().positive().required(),
   }),
 };
 
-export const adminProfileEditValidationSchema = {
+export const admin_profile_edit_validation_schema = {
   body: Joi.object({
     admin_id: Joi.number().integer().positive().required(),
     firstname: Joi.string(),

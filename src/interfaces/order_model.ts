@@ -2,14 +2,14 @@ import { any } from "joi";
 import { Optional } from "sequelize";
 
 export interface OrderAttributes {
-  orderId: number;
-  requestId: number;
-  userId: number,
+  order_id: number;
+  request_id: number;
+  user_id: number,
   request_state: string;
-  orderDetails: string;
-  numberOfRefill: number;
+  order_details: string;
+  number_of_refill: number;
   createdAt: Date;
   updatedAt: Date;
 }
 export interface OrderCreationAttributes
-  extends Optional<OrderAttributes, "createdAt" | "updatedAt" | "orderId"> {}
+  extends Optional<OrderAttributes, "createdAt" | "updatedAt" | "order_id"> {}

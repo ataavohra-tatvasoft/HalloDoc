@@ -7,6 +7,7 @@ export * from "./user_2";
 export * from "./requestor_2";
 export * from "./notes_2";
 export * from "./region_2";
+export * from "./profession_2"
 
 
 

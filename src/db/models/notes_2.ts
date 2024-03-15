@@ -17,10 +17,10 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
     type: DataType.INTEGER,
     allowNull: false,
   })
-  requestId: number;
+  request_id: number;
 
   @BelongsTo(() => Request, {
-    foreignKey: "requestId",
+    foreignKey: "request_id",
     targetKey: "request_id",
   })
   request: Request; // Optional association for Request
@@ -30,7 +30,7 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
     autoIncrement: true,
     primaryKey: true,
   })
-  noteId: number;
+  note_id: number;
 
   @Column({
     type: DataType.STRING,
@@ -62,7 +62,7 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
     ),
     allowNull: false,
   })
-  typeOfNote: string;
+  type_of_note: string;
 
   @BelongsTo(() => Request, {
     foreignKey: "requestId",

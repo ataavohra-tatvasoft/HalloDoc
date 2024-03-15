@@ -1,29 +1,24 @@
 import express, { Router } from "express";
-import { Request, Response, NextFunction } from "express";
+import { celebrate, Joi } from "celebrate";
 import { forgot_password, reset_password, login } from "../controllers";
-import { reset_password_schema } from "../middlewares";
+import {
+  forgot_password_validation_schema,
+  reset_password_validation_schema,
+} from "../validations/index";
 const router: Router = express.Router();
 
-router.post(
-  "/user_login",
-  (req: Request, res: Response, next: NextFunction) => {
-    login(req, res, next);
-  }
-);
+router.post("/user_login", login);
 
 router.post(
   "/user_forgotpassword",
-  (req: Request, res: Response, next: NextFunction) => {
-    forgot_password(req, res, next);
-  }
+  celebrate(forgot_password_validation_schema),
+  forgot_password
 );
 
 router.post(
   "/user_resetpassword",
-  reset_password_schema,
-  (req: Request, res: Response, next: NextFunction) => {
-    reset_password(req, res, next);
-  }
+  celebrate(reset_password_validation_schema),
+  reset_password
 );
 
 export default router;

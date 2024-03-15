@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import RequestModel from "../../db/models/request_2";
 import User from "../../db/models/user_2";
+import RequestModel from "../../db/models/request_2";
 import Requestor from "../../db/models/requestor_2";
 import Notes from "../../db/models/notes_2";
 import Order from "../../db/models/order_2";
-import statusCodes from "../../public/status_codes";
+import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
@@ -15,12 +15,14 @@ import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
 import path, { dirname } from "path";
 import fs from "fs";
+import message_constants from "../../public/message_constants";
+
 
 /** Configs */
 dotenv.config({ path: `.env` });
 
 /**                             Admin in Provider Menu                                    */
-export const provider_list = async (
+export const provider_list : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction

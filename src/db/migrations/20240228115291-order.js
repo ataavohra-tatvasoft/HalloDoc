@@ -4,12 +4,12 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("order", {
-      orderId: {
+      order_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      requestId: {
+      request_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -19,7 +19,7 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
-      userId: {
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -33,11 +33,11 @@ module.exports = {
         type: Sequelize.ENUM("active", "conclude", "toclose"),
         allowNull: false,
       },
-      orderDetails: {
+      order_details: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      numberOfRefill: {
+      number_of_refill: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0,

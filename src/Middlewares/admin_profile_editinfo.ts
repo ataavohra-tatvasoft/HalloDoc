@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/status_codes";
+import statusCodes from "../public/message_constants";
 
 
 export const admin_profile_info_edit_middleware = async (

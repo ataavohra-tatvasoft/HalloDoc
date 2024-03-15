@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import statusCodes from "../../public/status_codes";
+import message_constants from "../../public/message_constants";
 import { Request, Response, NextFunction } from "express";
 import User from "../../db/models/previous_models/user";
+import { Controller } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,7 +14,7 @@ dotenv.config();
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the authentication status and JWT token upon successful login.
  */
-export const login = async (
+export const login: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -39,7 +40,7 @@ export const login = async (
     if (!user) {
       return res.status(404).json({
         status: false,
-        message: "USER " + statusCodes[404],
+        message: "USER " + message_constants.NF,
       });
     }
     if (user) {
@@ -64,7 +65,7 @@ export const login = async (
       if (!user_data) {
         return res.status(401).json({
           status: false,
-          message: statusCodes[401],
+          message: message_constants.UA,
         });
       }
     }
@@ -79,14 +80,14 @@ export const login = async (
 
     return res.status(200).json({
       status: true,
-      message: statusCodes[200],
+      message: message_constants.OK,
       jwtToken,
     });
   } catch (error: any) {
     res.status(500).json({
       status: false,
       errormessage: error.message,
-      message: statusCodes[500],
+      message: message_constants.ISE,
     });
   }
 };

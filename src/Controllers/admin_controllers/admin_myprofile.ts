@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../db/models/user_2";
 import Region from "../../db/models/region_2";
+import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import message_constants from "../../public/message_constants";
+
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -17,7 +20,7 @@ dotenv.config({ path: `.env` });
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response containing the formatted admin profile data or an error message.
  */
-export const admin_profile_view = async (
+export const admin_profile_view: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -56,13 +59,13 @@ export const admin_profile_view = async (
       ],
     });
     if (!profile) {
-      return res.status(404).json({ error: "Request not found" });
+      return res.status(404).json({ error: message_constants.PNF });
     }
     const regions = await Region.findAll({
       attributes: ["region_name"],
     });
     if (!regions) {
-      res.status(500).json({ error: "Error fetching region data" });
+      res.status(500).json({ error: message_constants.EFRD });
     }
     const formattedRequest: any = {
       user_id: profile.user_id,
@@ -95,8 +98,7 @@ export const admin_profile_view = async (
       ...formattedResponse,
     });
   } catch (error) {
-    console.error("Error fetching Admin Profile:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -107,7 +109,7 @@ export const admin_profile_view = async (
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the password reset operation.
  */
-export const admin_profile_reset_password = async (
+export const admin_profile_reset_password : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -133,12 +135,11 @@ export const admin_profile_reset_password = async (
         }
       );
       if (updatePassword) {
-        res.status(200).json({ status: "Successfull" });
+        res.status(200).json({ status: message_constants.Success });
       }
     }
   } catch (error) {
-    console.error("Error setting password", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE});
   }
 };
 
@@ -149,7 +150,7 @@ export const admin_profile_reset_password = async (
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the profile update operation.
  */
-export const adminProfileEdit = async (
+export const admin_profile_edit : Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -178,7 +179,7 @@ export const adminProfileEdit = async (
 
     // If admin profile is not found, return error response
     if (!adminProfile) {
-      return res.status(404).json({ error: "Admin not found" });
+      return res.status(404).json({ error: message_constants.ANF });
     }
 
     let updateFields: any = {};
@@ -216,15 +217,14 @@ export const adminProfileEdit = async (
 
     // If the update operation is successful, return success response
     if (updateStatus) {
-      res.status(200).json({ status: "Updated Successfully" });
+      res.status(200).json({ status: message_constants.US });
     }
   } catch (error) {
     // Handle any errors that occur during the update process and return internal server error response
-    console.error("Error updating admin profile:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const admin_profile_admin_info_edit = async (
+export const admin_profile_admin_info_edit: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -238,7 +238,7 @@ export const admin_profile_admin_info_edit = async (
       },
     });
     if (!adminprofile) {
-      return res.status(404).json({ error: "Admin not found" });
+      return res.status(404).json({ error: message_constants.ANF });
     }
     const updatestatus = await User.update(
       {
@@ -254,14 +254,13 @@ export const admin_profile_admin_info_edit = async (
       }
     );
     if (updatestatus) {
-      res.status(200).json({ status: "Updated Successfully" });
+      res.status(200).json({ status: message_constants.US });
     }
   } catch (error) {
-    console.error("Error fetching Admin Profile:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const admin_profile_mailing_billling_info_edit = async (
+export const admin_profile_mailing_billling_info_edit: Controller  = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -284,7 +283,7 @@ export const admin_profile_mailing_billling_info_edit = async (
         },
       });
       if (!adminprofile) {
-        return res.status(404).json({ error: "Admin not found" });
+        return res.status(404).json({ error: message_constants.ANF });
       }
       const updatestatus = await User.update(
         {
@@ -302,11 +301,10 @@ export const admin_profile_mailing_billling_info_edit = async (
         }
       );
       if (updatestatus) {
-        res.status(200).json({ status: "Updated Successfully" });
+        res.status(200).json({ status:message_constants.US });
       }
     } catch (error) {
-      console.error("Error fetching Admin Profile:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: message_constants.ISE });
     }
   }
 };

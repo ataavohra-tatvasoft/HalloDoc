@@ -2,17 +2,17 @@ import { any } from "joi";
 import { Optional } from "sequelize";
 
 export interface NotesAttributes {
-  requestId: number;
-  noteId: number;
+  request_id: number;
+  note_id: number;
   physician_name: string;
   reason: string;
   description: string;
-  typeOfNote: string;
+  type_of_note: string;
   createdAt: Date;
   updatedAt: Date;
 }
 export interface NotesCreationAttributes
   extends Optional<
     NotesAttributes,
-    "createdAt" | "updatedAt" | "noteId" | "physician_name" | "reason"
+    "createdAt" | "updatedAt" | "note_id" | "physician_name" | "reason"
   > {}

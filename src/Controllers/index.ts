@@ -4,6 +4,7 @@ export * from "./admin_controllers/admin_access_roles";
 export * from "./admin_controllers/admin_dashboard";
 export * from "./admin_controllers/admin_myprofile";
 export * from "./admin_controllers/admin_provider_menu";
+export * from "./common_controllers/common_controllers"
 
 
 

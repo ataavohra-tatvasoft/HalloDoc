@@ -1,6 +1,6 @@
 import { Joi } from 'celebrate';
 
-export const manageAccountAccessValidationSchema = {
+export const manage_account_access_validation_schema = {
   query: Joi.object().keys({
     action: Joi.string().valid('list', 'edit', 'save', 'delete').required(),
     page: Joi.string().optional(),
@@ -30,7 +30,7 @@ export const manageAccountAccessValidationSchema = {
   })
 };
 
-export const manageUserAccessValidationSchema = {
+export const manage_user_access_validation_Schema = {
   query: Joi.object().keys({
     action: Joi.string().valid('list', 'edit', 'save').required(),
     role: Joi.string().allow('').optional(), // Optional parameter for 'list' action
