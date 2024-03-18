@@ -169,7 +169,7 @@ export const professions: Controller = async (
         data: [],
       };
       const professions = await Profession.findAll({
-        attributes: ["region_id", "region_name"],
+        attributes: ["profession_id", "profession_name"],
       });
 
       if (!professions) {

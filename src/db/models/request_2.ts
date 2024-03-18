@@ -182,10 +182,10 @@ export default class Request extends Model<
   })
   Requestor: Requestor;
 
-  @HasMany(() => Notes, { foreignKey: "requestId" })
+  @HasMany(() => Notes, { foreignKey: "request_id" })
   Notes: Notes[];
 
-  @HasOne(() => Order, { foreignKey: "requestId" })
+  @HasOne(() => Order, { foreignKey: "request_id" })
   Order: Order[];
 
   @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })

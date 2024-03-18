@@ -244,5 +244,5 @@ export const admin_send_link_validation = {
     lastname: Joi.string().required(),
     mobile_no: Joi.string().optional().allow(''), 
     email: Joi.string().email().optional().allow(''), 
-  }).oxor('mobile_no', 'email'), 
+  })
 };

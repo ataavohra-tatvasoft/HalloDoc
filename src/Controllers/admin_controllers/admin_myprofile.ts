@@ -36,6 +36,7 @@ export const admin_profile_view: Controller  = async (
       status: true,
       data: [],
     };
+    console.log(verifiedToken);
     const admin_id = verifiedToken.user_id;
     const profile = await User.findOne({
       where: {

@@ -856,7 +856,7 @@ export const manage_requests_by_State: Controller = async (
           },
           {
             model: Notes,
-            attributes: ["noteId", "typeOfNote", "description"],
+            attributes: ["note_id", "type_of_note", "description"],
           },
         ],
         limit,
@@ -1087,7 +1087,7 @@ export const requests_by_request_state_refactored: Controller = async (
           },
           {
             model: Notes,
-            attributes: ["noteId", "typeOfNote", "description"],
+            attributes: ["note_id", "type_of_note", "description"],
           },
         ],
         limit,
@@ -1229,9 +1229,9 @@ export const view_case_for_request: Controller = async (
         },
         {
           model: Notes,
-          attributes: ["requestId", "noteId", "description", "typeOfNote"],
+          attributes: ["request_id", "note_id", "description", "type_of_note"],
           where: {
-            typeOfNote: "patient_notes",
+            type_of_note: "patient_notes",
           },
         },
       ],
@@ -1310,21 +1310,21 @@ export const view_notes_for_request: Controller = async (
         request_id: request.request_id,
         type_of_note: "transfer_notes",
       },
-      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
     const physician_notes_list = await Notes.findAll({
       where: {
         request_id: request.request_id,
         type_of_note: "physician_notes",
       },
-      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
     const admin_notes_list = await Notes.findAll({
       where: {
         request_id: request.request_id,
         type_of_note: "admin_notes",
       },
-      attributes: ["requestId", "noteId", "description", "typeOfNote"],
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
     const formattedRequest: any = {
       confirmation_no: confirmation_no,
@@ -2073,7 +2073,7 @@ export const business_name_for_send_orders: Controller = async (
     const whereClause = {
       type_of_user: "vendor",
       // profession: profession
-      ...(profession && { profession: profession }),
+      // ...(profession && { profession: profession }),
     };
     const businesses = await User.findAll({
       attributes: ["business_name"],
