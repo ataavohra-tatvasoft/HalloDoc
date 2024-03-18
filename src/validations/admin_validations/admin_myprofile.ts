@@ -1,14 +1,14 @@
 import { Joi } from "celebrate";
 
 export const admin_profile_reset_password_validation_schema = {
-  body: Joi.object().keys({
+  body: Joi.object({
     password: Joi.string().required(),
     admin_id: Joi.number().integer().positive().required(),
   }),
 };
 
 export const admin_profile_edit_validation_schema = {
-  body: Joi.object().keys({
+  body: Joi.object({
     admin_id: Joi.number().integer().positive().required(),
     firstname: Joi.string(),
     lastname: Joi.string(),
