@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/message_constants";
+import message_constants from "../public/message_constants";
 // import countryStateCity, { State } from "country-state-city";
 
 export const admin_schema_signup = async (
@@ -156,7 +156,7 @@ export const admin_schema_signup = async (
     return res.status(500).json({
       status: false,
       errormessage: error.message,
-      message: statusCodes[500],
+      message: message_constants.ISE,
     });
   }
 };

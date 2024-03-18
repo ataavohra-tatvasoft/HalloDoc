@@ -1,6 +1,6 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
-import statusCodes from "../public/message_constants";
+import message_constants from "../public/message_constants";
 
 export const request_schema = async (
   req: Request,
@@ -97,7 +97,7 @@ export const request_schema = async (
     return res.status(500).json({
       status: false,
       errormessage: error.message,
-      message: statusCodes[500],
+      message: message_constants.ISE,
     });
   }
 };

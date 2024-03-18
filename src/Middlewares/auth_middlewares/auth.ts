@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../../db/models/previous_models/user";
-import statusCodes from "../../public/message_constants";
+import message_constants from "../../public/message_constants";
 
 export const authmiddleware = async (
   req: Request,
@@ -33,18 +33,18 @@ export const authmiddleware = async (
       return res.status(400).json({
         status: false,
         message: "Invalid user",
-        error: statusCodes[400],
+        error: message_constants.NF,
       });
     }
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
       return res
         .status(401)
-        .json({ message: "Invalid token", errormessage: statusCodes[401] });
+        .json({ message: "Invalid token", errormessage: message_constants.UA });
     } else {
       return res
         .status(500)
-        .json({ message: "Server error", errormessage: statusCodes[500] });
+        .json({ message: "Server error", errormessage: message_constants.ISE });
     }
   }
 };
