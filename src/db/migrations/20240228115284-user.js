@@ -9,6 +9,11 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
       },
+      username: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -123,6 +128,17 @@ module.exports = {
         defaultValue: "no",
       },
 
+      synchronization_email: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
+
+      admin_notes: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+
       // Vendors-specific fields
       profession: {
         type: Sequelize.STRING,
@@ -132,7 +148,7 @@ module.exports = {
       business_contact: {
         type: Sequelize.BIGINT,
         allowNull: true,
-        unique:true
+        unique: true,
       },
 
       fax_number: {
@@ -159,8 +175,34 @@ module.exports = {
         allowNull: true,
       },
 
+      //Regions of service
+      district_of_columbia: {
+        type: Sequelize.ENUM("yes", "no"),
+        allowNull: false,
+        defaultValue: "no",
+      },
+      new_york: {
+        type: Sequelize.ENUM("yes", "no"),
+        allowNull: false,
+        defaultValue: "no",
+      },
+      virginia: {
+        type: Sequelize.ENUM("yes", "no"),
+        allowNull: false,
+        defaultValue: "no",
+      },
+      maryland: {
+        type: Sequelize.ENUM("yes", "no"),
+        allowNull: false,
+        defaultValue: "no",
+      },
+
       // Additional attributes
       tax_id: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      business_website: {
         type: Sequelize.STRING,
         allowNull: true,
       },
@@ -169,10 +211,6 @@ module.exports = {
         allowNull: true,
       },
       signature_photo: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      business_website: {
         type: Sequelize.STRING,
         allowNull: true,
       },

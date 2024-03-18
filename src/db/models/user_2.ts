@@ -22,6 +22,13 @@ export default class User extends Model<
 
   @Column({
     type: DataType.STRING,
+    allowNull: true,
+    unique: true,
+  })
+  username: string;
+
+  @Column({
+    type: DataType.STRING,
     allowNull: false,
     unique: true,
   })
@@ -161,6 +168,20 @@ export default class User extends Model<
   })
   stop_notification_status: string;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    unique: true,
+  })
+  synchronization_email: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  admin_notes: string;
+
+
   // Vendors-specific fields
   @Column({
     type: DataType.STRING,
@@ -204,12 +225,47 @@ export default class User extends Model<
   })
   business_name: string;
 
+  //Regions of service
+  @Column({
+    type: DataType.ENUM("yes","no"),
+    allowNull: false,
+    defaultValue:"no"
+  })
+  district_of_columbia: string;
+
+  @Column({
+    type: DataType.ENUM("yes","no"),
+    allowNull: false,
+    defaultValue:"no"
+  })
+  new_york: string;
+
+  @Column({
+    type: DataType.ENUM("yes","no"),
+    allowNull: false,
+    defaultValue:"no"
+  })
+  virginia: string;
+
+  @Column({
+    type: DataType.ENUM("yes","no"),
+    allowNull: false,
+    defaultValue:"no"
+  })
+  maryland: string;
+
   // Additional attributes
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
   tax_id: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  business_website: string;
 
   @Column({
     type: DataType.STRING,
@@ -222,12 +278,6 @@ export default class User extends Model<
     allowNull: true,
   })
   signature_photo: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  business_website: string;
 
   @Column({
     type: DataType.STRING,

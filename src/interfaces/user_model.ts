@@ -1,6 +1,7 @@
 import { Optional } from "sequelize";
 export interface UserAttributes {
   user_id: number;
+  username: string | null;
   email: string;
   password?: string; // Optional
   type_of_user: "admin" | "patient" | "provider";
@@ -31,6 +32,8 @@ export interface UserAttributes {
   NPI_no?: number | null;
   alternative_mobile_no?: string | null;
   stop_notification_status?: string | null;
+  synchronization_email: string | null;
+  admin_notes: string | null;
 
   // Vendors-specific fields
   profession?: string | null;
@@ -46,11 +49,17 @@ export interface UserAttributes {
   // Common attributes between Patient and Provider and Vendor
   business_name: string | null;
 
+  //Regions of service
+  district_of_columbia: string | null;
+  new_york: string | null;
+  virginia: string | null;
+  maryland: string | null;
+
   // Additional attributes (optional)
   tax_id?: string | null;
+  business_website?: string | null;
   profile_picture?: string | null;
   signature_photo: string | null;
-  business_website?: string | null;
   on_call_status?: string | null;
   scheduled_status?: string | null;
   support_message?: string | null;
@@ -62,6 +71,7 @@ export interface UserCreationAttributes
   extends Optional<
     UserAttributes,
     | "user_id"
+    | "username"
     | "password"
     | "country_code"
     | "reset_token_expiry"
@@ -76,6 +86,8 @@ export interface UserCreationAttributes
     | "NPI_no"
     | "alternative_mobile_no"
     | "stop_notification_status"
+    | "synchronization_email"
+    | "admin_notes"
     | "profession"
     | "business_contact"
     | "fax_number"
@@ -83,9 +95,9 @@ export interface UserCreationAttributes
     | "open_requests"
     | "business_name"
     | "tax_id"
+    | "business_website"
     | "profile_picture"
     | "signature_photo"
-    | "business_website"
     | "on_call_status"
     | "scheduled_status"
     | "support_message"

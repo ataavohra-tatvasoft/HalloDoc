@@ -9,13 +9,22 @@ module.exports = {
         allowNull: false,
       },
 
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+      },
       document_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,
       },
-
+      document_name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
       document_path: {
         type: Sequelize.STRING,
         allowNull: false,

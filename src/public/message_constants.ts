@@ -34,12 +34,16 @@ const message_constants = {
   ANF: "Admin not found",
   RNF:"Request not found",
   AcNF: "Accounts not found",
+  ONF:"Order not found",
   EWD:"Error while deleting",
   EWDI: "Error while deleting information",
   EWEI: "Error while deleting information",
   EWEA: "Error while editing account",
   EWDA: "Error while deleting account",
   EWDN: "Error while deleting notes",
+  EWDD:"Error while deleting document",
+  EWDO:"Error while deletin order",
+  EWDP:"Error while deleting profile",
   EWU:"Error while updating",
   NVFD:"No valid files found for download",
   NDF:"No documents found",
@@ -52,6 +56,9 @@ const message_constants = {
   ASE:"Agreement sent to your email",
   ESA:"Error sending Agreement",
   CRLS:"Create request link sent successfully",
+  ES:"Email Sent",
+  MS:"Message Sent",
+  EWSM:"Error while sending mail!!!"
 };
 
 export default message_constants;
