@@ -196,7 +196,7 @@ module.exports = {
           type_of_note: "admin_notes"
         },
         {
-          requestId: 28,
+          request_id: 28,
           note_id: 28,
           reason: "reason 28",
           description: "Description 28",
@@ -259,7 +259,7 @@ module.exports = {
           type_of_note: "admin_notes"
         },
         {
-          requestId: 1,
+          request_id: 1,
           note_id: 37,
           reason: "reason 1",
           description: "Description 1",
