@@ -1,9 +1,4 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-} from "sequelize-typescript";
+import { Table, Column, DataType, Model } from "sequelize-typescript";
 import {
   BusinessAttributes,
   BusinessCreationAttributes,
@@ -17,6 +12,7 @@ export default class Business extends Model<
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    autoIncrement: true,
     primaryKey: true,
   })
   business_id: number;
@@ -24,14 +20,14 @@ export default class Business extends Model<
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique:true
+    unique: true,
   })
   business_name: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique:true
+    unique: true,
   })
   business_website: string;
 
@@ -56,7 +52,7 @@ export default class Business extends Model<
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique:true
+    unique: true,
   })
   email: string;
 
@@ -77,7 +73,7 @@ export default class Business extends Model<
     allowNull: true,
   })
   city: string;
-  
+
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -89,5 +85,4 @@ export default class Business extends Model<
     allowNull: true,
   })
   zip: number;
-
 }

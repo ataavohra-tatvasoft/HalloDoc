@@ -11,7 +11,7 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    
+    primaryKey:true
   })
   order_id: number;
 
