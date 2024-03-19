@@ -1781,7 +1781,7 @@ export const view_uploads_view_data: Controller = async (
       request_id: request.request_id,
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
-      patient_data: {
+      patientData: {
         user_id: request.Patient.user_id,
         name: request.Patient.firstname + " " + request.Patient.lastname,
       },
