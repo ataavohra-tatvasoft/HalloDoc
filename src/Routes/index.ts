@@ -4,7 +4,7 @@ import signup_routes from "./signup";
 import admin_dashboard from "./admin_routes/admin_dashboard";
 import admin_myprofile from "./admin_routes/admin_myprofile";
 import admin_access_roles from "./admin_routes/admin_access_roles";
-import admin_provider_menu from "./admin_routes/admin_provider_menu";
+import admin_provider_menu from "./admin_routes/admin_provider_menu/provider";
 import common_routes from "./common_routes/common_routes";
 import { authmiddleware } from "../middlewares";
 

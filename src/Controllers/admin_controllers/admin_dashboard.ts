@@ -1780,7 +1780,7 @@ export const view_uploads_view_data: Controller = async (
     const formattedRequest: any = {
       request_id: request.request_id,
       request_state: request.request_state,
-      confirmation_no: request.confirmation_no,
+      confirmationNo: request.confirmation_no,
       patientData: {
         user_id: request.Patient.user_id,
         name: request.Patient.firstname + " " + request.Patient.lastname,
