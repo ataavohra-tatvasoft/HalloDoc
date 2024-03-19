@@ -36,6 +36,7 @@ const message_constants = {
   RNF:"Request not found",
   AcNF: "Accounts not found",
   ONF:"Order not found",
+  BNF:"Business not found",
   EWD:"Error while deleting",
   EWDI: "Error while deleting information",
   EWEI: "Error while deleting information",

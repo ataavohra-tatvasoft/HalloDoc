@@ -1,9 +1,10 @@
-import { Table, Column, DataType, Model } from "sequelize-typescript";
-
+import { Table, Column, DataType, Model ,HasMany} from "sequelize-typescript";
 import {
   UserAttributes,
   UserCreationAttributes,
 } from "../../interfaces/user_model";
+
+import Business from "./business_2";
 
 @Table({
   timestamps: true,
@@ -189,12 +190,12 @@ export default class User extends Model<
   })
   profession: string;
 
-  @Column({
-    type: DataType.BIGINT,
-    allowNull: true,
-    unique: true,
-  })
-  business_contact: bigint;
+  // @Column({
+  //   type: DataType.BIGINT,
+  //   allowNull: true,
+  //   unique: true,
+  // })
+  // business_contact: bigint;
 
   @Column({
     type: DataType.INTEGER,
@@ -218,12 +219,16 @@ export default class User extends Model<
   })
   open_requests: number;
 
+
   // Common attributes between Patient and Provider and Vendor
+  /**deleted*/ //business_name
   @Column({
-    type: DataType.STRING,
+    type: DataType.NUMBER,
     allowNull: true,
+    defaultValue: null,
   })
-  business_name: string;
+  business_id: number;
+
 
   //Regions of service
   @Column({
@@ -261,11 +266,11 @@ export default class User extends Model<
   })
   tax_id: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  business_website: string;
+  // @Column({
+  //   type: DataType.STRING,
+  //   allowNull: true,
+  // })
+  // business_website: string;
 
   @Column({
     type: DataType.STRING,
@@ -297,4 +302,8 @@ export default class User extends Model<
     allowNull: true,
   })
   support_message: string;
+
+  //Associations
+  @HasMany(() => Business, { foreignKey: "business_id" })
+  Business: Business[];
 }

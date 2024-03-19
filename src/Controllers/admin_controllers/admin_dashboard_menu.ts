@@ -4,6 +4,7 @@ import User from "../../db/models/user_2";
 import Requestor from "../../db/models/requestor_2";
 import Notes from "../../db/models/notes_2";
 import Order from "../../db/models/order_2";
+import Business from "../../db/models/business_2";
 import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -1220,7 +1221,7 @@ export const view_case_for_request: Controller = async (
             "mobile_no",
             "email",
             "state",
-            "business_name",
+            "business_id",
             "address_1",
           ],
           where: {
@@ -1239,7 +1240,11 @@ export const view_case_for_request: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-
+    const business_data = await Business.findOne({
+      where:{
+        business_id: request.Patient.business_id
+      }
+    })
     const formattedRequest: any = {
       request_id: request.request_id,
       request_state: request.request_state,
@@ -1266,7 +1271,7 @@ export const view_case_for_request: Controller = async (
         email: request.Patient.email,
         location_information: {
           region: request.Patient.state,
-          business_name: request.Patient.business_name,
+          business_name: business_data?.business_name,
           room: request.Patient.address_1 + " " + request.Patient.address_2,
         },
       },
@@ -2104,18 +2109,22 @@ export const view_send_orders_for_request: Controller = async (
       data: [],
     };
     const vendor = await User.findOne({
-      attributes: ["business_contact", "email", "fax_number"],
+      attributes: ["business_contact","business_id", "email", "fax_number"],
       where: {
         type_of_user: "vendor",
         profession: profession,
-        business_name: business,
       },
     });
     if (!vendor) {
       return res.status(404).json({ error: message_constants.VNF });
     }
+    const business_data = await Business.findOne({
+        where:{
+          business_id: vendor?.business_id
+        }
+    })
     const formattedRequest: any = {
-      business_contact: vendor?.business_contact,
+      business_contact: business_data?.business_contact,
       email: vendor?.email,
       fax_number: vendor?.fax_number,
     };
@@ -2134,7 +2143,7 @@ export const send_orders_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no, state } = req.params;
-    const { business_contact, email } = req.query as {
+    const { email } = req.query as {
       business_contact: string;
       email: string;
     };
@@ -2153,7 +2162,6 @@ export const send_orders_for_request: Controller = async (
       }
       const vendor = await User.findOne({
         where: {
-          business_contact,
           email,
         },
       });
