@@ -19,7 +19,7 @@ export default class Documents extends Model<
 > {
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
   })
   request_id: number;
 

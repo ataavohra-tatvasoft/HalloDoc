@@ -8,14 +8,11 @@ import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
-import jwt from "jsonwebtoken";
-import * as crypto from "crypto";
 import { Op, where } from "sequelize";
 import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
-import path, { dirname } from "path";
-import fs from "fs";
 import message_constants from "../../public/message_constants";
+import { stat } from "fs";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -117,7 +114,7 @@ export const stop_notification: Controller = async (
   }
 };
 
-export const contact_your_provider: Controller = async (
+export const contact_provider: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -252,6 +249,12 @@ export const view_edit_physician_account: Controller = async (
       attributes: ["document_id", "document_name", "document_path"],
       where: {
         user_id,
+        // document_name:
+        //   "independent_contractor_agreement" ||
+        //   "background_check" ||
+        //   "HIPAA" ||
+        //   "non_disclosure_agreement" ||
+        //   "licence_document",
       },
     });
     if (!documents) {
@@ -545,48 +548,335 @@ export const delete_provider_account: Controller = async (
       if (!profile) {
         return res.status(404).json({ error: message_constants.PNF });
       }
+      const related_requests = await RequestModel.findAll({
+        where: { physician_id: user_id },
+      });
 
-      const delete_document = await Documents.destroy({
-        where: {
-          user_id,
-        },
-      });
-      if (!delete_document) {
-        return res.status(404).json({ error: message_constants.EWDD });
-      }
-      const delete_order = await Order.destroy({
-        where: {
-          user_id,
-        },
-      });
-      if (!delete_order) {
-        return res.status(404).json({ error: message_constants.EWDO });
+      if (related_requests.length > 0) {
+        const related_documents = await Documents.destroy({
+          where: {
+            request_id: related_requests.map((request) => request.request_id),
+          },
+        });
+        if (!related_documents && related_documents != 0) {
+          return res.status(400).json({ error: message_constants.EWDD });
+        }
+        const related_orders = await Order.destroy({
+          where: {
+            request_id: related_requests.map((request) => request.request_id),
+          },
+        });
+
+        if (!related_orders && related_orders != 0) {
+          return res.status(400).json({ error: message_constants.EWDO });
+        }
+
+        const related_notes = await Notes.destroy({
+          where: {
+            request_id: related_requests.map((request) => request.request_id),
+          },
+        });
+
+        if (!related_notes && related_notes != 0) {
+          return res.status(400).json({ error: message_constants.EWDN });
+        }
+
+        await RequestModel.destroy({ where: { physician_id: user_id } });
       }
       const delete_profile = await User.destroy({
         where: {
           user_id,
         },
       });
+
       if (!delete_profile) {
         return res.status(404).json({ error: message_constants.EWDP });
       }
+      return res.status(200).json({
+        message: message_constants.DS,
+      });
     } catch (error) {
       res.status(500).json({ error: message_constants.ISE });
     }
   }
 };
 
-export const provider_profile_upload: Controller = async (
+export const provider_profile_upload = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  {
-    try {
-      const { profile_photo, signature_photo } = req.file;
-      
-    } catch (error) {
-      res.status(500).json({ error: message_constants.ISE });
+  try {
+    const { user_id } = req.params;
+    const uploaded_files: any = req.files || [];
+
+    const profile_picture_path = uploaded_files.find(
+      (file: any) => file.fieldname === "profile_picture"
+    )?.path;
+    const signature_photo_path = uploaded_files.find(
+      (file: any) => file.fieldname === "signature_photo"
+    )?.path;
+
+    if (profile_picture_path || signature_photo_path) {
+      const updated_user = await User.update(
+        {
+          profile_picture: profile_picture_path,
+          signature_photo: signature_photo_path,
+        },
+        { where: { user_id } }
+      );
+
+      if (updated_user[0] === 1) {
+        return res.status(200).json({ status: message_constants.US });
+      } else {
+        return res.status(500).json({ error: message_constants.EWU });
+      }
     }
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+// export const provider_onboarding_upload = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { user_id } = req.params;
+//     const id = parseInt(user_id);
+//     const uploaded_files: any = req.files || [];
+
+//     const document_fields = [
+//       {
+//         fieldname: "independent_contractor_agreement",
+//         pathName: "independent_contractor_agreement_path",
+//       },
+//       { fieldname: "background_check", pathName: "background_check_path" },
+//       { fieldname: "HIPAA", pathName: "HIPAA_compliance_path" },
+//       { fieldname: "non_diclosure", pathName: "non_diclosure_agreement_path" },
+//       { fieldname: "licence_document", pathName: "licence_document_path" },
+//     ];
+
+//     const document_updates = document_fields.map(async (doc_field) => {
+//       const document_path = uploaded_files.find(
+//         (file: any) => file.fieldname === doc_field.fieldname
+//       )?.path;
+//       console.log(doc_field.fieldname);
+//       if (document_path) {
+//         const existingDocument = await Documents.findOne({
+//           where: {
+//             user_id,
+//             document_name: doc_field.pathName,
+//           },
+//         });
+
+//         if (!existingDocument) {
+//           const status = await Documents.create({
+//             user_id: id,
+//             document_name: doc_field.pathName,
+//             document_path: document_path,
+//           });
+//           console.log(status);
+//         } else {
+//           const status = await Documents.update(
+//             { document_path: document_path },
+//             { where: { user_id, document_name: doc_field.pathName } }
+//           );
+//           console.log(status);
+//         }
+//       }
+//     });
+
+//     await Promise.all(document_updates);
+
+//     return res.status(200).json({ message: message_constants.UpS });
+//   } catch (error) {
+//     return res.status(500).json({ error: message_constants.ISE });
+//   }
+// };
+
+export const provider_onboarding_upload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { user_id } = req.body as { user_id: number };
+    const user = await User.findOne({
+      where: {
+        user_id,
+        type_of_user: "provider",
+        role: "physician",
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
+    const uploaded_files: any = req.files || [];
+
+    const independent_contractor_agreement_path = uploaded_files.find(
+      (file: any) => file.fieldname === "independent_contractor_agreement"
+    )?.path;
+    const background_check_path = uploaded_files.find(
+      (file: any) => file.fieldname === "background_check"
+    )?.path;
+    const HIPAA_path = uploaded_files.find(
+      (file: any) => file.fieldname === "HIPAA"
+    )?.path;
+    const non_diclosure_path = uploaded_files.find(
+      (file: any) => file.fieldname === "non_diclosure"
+    )?.path;
+    const licence_document_path = uploaded_files.find(
+      (file: any) => file.fieldname === "licence_document"
+    )?.path;
+
+    if (independent_contractor_agreement_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_name: "independent_contractor_agreement",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id,
+          document_name: "independent_contractor_agreement",
+          document_path: independent_contractor_agreement_path,
+        });
+      } else {
+        Documents.update(
+          { document_path: independent_contractor_agreement_path },
+          {
+            where: {
+              user_id,
+            },
+          }
+        );
+      }
+    }
+    if (background_check_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_name: "background_check",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id,
+          document_name: "background_check",
+          document_path: background_check_path,
+        });
+      } else {
+        Documents.update(
+          { document_path: background_check_path },
+          {
+            where: {
+              user_id,
+            },
+          }
+        );
+      }
+    }
+    if (HIPAA_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_name: "HIPAA",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id,
+          document_name: "HIPAA",
+          document_path: HIPAA_path,
+        });
+      } else {
+        Documents.update(
+          { document_path: HIPAA_path },
+          {
+            where: {
+              user_id,
+            },
+          }
+        );
+      }
+    }
+    if (non_diclosure_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_name: "non_diclosure",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id,
+          document_name: "non_diclosure",
+          document_path: non_diclosure_path,
+        });
+      } else {
+        Documents.update(
+          { document_path: non_diclosure_path },
+          {
+            where: {
+              user_id,
+            },
+          }
+        );
+      }
+    }
+    if (licence_document_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_name: "licence_document",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id,
+          document_name: "licence_document",
+          document_path: licence_document_path,
+        });
+      } else {
+        Documents.update(
+          { document_path: licence_document_path },
+          {
+            where: {
+              user_id,
+            },
+          }
+        );
+      }
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+export const provider_onboarding_delete = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { document_id } = req.params;
+    const delete_status = Documents.destroy({
+      where: {
+        document_id,
+      },
+    });
+    if (!delete_status) {
+      return res.status(200).json({ message: message_constants.EWDD });
+    }
+    return res.status(200).json({ message: message_constants.DS });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
