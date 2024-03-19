@@ -167,7 +167,7 @@ module.exports = {
 
       // Common attributes between Patient and Provider and Vendor
       business_id:{
-        type: DataType.NUMBER,
+        type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null,
         references: {
