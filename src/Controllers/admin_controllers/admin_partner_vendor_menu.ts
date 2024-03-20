@@ -1,19 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../../db/models/user_2";
-import RequestModel from "../../db/models/request_2";
-import Notes from "../../db/models/notes_2";
-import Order from "../../db/models/order_2";
 import { Controller } from "../../interfaces/common_interface";
-import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
-import twilio from "twilio";
-import Documents from "../../db/models/documents_2";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor_2";
-import { where } from "sequelize";
-import { any } from "joi";
-import { json } from "body-parser";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -57,13 +46,11 @@ export const partner_vendor_list: Controller = async (
     });
     if (!businesses) {
       return res.status(404).json({
-        message:
-          message_constants.BNF 
+        message: message_constants.BNF,
       });
     }
     var i = offset + 1;
     for (const business of businesses) {
-
       const formattedRequest: any = {
         sr_no: i,
         business_id: business.business_id,
@@ -140,6 +127,7 @@ export const add_business: Controller = async (
       message: message_constants.Success,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: message_constants.ISE });
   }
 };
@@ -150,6 +138,17 @@ export const update_business: Controller = async (
   next: NextFunction
 ) => {
   try {
+    const { business_id } = req.params;
+    const is_business = await Business.findOne({
+      where: {
+        business_id,
+      },
+    });
+    if (!is_business) {
+      return res.status(400).json({
+        message: message_constants.BNF,
+      });
+    }
     const {
       business_name,
       profession,
@@ -174,21 +173,62 @@ export const update_business: Controller = async (
       zip: number;
     };
 
-    const status = await Business.create({
-      business_name,
-      profession,
-      fax_number,
-      mobile_no,
-      email,
-      business_contact,
-      street,
-      city,
-      state,
-      zip,
-    });
+    const status = await Business.update(
+      {
+        business_name,
+        profession,
+        fax_number,
+        mobile_no,
+        email,
+        business_contact,
+        street,
+        city,
+        state,
+        zip,
+      },
+      {
+        where: { business_id },
+      }
+    );
     if (!status) {
       return res.status(400).json({
         message: message_constants.EWUB,
+      });
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const delete_vendor: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { business_id } = req.params;
+    const is_business = await Business.findOne({
+      where: {
+        business_id,
+      },
+    });
+    if (!is_business) {
+      return res.status(400).json({
+        message: message_constants.BNF,
+      });
+    }
+    const status = await Business.destroy({
+      where: {
+        business_id,
+      },
+    });
+    if (!status) {
+      return res.status(400).json({
+        message: message_constants.EWDB,
       });
     }
     return res.status(200).json({
