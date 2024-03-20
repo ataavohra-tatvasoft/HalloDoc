@@ -1,15 +1,30 @@
-import { NextFunction, Request, Response } from 'express';
-import {  ValidationError } from 'joi'; // Import Joi.Error type
+import { NextFunction, Request, Response } from "express";
+const celebrate = require('celebrate');
+// import { ValidationError } from "joi";
 
-export const handle_joi_errors = (err: Error, req: Request, res: Response, next: NextFunction) => {
-    if (err && (err as ValidationError).isJoi) { // Type assertion
-      const { details } = err as ValidationError; // Type assertion
-      const validationErrors = details.map((detail) => detail.message);
-  
-      return res.status(400).json({
-        status: false,
-        errors: validationErrors,
-      });
-    }
-  };
-  
+export const handle_joi_errors = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (err instanceof celebrate.CelebrateError) {
+    // Handle Celebrate validation errors
+    const { details } = err;
+
+    res.status(err.statusCode || 400).json({
+      message: "Validation failed",
+      errors: details.reduce((acc:any, error:any) => {
+        const {
+          message,
+          context: { key },
+        } = error;
+        acc[key] = message;
+        return acc;
+      }, {}),
+    });
+  } else {
+
+    next(err);
+  }
+};
