@@ -5,12 +5,21 @@ import routes from "./src/routes";
 import dotenv from "dotenv";
 import fileUpload from "express-fileupload";
 import { handle_joi_errors } from "./src/middlewares";
+import connectToDatabase from "./src/connections/database";
 // import multer from "multer";
 
 dotenv.config({ path: "config.env" });
 
 /** Constants */
 const app: Express = express();
+
+(async () => {
+  try {
+    await connectToDatabase();
+  } catch (error) {
+    console.error(error);
+  }
+})();
 
 
 app.use(cors());

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Sequelize from "sequelize";
-import User from "../../db/models/previous_models/user";
+import User from "../../db/models/user_2";
 import brcypt from "bcrypt";
 import * as crypto from "crypto";
 import dotenv from "dotenv";

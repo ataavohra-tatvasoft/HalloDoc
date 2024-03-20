@@ -11,7 +11,7 @@ export interface UserAttributes {
   lastname: string;
   mobile_no: string;
   reset_token?: string | null;
-  reset_token_expiry?: number;
+  reset_token_expiry?: number | null;
   address_1: string;
   address_2?: string | null;
   city: string;

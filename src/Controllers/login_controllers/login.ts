@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import message_constants from "../../public/message_constants";
 import { Request, Response, NextFunction } from "express";
-import User from "../../db/models/previous_models/user";
+import User from "../../db/models/user_2";
 import { Controller } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 dotenv.config();

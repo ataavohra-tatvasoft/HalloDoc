@@ -1182,7 +1182,6 @@ export const requests_by_request_state_refactored: Controller = async (
         return res.status(500).json({ message: "Invalid State !!!" });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -1241,10 +1240,15 @@ export const view_case_for_request: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
     const business_data = await Business.findOne({
-      where:{
-        business_id: request.Patient.business_id
-      }
-    })
+      where: {
+        business_id: request.Patient.business_id,
+      },
+    });
+    if (!business_data) {
+      return res.status(404).json({
+        message: message_constants.BNF,
+      });
+    }
     const formattedRequest: any = {
       request_id: request.request_id,
       request_state: request.request_state,
@@ -1692,7 +1696,7 @@ export const block_case_for_request_view: Controller = async (
       ...formattedResponse,
     });
   } catch (error) {
-    res.status(500).json({ error:message_constants.ISE });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const block_case_for_request_post: Controller = async (
@@ -1713,7 +1717,7 @@ export const block_case_for_request_post: Controller = async (
       },
     });
     if (!request) {
-      return res.status(404).json({ error: message_constants.RNF});
+      return res.status(404).json({ error: message_constants.RNF });
     }
     await RequestModel.update(
       {
@@ -1825,7 +1829,7 @@ export const view_uploads_upload: Controller = async (
     });
 
     if (!request) {
-      return res.status(404).json({ error:message_constants.ISE});
+      return res.status(404).json({ error: message_constants.ISE });
     }
 
     const newDocument = await Documents.create({
@@ -1838,7 +1842,7 @@ export const view_uploads_upload: Controller = async (
     return res.status(200).json({
       status: true,
       confirmation_no: confirmation_no,
-      message:message_constants.UpS,
+      message: message_constants.UpS,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1888,7 +1892,7 @@ export const view_uploads_actions_delete: Controller = async (
       message: message_constants.Success,
     });
   } catch (error) {
-    res.status(500).json({ error:message_constants.ISE });
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const view_uploads_actions_download: Controller = async (
@@ -2026,9 +2030,7 @@ export const view_uploads_download_all: Controller = async (
     const documents = request.Documents;
 
     if (documents.length === 0) {
-      return res
-        .status(200)
-        .json({ message: message_constants.NDF });
+      return res.status(200).json({ message: message_constants.NDF });
     }
 
     const validPaths = documents.filter((file) =>
@@ -2036,9 +2038,7 @@ export const view_uploads_download_all: Controller = async (
     );
 
     if (validPaths.length === 0) {
-      return res
-        .status(404)
-        .json({ error: message_constants.NVFD });
+      return res.status(404).json({ error: message_constants.NVFD });
     }
 
     for (const file of validPaths) {
@@ -2109,7 +2109,7 @@ export const view_send_orders_for_request: Controller = async (
       data: [],
     };
     const vendor = await User.findOne({
-      attributes: ["business_contact","business_id", "email", "fax_number"],
+      attributes: ["business_contact", "business_id", "email", "fax_number"],
       where: {
         type_of_user: "vendor",
         profession: profession,
@@ -2119,10 +2119,10 @@ export const view_send_orders_for_request: Controller = async (
       return res.status(404).json({ error: message_constants.VNF });
     }
     const business_data = await Business.findOne({
-        where:{
-          business_id: vendor?.business_id
-        }
-    })
+      where: {
+        business_id: vendor?.business_id,
+      },
+    });
     const formattedRequest: any = {
       business_contact: business_data?.business_contact,
       email: vendor?.email,
@@ -2133,7 +2133,7 @@ export const view_send_orders_for_request: Controller = async (
       ...formattedResponse,
     });
   } catch (error) {
-    return res.status(500).json({ error:message_constants.ISE});
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const send_orders_for_request: Controller = async (
@@ -2265,7 +2265,7 @@ export const transfer_request: Controller = async (
       },
     });
     if (!request) {
-      return res.status(404).json({ error: message_constants.RNF});
+      return res.status(404).json({ error: message_constants.RNF });
     }
     // const physician_id = provider.user_id;
     await RequestModel.update(
@@ -2336,7 +2336,7 @@ export const clear_case_for_request: Controller = async (
       return res.status(200).json({
         status: true,
         confirmation_no: confirmation_no,
-        message:message_constants.Success,
+        message: message_constants.Success,
       });
     } catch {
       res.status(404).json({ error: message_constants.IS });
@@ -2590,7 +2590,7 @@ export const close_case_for_request_view_details: Controller = async (
       attributes: ["request_id", "confirmation_no"],
     });
     if (!request) {
-      return res.status(404).json({ error:message_constants.RNF });
+      return res.status(404).json({ error: message_constants.RNF });
     }
     const formattedRequest: any = {
       request_id: request.request_id,
@@ -2689,7 +2689,7 @@ export const close_case_for_request_actions_download: Controller = async (
     });
 
     if (!request) {
-      return res.status(404).json({ error:message_constants.RNF });
+      return res.status(404).json({ error: message_constants.RNF });
     }
 
     const document = await Documents.findOne({
@@ -2726,7 +2726,7 @@ export const close_case_for_request_actions_download: Controller = async (
         return res.status(200).json({
           status: true,
           confirmation_no: confirmation_no,
-          message:message_constants.DoS,
+          message: message_constants.DoS,
         });
       }
     });
@@ -2760,7 +2760,7 @@ export const request_support: Controller = async (
     );
     return res.status(200).json({
       status: true,
-      message:message_constants.Success,
+      message: message_constants.Success,
     });
   } catch (error) {
     console.error(error);
@@ -2791,7 +2791,7 @@ export const admin_send_link: Controller = async (
     if (!user) {
       return res
         .status(404)
-        .json({ status: false, message:message_constants.UNF });
+        .json({ status: false, message: message_constants.UNF });
     }
 
     const create_request_link = "https://localhost:3000/createRequest";

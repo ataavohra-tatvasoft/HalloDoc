@@ -1,12 +1,13 @@
-import { Table, Column, DataType, Model,BelongsTo } from "sequelize-typescript";
+import { Table, Column, DataType, Model,BelongsTo, Sequelize } from "sequelize-typescript";
 import {
   OrderAttributes,
   OrderCreationAttributes,
 } from "../../interfaces/order_model";
 import Request from "./request_2";
 import User from "./user_2";
+import sequelize from "../../connections/database";
 
-@Table({ timestamps: true, tableName: "order" })
+@Table({ timestamps: true , tableName: "order" })
 export default class Order extends Model<OrderAttributes, OrderCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
