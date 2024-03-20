@@ -105,7 +105,7 @@ router.put(
   provider_profile_upload
 );
 router.put(
-  "/providermenu/provider_list/:user_id/provider_onboarding_upload",
+  "/providermenu/provider_list/provider_onboarding_upload",
   authmiddleware,
   // celebrate(provider_onboarding_upload_validation),
   upload.any(),

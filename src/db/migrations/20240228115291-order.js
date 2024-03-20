@@ -19,12 +19,12 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
-      user_id: {
+      business_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "user",
-          key: "user_id",
+          model: "business-vendor",
+          key: "business_id",
           onDelete: "SET NULL",
           onUpdate: "CASCADE",
         },

@@ -63,15 +63,19 @@ const Op = Sequelize.Op;
         subject: "Password Reset Request",
         html: mailContent,
       });
+      if(!info){
+        return res.status(500).json({
+          message: message_constants.ESRPL,
+        });
+      }
 
-      res.status(200).json({
+     return res.status(200).json({
         message: message_constants.RPLSE,
         response_message: message_constants.OK,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        message: message_constants.ESRPL,
+      // console.log(error);
+      return res.status(500).json({
         errormessage: message_constants.ISE,
       });
     }

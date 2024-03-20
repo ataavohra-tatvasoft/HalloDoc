@@ -10,7 +10,6 @@ import twilio from "twilio";
 import Documents from "../../../db/models/documents_2";
 import dotenv from "dotenv";
 import message_constants from "../../../public/message_constants";
-import Business from "../../../db/models/business_2";
 import { where } from "sequelize";
 
 /** Configs */
@@ -243,14 +242,6 @@ export const view_edit_physician_account: Controller = async (
     if (!profile) {
       return res.status(404).json({ error: message_constants.PNF });
     }
-    const business_data = await Business.findOne({
-      where: {
-        business_id: profile.business_id,
-      },
-    });
-    if (!business_data) {
-      return res.status(404).json({ error: message_constants.BNF });
-    }
     const documents = await Documents.findAll({
       attributes: ["document_id", "document_name", "document_path"],
       where: {
@@ -297,8 +288,8 @@ export const view_edit_physician_account: Controller = async (
         billing_mobile_no: profile.billing_mobile_no,
       },
       provider_profile: {
-        business_name: business_data.business_name,
-        business_website: business_data.business_website,
+        business_name: profile.business_name,
+        business_website: profile.business_website,
         admin_notes: profile.admin_notes,
       },
       onboarding: {
@@ -516,38 +507,21 @@ export const save_provider_profile: Controller = async (
       if (!profile) {
         return res.status(404).json({ error: message_constants.PNF });
       }
-      const business_data = await Business.findOne({
-        where: {
-          business_id: profile.business_id,
-        },
-      });
-      if (!business_data) {
-        return res.status(404).json({
-          message: message_constants.BNF,
-        });
-      }
-      const business_update = await Business.update(
+      const updatestatus = await User.update(
         {
+          admin_notes,
           business_name,
           business_website,
         },
         {
           where: {
-            business_id: profile.business_id,
-          },
-        }
-      );
-      const updatestatus = await User.update(
-        {
-          admin_notes,
-        },
-        {
-          where: {
             user_id,
+            business_name,
+          business_website,
           },
         }
       );
-      if (updatestatus && business_update) {
+      if (updatestatus ) {
         res.status(200).json({ status: message_constants.US });
       }
     } catch (error) {

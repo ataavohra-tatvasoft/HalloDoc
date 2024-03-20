@@ -22,6 +22,7 @@ export interface BusinessCreationAttributes
     BusinessAttributes,
     | "createdAt"
     | "updatedAt"
+    |"business_id"
     | "business_website"
     | "profession"
     | "fax_number"

@@ -6,6 +6,7 @@ import {
 import Request from "./request_2";
 import User from "./user_2";
 import sequelize from "../../connections/database";
+import Business from "./business-vendor_2";
 
 @Table({ timestamps: true , tableName: "order" })
 export default class Order extends Model<OrderAttributes, OrderCreationAttributes> {
@@ -26,7 +27,7 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
     type: DataType.INTEGER,
     allowNull: false,
   })
-  user_id: number;
+  business_id: number;
 
   @Column({
     type: DataType.ENUM("active", "conclude", "toclose"),
@@ -53,10 +54,10 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   })
   Request: Request;
   
-  @BelongsTo(() => User, {
-    foreignKey: "user_id",
-    targetKey: "user_id",
+  @BelongsTo(() => Business, {
+    foreignKey: "business_id",
+    targetKey: "business_id",
   })
-  Vendor: User;
+  Business: Business;
   // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

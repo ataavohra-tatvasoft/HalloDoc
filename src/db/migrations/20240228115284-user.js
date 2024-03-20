@@ -24,7 +24,7 @@ module.exports = {
         allowNull: true,
       },
       type_of_user: {
-        type: Sequelize.ENUM("admin", "patient", "provider", "vendor"),
+        type: Sequelize.ENUM("admin", "patient", "provider"),
         allowNull: false,
       },
 
@@ -80,7 +80,6 @@ module.exports = {
           "patient",
           "physician",
           "clinical",
-          "vendor"
         ),
         allowNull: true,
         defaultValue: null,
@@ -135,24 +134,7 @@ module.exports = {
         allowNull: true,
       },
 
-      // Vendors-specific fields
-      profession: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-
-      // business_contact: {
-      //   type: Sequelize.BIGINT,
-      //   allowNull: true,
-      //   unique: true,
-      // },
-
-      fax_number: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-
-      //Common attributes between Patient and Provider
+      //Common attributes between Patient and Provider (optional)
       street: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -165,22 +147,11 @@ module.exports = {
         defaultValue: 0,
       },
 
-      // Common attributes between Patient and Provider and Vendor
-      business_id:{
-        type: Sequelize.INTEGER,
+      // Common attributes between Patient and Provider 
+      business_name: {
+        type: Sequelize.STRING,
         allowNull: true,
-        defaultValue: null,
-        references: {
-          model: "Business",
-          key: "business_id",
-          onDelete: "SET NULL",
-          onUpdate: "CASCADE",
-        },
       },
-      // business_name: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
 
       //Regions of service
       district_of_columbia: {
@@ -209,10 +180,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      // business_website: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
+      business_website: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       profile_picture: {
         type: Sequelize.STRING,
         allowNull: true,

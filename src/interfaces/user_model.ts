@@ -35,20 +35,14 @@ export interface UserAttributes {
   synchronization_email: string | null;
   admin_notes: string | null;
 
-  // Vendors-specific fields
-  profession?: string | null;
-  // business_contact?: number | null;
-  fax_number?: number | null;
-
   //Common attributes between Patient and Provider (optional)
   street?: string | null;
 
   //Common attributes between Admin and Provider
   open_requests: number | null;
 
-  // Common attributes between Patient and Provider and Vendor
-  // business_name: string | null;
-  business_id: number | null;
+  // Common attributes between Patient and Provider 
+  business_name: string | null;
 
   //Regions of service
   district_of_columbia: string | null;
@@ -58,7 +52,7 @@ export interface UserAttributes {
 
   // Additional attributes (optional)
   tax_id?: string | null;
-  // business_website?: string | null;
+  business_website?: string | null;
   profile_picture?: string | null;
   signature_photo: string | null;
   on_call_status?: string | null;
@@ -89,11 +83,8 @@ export interface UserCreationAttributes
     | "stop_notification_status"
     | "synchronization_email"
     | "admin_notes"
-    | "profession"
-    | "fax_number"
     | "street"
     | "open_requests"
-    | "business_id"
     | "tax_id"
     | "profile_picture"
     | "signature_photo"

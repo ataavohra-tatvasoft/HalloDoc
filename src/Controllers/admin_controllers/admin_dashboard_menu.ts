@@ -4,7 +4,7 @@ import User from "../../db/models/user_2";
 import Requestor from "../../db/models/requestor_2";
 import Notes from "../../db/models/notes_2";
 import Order from "../../db/models/order_2";
-import Business from "../../db/models/business_2";
+import Business from "../../db/models/business-vendor_2";
 import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -1214,13 +1214,14 @@ export const view_case_for_request: Controller = async (
           as: "Patient",
           model: User,
           attributes: [
+            "user_id",
             "firstname",
             "lastname",
             "dob",
             "mobile_no",
             "email",
             "state",
-            "business_id",
+            "business_name",
             "address_1",
           ],
           where: {
@@ -1238,16 +1239,6 @@ export const view_case_for_request: Controller = async (
     });
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
-    }
-    const business_data = await Business.findOne({
-      where: {
-        business_id: request.Patient.business_id,
-      },
-    });
-    if (!business_data) {
-      return res.status(404).json({
-        message: message_constants.BNF,
-      });
     }
     const formattedRequest: any = {
       request_id: request.request_id,
@@ -1275,7 +1266,7 @@ export const view_case_for_request: Controller = async (
         email: request.Patient.email,
         location_information: {
           region: request.Patient.state,
-          business_name: business_data?.business_name,
+          business_name: request.Patient.business_name,
           room: request.Patient.address_1 + " " + request.Patient.address_2,
         },
       },
@@ -2076,13 +2067,12 @@ export const business_name_for_send_orders: Controller = async (
   try {
     const profession = req.query as { profession: string };
     const whereClause = {
-      type_of_user: "vendor",
-      // profession: profession
-      // ...(profession && { profession: profession }),
+      // profession: profession  // Commented out for dynamic filtering
+      ...(profession && { profession: profession }),
     };
-    const businesses = await User.findAll({
+    const businesses = await Business.findAll({
       attributes: ["business_name"],
-      where: whereClause,
+      // where: whereClause,
     });
     if (!businesses) {
       res.status(500).json({ error: message_constants.EFBD });
@@ -2091,9 +2081,11 @@ export const business_name_for_send_orders: Controller = async (
       .status(200)
       .json({ status: message_constants.Success, businesses: businesses });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
 export const view_send_orders_for_request: Controller = async (
   req: Request,
   res: Response,
@@ -2108,25 +2100,19 @@ export const view_send_orders_for_request: Controller = async (
       status: true,
       data: [],
     };
-    const vendor = await User.findOne({
-      attributes: ["business_contact", "business_id", "email", "fax_number"],
+    const business_data = await Business.findOne({
       where: {
-        type_of_user: "vendor",
+        business_name: business,
         profession: profession,
       },
     });
-    if (!vendor) {
-      return res.status(404).json({ error: message_constants.VNF });
+    if (!business_data) {
+      return res.status(404).json({ error: message_constants.BNF });
     }
-    const business_data = await Business.findOne({
-      where: {
-        business_id: vendor?.business_id,
-      },
-    });
     const formattedRequest: any = {
       business_contact: business_data?.business_contact,
-      email: vendor?.email,
-      fax_number: vendor?.fax_number,
+      email: business_data?.email,
+      fax_number: business_data?.fax_number,
     };
     formattedResponse.data.push(formattedRequest);
     return res.status(200).json({
@@ -2143,8 +2129,8 @@ export const send_orders_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no, state } = req.params;
-    const { email } = req.query as {
-      business_contact: string;
+    const { business_contact, email } = req.query as {
+      business_contact: any;
       email: string;
     };
     const { order_details, number_of_refill } = req.body;
@@ -2160,17 +2146,18 @@ export const send_orders_for_request: Controller = async (
       if (!request) {
         return res.status(404).json({ error: message_constants.RNF });
       }
-      const vendor = await User.findOne({
+      const business = await Business.findOne({
         where: {
+          business_contact,
           email,
         },
       });
-      if (!vendor) {
-        return res.status(404).json({ error: message_constants.VNF });
+      if (!business) {
+        return res.status(404).json({ error: message_constants.BNF });
       }
       await Order.create({
         request_id: request.request_id,
-        user_id: vendor.user_id,
+        business_id: business.business_id,
         request_state: state,
         order_details,
         number_of_refill,
@@ -2182,6 +2169,7 @@ export const send_orders_for_request: Controller = async (
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };

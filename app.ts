@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import fileUpload from "express-fileupload";
 import { handle_joi_errors } from "./src/middlewares";
 import connectToDatabase from "./src/connections/database";
+import { errors } from "celebrate";
+
 // import multer from "multer";
 
 dotenv.config({ path: "config.env" });
@@ -39,7 +41,8 @@ app.use(fileUpload({
   limits: { fileSize: 5000000 }, 
   useTempFiles: true 
 }));
-app.use(handle_joi_errors);
+// app.use(handle_joi_errors);
+app.use(errors());
 
 app.listen(process.env.PORT);
 console.log("Application Started!!!");

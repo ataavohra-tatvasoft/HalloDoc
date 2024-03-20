@@ -4,8 +4,6 @@ import {
   UserCreationAttributes,
 } from "../../interfaces/user_model";
 
-import Business from "./business_2";
-
 @Table({
   timestamps: true,
   tableName: "user",
@@ -182,29 +180,7 @@ export default class User extends Model<
   })
   admin_notes: string;
 
-
-  // Vendors-specific fields
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  profession: string;
-
-  // @Column({
-  //   type: DataType.BIGINT,
-  //   allowNull: true,
-  //   unique: true,
-  // })
-  // business_contact: bigint;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-    // unique: true,
-  })
-  fax_number: number;
-
-  // Common attributes between Patient and Provider
+  // Common attributes between Patient and Provider (optional)
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -220,15 +196,12 @@ export default class User extends Model<
   open_requests: number;
 
 
-  // Common attributes between Patient and Provider and Vendor
-  /**deleted*/ //business_name
+  // Common attributes between Patient and Provider  
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.STRING,
     allowNull: true,
-    defaultValue: null,
   })
-  business_id: number;
-
+  business_name: string;
 
   //Regions of service
   @Column({
@@ -266,11 +239,11 @@ export default class User extends Model<
   })
   tax_id: string;
 
-  // @Column({
-  //   type: DataType.STRING,
-  //   allowNull: true,
-  // })
-  // business_website: string;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  business_website: string;
 
   @Column({
     type: DataType.STRING,
@@ -303,7 +276,5 @@ export default class User extends Model<
   })
   support_message: string;
 
-  //Associations
-  @HasMany(() => Business, { foreignKey: "business_id" })
-  Business: Business[];
+
 }
