@@ -1000,24 +1000,26 @@ export const requests_by_request_state_refactored: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { state, firstname, lastname, region, requestor, page, pageSize } =
-      req.query as {
-        state: string;
-        firstname: string;
-        lastname: string;
-        region: string;
-        requestor: string;
-        page: string;
-        pageSize: string;
-      };
+    const { state, search, region, requestor, page, pageSize } = req.query as {
+      state: string;
+      search: string;
+      region: string;
+      requestor: string;
+      page: string;
+      pageSize: string;
+    };
     const pageNumber = parseInt(page) || 1;
     const limit = parseInt(pageSize) || 10;
     const offset = (pageNumber - 1) * limit;
 
     const whereClause_patient = {
       type_of_user: "patient",
-      ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
-      ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
+      ...(search && {
+        [Op.or]: [
+          { firstname: { [Op.like]: `%${search}%` } },
+          { lastname: { [Op.like]: `%${search}%` } }
+        ]
+      }),
       ...(region && { state: region }),
     };
 
