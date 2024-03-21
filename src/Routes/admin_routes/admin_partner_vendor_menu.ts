@@ -35,7 +35,7 @@ router.post(
 router.put(
   "/partners/:business_id/update_business",
   authmiddleware,
-  // celebrate(update_business_validation),
+  celebrate(update_business_validation),
   update_business
 );
 

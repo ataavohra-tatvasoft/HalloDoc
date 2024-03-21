@@ -1017,8 +1017,8 @@ export const requests_by_request_state_refactored: Controller = async (
       ...(search && {
         [Op.or]: [
           { firstname: { [Op.like]: `%${search}%` } },
-          { lastname: { [Op.like]: `%${search}%` } }
-        ]
+          { lastname: { [Op.like]: `%${search}%` } },
+        ],
       }),
       ...(region && { state: region }),
     };
@@ -1119,7 +1119,11 @@ export const requests_by_request_state_refactored: Controller = async (
             DOB: request.Patient.dob.toISOString().split("T")[0],
             mobile_no: request.Patient.mobile_no,
             address:
-              request.Patient.address_1 + " " + request.Patient.address_2,
+              request.Patient.address_1 +
+              " " +
+              request.Patient.address_2 +
+              " " +
+              request.Patient.state,
             ...(state === "toclose" ? { region: request.Patient.state } : {}),
           },
           ...(state !== "new"
@@ -1135,7 +1139,9 @@ export const requests_by_request_state_refactored: Controller = async (
                   address:
                     request.Physician.address_1 +
                     " " +
-                    request.Physician.address_2,
+                    request.Physician.address_2 +
+                    " " +
+                    request.Patient.state,
                 },
               }
             : {}),
