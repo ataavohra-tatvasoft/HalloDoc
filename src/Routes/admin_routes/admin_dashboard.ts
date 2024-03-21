@@ -34,6 +34,7 @@ import {
   manage_requests_by_State,
   requests_by_request_state_refactored,
   requests_by_request_state_counts,
+  regions,
 } from "../../controllers";
 import {
   region_with_thirdparty_API,
@@ -93,15 +94,16 @@ router.get(
   authmiddleware,
   region_with_thirdparty_API
 );
-router.get(
-  "/dashboard/requestsregion",
-  authmiddleware,
-  region_for_request_states
-);
+
 
 /**
  * @description This route handles various actions related to requests based on their state.
  */
+router.get(
+  "/dashboard/requestsregion",
+  authmiddleware,
+  regions
+);
 router.get(
   "/dashboard/requestsandcounts",
   authmiddleware,
@@ -271,7 +273,7 @@ router.post(
 router.get(
   "/dashboard/requests/actions/transferrequestregions",
   authmiddleware,
-  transfer_request_regions
+  regions
 );
 router.get(
   "/dashboard/requests/actions/transferrequestphysicians",

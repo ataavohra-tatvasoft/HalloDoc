@@ -16,6 +16,7 @@ import dotenv from "dotenv";
 import path, { dirname } from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
+import Logs from "../../db/models/log_2";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -226,8 +227,14 @@ export const requests_by_request_state: Controller = async (
         };
         const { count, rows: requests } = await RequestModel.findAndCountAll({
           where: {
-            cancellation_status: "no",
-            block_status: "no",
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -318,8 +325,14 @@ export const requests_by_request_state: Controller = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
-            cancellation_status: "no",
-            block_status: "no",
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -441,8 +454,14 @@ export const requests_by_request_state: Controller = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
-            cancellation_status: "no",
-            block_status: "no",
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -543,8 +562,14 @@ export const requests_by_request_state: Controller = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
-            cancellation_status: "no",
-            block_status: "no",
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -653,8 +678,14 @@ export const requests_by_request_state: Controller = async (
         };
         const requests = await RequestModel.findAndCountAll({
           where: {
-            cancellation_status: "no",
-            block_status: "no",
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
           },
@@ -797,8 +828,14 @@ export const manage_requests_by_State: Controller = async (
       };
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
-          cancellation_status: "no",
-          block_status: "no",
+          request_status: {
+            [Op.notIn]: [
+              "cancelled by admin",
+              "cancelled by provider",
+              "blocked",
+              "clear",
+            ],
+          },
           request_state: state,
           ...(requestor ? { requested_by: requestor } : {}),
         },
@@ -974,8 +1011,14 @@ export const requests_by_request_state_counts: Controller = async (
     for (const state of request_state) {
       const { count } = await RequestModel.findAndCountAll({
         where: {
-          cancellation_status: "no",
-          block_status: "no",
+          request_status: {
+            [Op.notIn]: [
+              "cancelled by admin",
+              "cancelled by provider",
+              "blocked",
+              "clear",
+            ],
+          },
           request_state: state,
         },
       });
@@ -1030,8 +1073,14 @@ export const requests_by_request_state_refactored: Controller = async (
       };
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
-          cancellation_status: "no",
-          block_status: "no",
+          request_status: {
+            [Op.notIn]: [
+              "cancelled by admin",
+              "cancelled by provider",
+              "blocked",
+              "clear",
+            ],
+          },
           request_state: state,
           ...(requestor ? { requested_by: requestor } : {}),
         },
@@ -1213,8 +1262,14 @@ export const view_case_for_request: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       attributes: ["request_id", "request_state", "confirmation_no"],
       include: [
@@ -1306,8 +1361,14 @@ export const view_notes_for_request: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -1379,8 +1440,14 @@ export const save_view_notes_for_request: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -1439,8 +1506,14 @@ export const cancel_case_for_request_view_data: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "new",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
 
       include: [
@@ -1486,8 +1559,14 @@ export const cancel_case_for_request: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "new",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -1495,7 +1574,7 @@ export const cancel_case_for_request: Controller = async (
     }
     await RequestModel.update(
       {
-        cancellation_status: "yes",
+        request_status: "cancelled by provider",
       },
       {
         where: {
@@ -1663,8 +1742,14 @@ export const block_case_for_request_view: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "new",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -1711,8 +1796,14 @@ export const block_case_for_request_post: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "new",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -1720,8 +1811,8 @@ export const block_case_for_request_post: Controller = async (
     }
     await RequestModel.update(
       {
-        block_status: "yes",
-        block_status_reason: reason_for_block,
+        request_status: "blocked",
+        block_reason: reason_for_block,
       },
       {
         where: {
@@ -1757,8 +1848,14 @@ export const view_uploads_view_data: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
 
       include: [
@@ -1822,8 +1919,14 @@ export const view_uploads_upload: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
 
@@ -1858,8 +1961,14 @@ export const view_uploads_actions_delete: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no: confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -1905,8 +2014,14 @@ export const view_uploads_actions_download: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -1971,8 +2086,14 @@ export const view_uploads_delete_all: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
 
@@ -2010,8 +2131,14 @@ export const view_uploads_download_all: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -2147,8 +2274,14 @@ export const send_orders_for_request: Controller = async (
         where: {
           confirmation_no: confirmation_no,
           request_state: state,
-          block_status: "no",
-          cancellation_status: "no",
+          request_status: {
+            [Op.notIn]: [
+              "cancelled by admin",
+              "cancelled by provider",
+              "blocked",
+              "clear",
+            ],
+          },
         },
       });
       if (!request) {
@@ -2255,9 +2388,14 @@ export const transfer_request: Controller = async (
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        block_status: "no",
-        cancellation_status: "no",
-        close_case_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -2371,9 +2509,14 @@ export const send_agreement: Controller = async (
       where: {
         confirmation_no,
         patient_id: user.user_id,
-        block_status: "no",
-        cancellation_status: "no",
-        close_case_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: {
         as: "Patient",
@@ -2434,15 +2577,29 @@ export const send_agreement: Controller = async (
       html: mailContent,
     });
     if (!info) {
-      res.status(500).json({
+      return res.status(500).json({
         message: message_constants.EWSA,
-        errormessage: message_constants.OK,
       });
     }
+
+    const email_log = await Logs.create({
+      type_of_log: "Email",
+      recipient: user.firstname + " " + user.lastname,
+      action: "For Agreement",
+      role_name: "Admin",
+      email: user.email,
+      sent: "Yes",
+    });
+
+    if (!email_log) {
+      return res.status(500).json({
+        message: message_constants.EWCL,
+      });
+    }
+
     return res.status(200).json({
       confirmation_no: confirmation_no,
       message: message_constants.ASE,
-      errormessage: message_constants.OK,
     });
   } catch (error) {
     console.error(error);
@@ -2506,9 +2663,14 @@ export const close_case_for_request: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "toclose",
-        close_case_status: "no",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -2523,7 +2685,7 @@ export const close_case_for_request: Controller = async (
     }
     await RequestModel.update(
       {
-        close_case_status: "yes",
+        request_status: "closed",
       },
       {
         where: {
@@ -2556,9 +2718,14 @@ export const close_case_for_request_view_details: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "toclose",
-        close_case_status: "no",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -2626,7 +2793,14 @@ export const close_case_for_request_edit: Controller = async (
       where: {
         confirmation_no: confirmation_no,
         request_state: "toclose",
-        close_case_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
     });
     if (!request) {
@@ -2673,8 +2847,14 @@ export const close_case_for_request_actions_download: Controller = async (
       where: {
         confirmation_no,
         request_state: "toclose",
-        block_status: "no",
-        cancellation_status: "no",
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
       },
       include: [
         {
@@ -2822,7 +3002,25 @@ export const admin_send_link: Controller = async (
         html: mailContent,
       });
 
-      console.log("Email sent: %s", info.messageId);
+      if (!info) {
+        return res.status(500).json({
+          message: message_constants.EWSL,
+        });
+      }
+      const email_log = await Logs.create({
+        type_of_log: "Email",
+        recipient: user.firstname + " " + user.lastname,
+        action: "For Sending Request Link",
+        role_name: "Admin",
+        email: user.email,
+        sent: "Yes",
+      });
+
+      if (!email_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
+        });
+      }
     }
 
     if (mobile_no) {
@@ -2839,7 +3037,21 @@ export const admin_send_link: Controller = async (
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));
     }
+    
+    const SMS_log = await Logs.create({
+      type_of_log: "SMS",
+      recipient: user.firstname + " " + user.lastname,
+      action: "For Sending Request Link",
+      role_name: "Admin",
+      mobile_no: user.mobile_no,
+      sent: "Yes",
+    });
 
+    if (!SMS_log) {
+      return res.status(500).json({
+        message: message_constants.EWCL,
+      });
+    }
     return res.status(200).json({
       status: true,
       message: message_constants.CRLS,

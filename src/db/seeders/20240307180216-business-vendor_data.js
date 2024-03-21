@@ -17,8 +17,8 @@ module.exports = {
           email: "business_1@gmail.com",
           business_contact: 5279861230,
           street: "Street_1",
-          city: "Ahmedabad",
-          state: "Gujarat",
+          city: "City 1",
+          state: "Virginia",
           zip: 994512,
         }
       ],

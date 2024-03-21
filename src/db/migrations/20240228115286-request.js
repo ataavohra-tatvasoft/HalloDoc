@@ -26,7 +26,7 @@ module.exports = {
         ),
         allowNull: false,
       },
-      provider_id: {
+      patient_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
@@ -46,7 +46,7 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
-      patient_id: {
+      provider_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
@@ -76,32 +76,35 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      notes_symptoms: {
-        type: Sequelize.STRING,
+      concluded_date: {
+        type: Sequelize.DATE,
         allowNull: true,
       },
       date_of_service: {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      block_status: {
-        type: Sequelize.ENUM("yes", "no"),
-        defaultValue: "no",
-        allowNull: false,
-      },
-      block_status_reason: {
-        type: Sequelize.STRING,
+      closed_date: {
+        type: Sequelize.DATE,
         allowNull: true,
       },
-      cancellation_status: {
-        type: Sequelize.ENUM("yes", "no"),
-        defaultValue: "no",
+      request_status: {
+        type: Sequelize.ENUM(
+          "new",
+          "accepted",
+          "closed",
+          "conclude",
+          "blocked",
+          "clear",
+          "cancelled by admin",
+          "cancelled by provider"
+        ),
+        defaultValue: "new",
         allowNull: false,
       },
-      close_case_status: {
-        type: Sequelize.ENUM("yes", "no"),
-        defaultValue: "no",
-        allowNull: false,
+      block_reason: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       transfer_request_status: {
         type: Sequelize.ENUM("pending", "accepted", "rejected"),
@@ -113,7 +116,15 @@ module.exports = {
         defaultValue: null,
         allowNull: true,
       },
+      notes_symptoms: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       assign_req_description: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      final_report: {
         type: Sequelize.STRING,
         allowNull: true,
       },

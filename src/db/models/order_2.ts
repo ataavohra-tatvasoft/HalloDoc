@@ -4,8 +4,6 @@ import {
   OrderCreationAttributes,
 } from "../../interfaces/order_model";
 import Request from "./request_2";
-import User from "./user_2";
-import sequelize from "../../connections/database";
 import Business from "./business-vendor_2";
 
 @Table({ timestamps: true , tableName: "order" })

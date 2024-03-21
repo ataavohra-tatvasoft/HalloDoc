@@ -54,9 +54,9 @@ export default class Request extends Model<
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: false,
   })
-  provider_id: number;
+  patient_id: number;
 
   @Column({
     type: DataType.INTEGER,
@@ -66,9 +66,9 @@ export default class Request extends Model<
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
   })
-  patient_id: number;
+  provider_id: number;
 
   @Column({
     type: DataType.ENUM(
@@ -97,10 +97,10 @@ export default class Request extends Model<
   requested_date: Date;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DATE,
     allowNull: true,
   })
-  notes_symptoms: string;
+  concluded_date: Date;
 
   @Column({
     type: DataType.DATE,
@@ -109,31 +109,32 @@ export default class Request extends Model<
   date_of_service: Date;
 
   @Column({
-    type: DataType.ENUM("yes", "no"),
-    defaultValue: "no",
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  closed_date: Date;
+
+  @Column({
+    type: DataType.ENUM(
+      "new",
+      "accepted",
+      "closed",
+      "conclude",
+      "blocked",
+      "clear",
+      "cancelled by admin",
+      "cancelled by provider"
+    ),
+    defaultValue: "new",
     allowNull: false,
   })
-  block_status: string;
+  request_status: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  block_status_reason: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    defaultValue: "no",
-    allowNull: false,
-  })
-  cancellation_status: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    defaultValue: "no",
-    allowNull: false,
-  })
-  close_case_status: string;
+  block_reason: string;
 
   @Column({
     type: DataType.ENUM("pending", "accepted", "rejected"),
@@ -153,7 +154,19 @@ export default class Request extends Model<
     type: DataType.STRING,
     allowNull: true,
   })
+  notes_symptoms: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   assign_req_description: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  final_report: string;
 
   @BelongsTo(() => User, {
     as: "Provider",
