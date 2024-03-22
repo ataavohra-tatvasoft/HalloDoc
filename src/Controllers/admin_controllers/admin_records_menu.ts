@@ -6,6 +6,7 @@ import message_constants from "../../public/message_constants";
 import User from "../../db/models/user_2";
 import RequestModel from "../../db/models/request_2";
 import Notes from "../../db/models/notes_2";
+import Documents from "../../db/models/documents_2";
 import Logs from "../../db/models/log_2";
 import { request } from "http";
 
@@ -166,6 +167,173 @@ export const patient_records: Controller = async (
     });
   } catch (error) {
     res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const patient_records_view_documents: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: ["firstname", "lastname"],
+          where: {
+            type_of_user: "patient",
+          },
+        },
+        {
+          model: Documents,
+          attributes: [
+            "request_id",
+            "document_id",
+            "document_path",
+            "createdAt",
+          ],
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmationNo: request.confirmation_no,
+      patientData: {
+        user_id: request.Patient.user_id,
+        name: request.Patient.firstname + " " + request.Patient.lastname,
+      },
+      documents: request.Documents?.map((document) => ({
+        document_id: document.document_id,
+        document_path: document.document_path,
+        createdAt: document.createdAt.toISOString().split("T")[0],
+      })),
+    };
+    formattedResponse.data.push(formattedRequest);
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const patient_records_view_case: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+      attributes: ["request_id", "request_state", "confirmation_no"],
+      include: [
+        {
+          as: "Patient",
+          model: User,
+          attributes: [
+            "user_id",
+            "firstname",
+            "lastname",
+            "dob",
+            "mobile_no",
+            "email",
+            "state",
+            "business_name",
+            "address_1",
+          ],
+          where: {
+            type_of_user: "patient",
+          },
+        },
+        {
+          model: Notes,
+          attributes: ["request_id", "note_id", "description", "type_of_note"],
+          where: {
+            type_of_note: "patient_notes",
+          },
+        },
+      ],
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+      // requested_date: request.requested_date.toISOString().split("T")[0],
+      patient_data: {
+        user_id: request.Patient.user_id,
+        patient_notes: request.Notes?.map((note) => ({
+          note_id: note.note_id,
+          type_of_note: note.type_of_note,
+          description: note.description,
+        })),
+        first_name: request.Patient.firstname,
+        last_name: request.Patient.lastname,
+        // DOB: request.Patient.dob
+        //   .toISOString()
+        //   .split("T")[0]
+        //   .split("-")
+        //   .map(Number)
+        //   .reverse()
+        //   .join("-"),
+        DOB: request.Patient.dob.toISOString().split("T")[0],
+        mobile_no: request.Patient.mobile_no,
+        email: request.Patient.email,
+        location_information: {
+          region: request.Patient.state,
+          business_name: request.Patient.business_name,
+          room: request.Patient.address_1 + " " + request.Patient.address_2,
+        },
+      },
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 

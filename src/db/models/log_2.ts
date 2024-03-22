@@ -4,7 +4,7 @@ import {
     LogsCreationAttributes,
 } from "../../interfaces/logs_model";
 
-@Table({ timestamps: true , tableName: "order" })
+@Table({ timestamps: true , tableName: "logs" })
 export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,

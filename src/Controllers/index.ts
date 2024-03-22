@@ -6,6 +6,6 @@ export * from "./admin_controllers/admin_myprofile_menu";
 export * from "./admin_controllers/admin_provider_menu/provider";
 export * from "./admin_controllers/admin_partner_vendor_menu";
 export * from "./common_controllers/common_controllers"
-
+export * from "./admin_controllers/admin_records_menu";
 
 

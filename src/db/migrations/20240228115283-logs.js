@@ -19,7 +19,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-
+      action: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       role_name: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -34,7 +37,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-
+      sent: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         default: Sequelize.NOW,
