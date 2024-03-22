@@ -9,6 +9,7 @@ import axios from "axios";
 import * as fs from "fs";
 import * as xlsx from "xlsx";
 import path from "path";
+import RequestModel from "../../db/models/request_2";
 
 /** Regions API */
 
@@ -275,5 +276,41 @@ export const export_one: Controller = async (
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });
     }
+  }
+};
+
+/**Action's API */
+export const actions: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formattedResponse: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+      },
+      attributes: ["request_id", "request_state", "confirmation_no"],
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    const formattedRequest: any = {
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+    };
+    formattedResponse.data.push(formattedRequest);
+
+    return res.status(200).json({
+      ...formattedResponse,
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
