@@ -461,8 +461,12 @@ export const search_records: Controller = async (
         patient_name:
           request.Patient.firstname + " " + request.Patient.lastname,
         requestor: request.requested_by,
-        date_of_service: request.date_of_service.toISOString().split("T")[0],
-        closed_date: request.closed_date.toISOString().split("T")[0],
+        date_of_service: request.date_of_service
+          ? request.date_of_service.toISOString().split("T")[0]
+          : null,
+        closed_date: request.closed_date
+          ? request.closed_date.toISOString().split("T")[0]
+          : null,
         email: request.Patient.email,
         phone_no: request.Patient.mobile_no,
         address:
@@ -492,44 +496,43 @@ export const search_records: Controller = async (
       total_count: count,
     });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
 export const search_record_delete: Controller = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const { confirmation_no } = req.params;
-  
-      const request = RequestModel.findOne({
-        where: {
-          confirmation_no,
-        },
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+
+    const request = RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
       });
-      if (!request) {
-        return res.status(404).json({
-          message: message_constants.RNF,
-        });
-      }
-      const delete_status = RequestModel.destroy(
-        {
-          where: {
-            confirmation_no,
-          },
-        }
-      );
-      if (!delete_status) {
-        return res.status(500).json({
-          message: message_constants.EWD,
-        });
-      }
-    } catch (error) {
-      res.status(500).json({ message: message_constants.ISE });
     }
-  };
+    const delete_status = RequestModel.destroy({
+      where: {
+        confirmation_no,
+      },
+    });
+    if (!delete_status) {
+      return res.status(500).json({
+        message: message_constants.EWD,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: message_constants.ISE });
+  }
+};
 
 export const logs_history: Controller = async (
   req: Request,
@@ -538,6 +541,7 @@ export const logs_history: Controller = async (
 ) => {
   try {
     const {
+      type_of_log,
       search_by_role,
       receiver_name,
       email_id,
@@ -547,6 +551,7 @@ export const logs_history: Controller = async (
       page,
       pageSize,
     } = req.query as {
+      type_of_log: string;
       search_by_role: string;
       receiver_name: string;
       email_id: string;
@@ -576,6 +581,7 @@ export const logs_history: Controller = async (
         "sent",
       ],
       where: {
+        type_of_log,
         ...(search_by_role && {
           role_name: { [Op.like]: `%${search_by_role}%` },
         }),
@@ -778,8 +784,10 @@ export const block_history_unblock: Controller = async (
         message: message_constants.EWU,
       });
     }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
-

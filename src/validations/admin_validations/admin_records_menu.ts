@@ -96,6 +96,7 @@ export const search_record_delete_validation = {
 export const logs_history_validation = {
   // Query parameters
   query: Joi.object({
+    type_of_log: Joi.string().allow(""),
     search_by_role: Joi.string().allow(""),
     receiver_name: Joi.string().allow(""),
     email_id: Joi.string().email().allow(""),

@@ -6,8 +6,8 @@ import admin_myprofile from "./admin_routes/admin_myprofile";
 import admin_access_roles from "./admin_routes/admin_access_roles";
 import admin_provider_menu from "./admin_routes/admin_provider_menu/provider";
 import admin_partner_vendor_menu from "./admin_routes/admin_partner_vendor_menu";
+import admin_records_menu from "./admin_routes/admin_records_menu";
 import common_routes from "./common_routes/common_routes";
-import { authmiddleware } from "../middlewares";
 
 const router: Router = express.Router();
 
@@ -19,6 +19,7 @@ router.use("/admin", admin_myprofile);
 router.use("/admin", admin_access_roles);
 router.use("/admin", admin_provider_menu);
 router.use("/admin", admin_partner_vendor_menu);
+router.use("/admin", admin_records_menu);
 router.use(common_routes);
 
 export default router;
