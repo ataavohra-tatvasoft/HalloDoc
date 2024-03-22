@@ -4,6 +4,11 @@ import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../interfaces/common_interface";
 import User from "../../db/models/user_2";
 import message_constants from "../../public/message_constants";
+import * as exceljs from "exceljs";
+import axios from "axios";
+import * as fs from "fs";
+import * as xlsx from "xlsx";
+import path from "path";
 
 /** Regions API */
 
@@ -184,6 +189,89 @@ export const professions: Controller = async (
       return res.status(200).json({
         ...formattedResponse,
       });
+    } catch (error) {
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+  }
+};
+
+/**Exports API */
+
+export const export_one: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  {
+    try {
+      const token = req.headers.authorization;
+      console.log(token);
+      const { search, region, requestor, state } = req.query as {
+        search: string;
+        region: string;
+        requestor: string;
+        state: string;
+      };
+      const get_patient_requests = async (
+        search?: string,
+        region?: string,
+        requestor?: string,
+        state?: string
+      ): Promise<any> => {
+        const response = await axios.get(
+          "http://localhost:7000/admin/dashboard/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              search,
+              region,
+              requestor,
+              state,
+            },
+          }
+        );
+        console.log(response);
+        if (response.status !== 200) {
+          throw new Error(
+            `Failed to fetch patient requests: ${response.statusText}`
+          );
+        }
+        const data = await response.data;
+        return data;
+      };
+
+      const create_export_excel = async (requests: any[]): Promise<any> => {
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.json_to_sheet(requests);
+        xlsx.utils.book_append_sheet(workbook, worksheet, "Patient Requests");
+
+        const buffer = xlsx.write(workbook, {
+          bookType: "xlsx",
+          type: "binary",
+        });
+        const filePath = path.join(
+          __dirname,
+          "public",
+          "uploads",
+          "patient_requests.xlsx"
+        );
+
+        // Create the directory if it doesn't exist (optional)
+        fs.mkdirSync(path.dirname(filePath), { recursive: true }); // Create directories recursively
+
+        fs.writeFileSync(filePath, buffer, "binary");
+        console.log("Excel file created successfully:", filePath);
+      };
+      const requests = await get_patient_requests(
+        search,
+        region,
+        requestor,
+        state
+      );
+      create_export_excel(requests);
+      return res.json({ message: "Excel file exported successfully!" });
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });
     }

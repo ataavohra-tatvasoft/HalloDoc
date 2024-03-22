@@ -119,7 +119,7 @@ module.exports = {
           user_id: 8,
           email: "arjunpatel@outlook.com",
           type_of_user: "provider",
-          firstname: "Arjun ",
+          firstname: "Arjun",
           lastname: "Patel",
           mobile_no: 8802172758,
           address_1: "Room 8",

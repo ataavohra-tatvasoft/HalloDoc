@@ -34,13 +34,13 @@ module.exports = {
           description: "Description 4",
           type_of_note: "admin_notes"
         },
-        {
-          request_id: 5,
-          note_id: 5,
-          reason: "reason 5",
-          description: "Description 5",
-          type_of_note: "admin_notes"
-        },
+        // {
+        //   request_id: 5,
+        //   note_id: 5,
+        //   reason: "reason 5",
+        //   description: "Description 5",
+        //   type_of_note: "admin_notes"
+        // },
         {
           request_id: 6,
           note_id: 6,
@@ -286,13 +286,13 @@ module.exports = {
           description: "Description 4",
           type_of_note: "patient_notes"
         },
-        {
-          request_id: 5,
-          note_id: 41,
-          reason: "reason 5",
-          description: "Description 5",
-          type_of_note: "patient_notes"
-        },
+        // {
+        //   request_id: 5,
+        //   note_id: 41,
+        //   reason: "reason 5",
+        //   description: "Description 5",
+        //   type_of_note: "patient_notes"
+        // },
         {
           request_id: 6,
           note_id: 42,

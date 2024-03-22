@@ -17,6 +17,7 @@ import path, { dirname } from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log_2";
+import { error } from "console";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -2037,6 +2038,8 @@ export const view_uploads_actions_download: Controller = async (
       },
       attributes: ["document_id", "document_path"],
     });
+
+    // Check for missing request or document and send appropriate error responses
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
@@ -2047,33 +2050,33 @@ export const view_uploads_actions_download: Controller = async (
 
     let filePath = document.document_path;
 
+    // Handle relative paths by joining with `__dirname` and "uploads"
     if (!path.isAbsolute(filePath)) {
       filePath = path.join(__dirname, "uploads", filePath);
     }
 
+    // Check for file existence and send error if not found
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: message_constants.FNF });
     }
 
+    // **Set headers before sending download response**
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${document.document_path}"}`
+      `attachment; filename=${document.document_path}`
     );
 
+    // Initiate file download with `res.download`
     res.download(filePath, (error) => {
       if (error) {
-        res.status(500).json({ error: message_constants.ISE });
+        return res.status(500).json({ error: message_constants.ISE });
       } else {
-        return res.status(200).json({
-          status: true,
-          confirmation_no: confirmation_no,
-          message: message_constants.Success,
-        });
+        console.log("Downloaded!!!");
       }
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const view_uploads_delete_all: Controller = async (
@@ -2128,6 +2131,8 @@ export const view_uploads_download_all: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
+
+    // Fetch request with associated documents
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
@@ -2149,46 +2154,57 @@ export const view_uploads_download_all: Controller = async (
       ],
     });
 
+    // Handle missing request
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
 
     const documents = request.Documents;
 
+    // Handle no documents found
     if (documents.length === 0) {
       return res.status(200).json({ message: message_constants.NDF });
     }
 
-    const validPaths = documents.filter((file) =>
-      fs.existsSync(file.document_path)
-    );
+    // Function to handle individual file download (reusable)
+    const downloadFile = async (filePath: string, filename: string) => {
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    if (validPaths.length === 0) {
-      return res.status(404).json({ error: message_constants.NVFD });
-    }
+      try {
+        await res.download(filePath); // Download the file
+        console.log(`Successfully downloaded: ${filename}`); // Optional logging
+      } catch (error) {
+        console.error(`Error downloading ${filename}:`, error);
+        // Handle individual download errors appropriately (e.g., log or send error response)
+      }
+    };
 
-    for (const file of validPaths) {
+    // Initiate downloads for all valid documents using a loop
+    for (const file of documents) {
       const filePath = file.document_path;
       const filename = path.basename(filePath);
 
-      res.setHeader("Content-Type", "application/octet-stream");
-      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
-      res.download(filePath, (error) => {
-        if (error) {
-          console.error("Error sending file:", error);
-          // Handle errors appropriately (e.g., log the error, send an error response)
-        }
-      });
+      // Check for file existence before download attempt
+      if (fs.existsSync(filePath)) {
+        await downloadFile(filePath, filename);
+      } else {
+        console.error(`File not found: ${filePath}`); // Handle missing files here (e.g., log or send response)
+      }
     }
 
-    res.status(200).json({
-      confirmation_no: confirmation_no,
-      message: `Successfully initiated download(s) for ${validPaths.length} document(s)`,
+    // Send final success response (no need for Promise.all)
+    return res.status(200).json({
+      confirmation_no,
+      message: `Successfully initiated download(s) for ${documents.length} document(s)`,
     });
   } catch (error) {
+    console.error("Error downloading documents:", error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
+
 // Send Mail and Download All remaining in View Uploads
 
 /**
@@ -3037,7 +3053,7 @@ export const admin_send_link: Controller = async (
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));
     }
-    
+
     const SMS_log = await Logs.create({
       type_of_log: "SMS",
       recipient: user.firstname + " " + user.lastname,

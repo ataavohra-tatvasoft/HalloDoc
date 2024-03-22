@@ -31,7 +31,7 @@ export const view_notes_for_request_validation = {
 };
 export const save_view_notes_for_request_validation = {
   params: Joi.object({
-    confirmation_no: Joi.string().required().alphanum(), // Assuming confirmation_no is alphanumeric
+    confirmation_no: Joi.string().required(), // Assuming confirmation_no is alphanumeric
   }),
   body: Joi.object({
     new_note: Joi.string().required().min(1), // Minimum length of 1 character
