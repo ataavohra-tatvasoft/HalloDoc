@@ -3,8 +3,8 @@ import {
   OrderAttributes,
   OrderCreationAttributes,
 } from "../../interfaces/order_model";
-import Request from "./request_2";
-import Business from "./business-vendor_2";
+import Request from "./request";
+import Business from "./business-vendor";
 
 @Table({ timestamps: true , tableName: "order" })
 export default class Order extends Model<OrderAttributes, OrderCreationAttributes> {

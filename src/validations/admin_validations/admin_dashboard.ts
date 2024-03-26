@@ -1,5 +1,37 @@
 import { Joi } from "celebrate";
 
+//Admin Create Request
+export const admin_create_request_validation = {
+  body: Joi.object({
+    firstname: Joi.string().trim().required(),
+    lastname: Joi.string().trim().required(),
+    phone_number: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    email: Joi.string().email().required(),
+    DOB: Joi.date().iso().required(),
+    street: Joi.string().trim().required(),
+    city: Joi.string().trim().required(),
+    state: Joi.string().trim().length(2).uppercase().required(),
+    zip: Joi.string()
+      .length(5)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    room: Joi.string().trim().optional().allow(""), // Optional room number
+    admin_notes: Joi.string().trim().optional().allow(""), // Optional admin notes
+  }).required(),
+};
+
+export const admin_create_request_verify_validation = {
+  body: Joi.object({
+    state: Joi.string()
+      .trim()
+      .required()
+      .valid("district_of_columbia", "new_york", "virginia", "maryland"),
+  }).required(),
+};
+
 //Request by state and counts
 export const manage_requests_by_state_validation = {
   query: Joi.object({
@@ -137,8 +169,8 @@ export const view_send_orders_for_request_validation = {
 };
 export const send_orders_for_request_validation = {
   params: Joi.object({
-    confirmation_no: Joi.string().required().alphanum(), 
-    state: Joi.string().required().valid('active', 'conclude', 'toclose'), // Valid states
+    confirmation_no: Joi.string().required().alphanum(),
+    state: Joi.string().required().valid("active", "conclude", "toclose"), // Valid states
   }),
   query: Joi.object({
     business_contact: Joi.string().required(),
@@ -237,12 +269,11 @@ export const request_support_validation = {
 };
 
 /**Admin Send Link */
-
 export const admin_send_link_validation = {
   body: Joi.object({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    mobile_no: Joi.string().optional().allow(''), 
-    email: Joi.string().email().optional().allow(''), 
-  })
+    mobile_no: Joi.string().optional().allow(""),
+    email: Joi.string().email().optional().allow(""),
+  }),
 };

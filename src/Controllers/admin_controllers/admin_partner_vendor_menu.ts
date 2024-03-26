@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
-import Business from "../../db/models/business-vendor_2";
+import Business from "../../db/models/business-vendor";
 
 /** Configs */
 dotenv.config({ path: `.env` });

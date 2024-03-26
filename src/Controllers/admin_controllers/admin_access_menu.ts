@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import RequestModel from "../../db/models/request_2";
-import User from "../../db/models/user_2";
-import Notes from "../../db/models/notes_2";
+import RequestModel from "../../db/models/request";
+import User from "../../db/models/user";
+import Notes from "../../db/models/notes";
 import { Controller } from "../../interfaces/common_interface";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
+import Access from "../../db/models/access";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -13,7 +14,7 @@ dotenv.config({ path: `.env` });
 /**                             Admin in Access Roles                                     */
 /** Admin Account Access */
 
-export const access_accountaccess: Controller  = async (
+export const access_accountaccess: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -40,7 +41,7 @@ export const access_accountaccess: Controller  = async (
     });
 
     if (!accounts) {
-      return res.status(404).json({ error: message_constants.AcNF});
+      return res.status(404).json({ error: message_constants.AcNF });
     }
 
     var i = offset + 1;
@@ -64,7 +65,7 @@ export const access_accountaccess: Controller  = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_accountaccess_edit: Controller  = async (
+export const access_accountaccess_edit: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -121,14 +122,108 @@ export const access_accountaccess_edit: Controller  = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
+export const access_account_access_create_access: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      role_name,
+      account_type,
+      regions,
+      scheduling,
+      history,
+      accounts,
+      role,
+      provider,
+      request_data,
+      vendorship,
+      profession,
+      email_logs,
+      halo_administrators,
+      halo_users,
+      cancelled_history,
+      provider_location,
+      halo_employee,
+      halo_work_place,
+      patient_records,
+      blocked_history,
+      sms_logs,
+      my_schedule,
+      dashboard,
+      my_profile,
+      send_order,
+      chat,
+      invoicing,
+    } = req.body;
+
+    const firstname = role_name.split(" ")[0];
+    const lastname = role_name.split(" ")[1];
+
+    const user = await User.create({
+      firstname,
+      lastname,
+      type_of_user: account_type,
+      status: "active",
+    });
+
+    if (!user) {
+      return res.status(500).json({
+        message: message_constants.EWCA,
+      });
+    }
+
+    const access = await Access.create({
+      user_id: user.user_id,
+      regions,
+      scheduling,
+      history,
+      accounts,
+      role,
+      provider,
+      request_data,
+      vendorship,
+      profession,
+      email_logs,
+      halo_administrators,
+      halo_users,
+      cancelled_history,
+      provider_location,
+      halo_employee,
+      halo_work_place,
+      patient_records,
+      blocked_history,
+      sms_logs,
+      my_schedule,
+      dashboard,
+      my_profile,
+      send_order,
+      chat,
+      invoicing,
+    });
+    if (!access) {
+      return res.status(500).json({
+        message: message_constants.EWCAc,
+      });
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
 /**
  * Manages account access based on the specified action.
- * 
+ *
  * @param req Express Request object
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const manage_account_access : Controller = async (
+export const manage_account_access: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -244,7 +339,7 @@ export const manage_account_access : Controller = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_account_access_edit_save : Controller = async (
+export const access_account_access_edit_save: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -294,13 +389,13 @@ export const access_account_access_edit_save : Controller = async (
     }
     return res.status(200).json({
       status: true,
-      message:message_constants.US,
+      message: message_constants.US,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_account_access_delete : Controller = async (
+export const access_account_access_delete: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -360,12 +455,12 @@ export const access_account_access_delete : Controller = async (
 
 /**
  * Manages user access based on the specified action.
- * 
+ *
  * @param req Express Request object
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const manage_user_access : Controller = async (
+export const manage_user_access: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -482,14 +577,14 @@ export const manage_user_access : Controller = async (
         }
       }
       default:
-        return res.status(400).json({ error:message_constants.IA });
+        return res.status(400).json({ error: message_constants.IA });
     }
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
   }
 };
 
-export const access_useraccess: Controller  = async (
+export const access_useraccess: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -539,7 +634,7 @@ export const access_useraccess: Controller  = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_useraccess_edit: Controller  = async (
+export const access_useraccess_edit: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -594,7 +689,7 @@ export const access_useraccess_edit: Controller  = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_useraccess_edit_save : Controller = async (
+export const access_useraccess_edit_save: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -639,15 +734,13 @@ export const access_useraccess_edit_save : Controller = async (
       }
     );
     if (!account_data) {
-      return res.status(404).json({ error: message_constants.EWEA});
+      return res.status(404).json({ error: message_constants.EWEA });
     }
     return res.status(200).json({
       status: true,
       message: message_constants.US,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE});
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
-
-//API for Create role All, Admin, Physician, Patient remaining

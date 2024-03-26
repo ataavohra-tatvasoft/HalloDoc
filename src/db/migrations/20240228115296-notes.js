@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Request",
+          model: "request",
           key: "request_id",
           onDelete: "SET NULL",
           onUpdate: "CASCADE",

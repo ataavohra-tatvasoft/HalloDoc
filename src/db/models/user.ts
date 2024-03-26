@@ -1,4 +1,4 @@
-import { Table, Column, DataType, Model ,HasMany} from "sequelize-typescript";
+import { Table, Column, DataType, Model } from "sequelize-typescript";
 import {
   UserAttributes,
   UserCreationAttributes,
@@ -28,7 +28,7 @@ export default class User extends Model<
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   })
   email: string;
@@ -40,7 +40,7 @@ export default class User extends Model<
   password: string;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "provider", "vendor"),
+    type: DataType.ENUM("admin", "patient", "provider", "all"),
     allowNull: false,
   })
   type_of_user: string;
@@ -60,7 +60,7 @@ export default class User extends Model<
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   })
   mobile_no: bigint;
@@ -114,7 +114,7 @@ export default class User extends Model<
   zip: number;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "physician", "clinical", "vendor"),
+    type: DataType.ENUM("admin", "patient", "physician", "clinical"),
     allowNull: true,
     defaultValue: null,
   })

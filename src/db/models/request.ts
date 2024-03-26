@@ -7,11 +7,11 @@ import {
   HasOne,
   BelongsTo,
 } from "sequelize-typescript";
-import Documents from "./documents_2";
-import Order from "./order_2";
-import Notes from "./notes_2";
-import User from "./user_2";
-import Requestor from "./requestor_2";
+import Documents from "./documents";
+import Order from "./order";
+import Notes from "./notes";
+import User from "./user";
+import Requestor from "./requestor";
 import {
   RequestCreationAttributes,
   RequestAttributes,

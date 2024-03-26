@@ -4,6 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("user", {
+      
       user_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -16,7 +17,7 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       password: {
@@ -24,7 +25,7 @@ module.exports = {
         allowNull: true,
       },
       type_of_user: {
-        type: Sequelize.ENUM("admin", "patient", "provider"),
+        type: Sequelize.ENUM("admin", "patient", "provider","all"),
         allowNull: false,
       },
 
@@ -39,7 +40,7 @@ module.exports = {
       },
       mobile_no: {
         type: Sequelize.BIGINT,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       reset_token: {

@@ -25,7 +25,7 @@ export const contact_provider_validation = {
       .pattern(/^\d+$/, "mobile number must be a string of digits")
       .required(),
   }),
- 
+
   body: Joi.object({
     message: Joi.string().required().min(1),
   }),
@@ -145,4 +145,40 @@ export const provider_onboarding_delete_validation = {
   params: Joi.object({
     document_id: Joi.string().required(),
   }),
+};
+
+export const create_provider_account_validation = {
+  body: Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(6).required(),
+    role: Joi.string().allow("provider").required(),
+    firstname: Joi.string().trim().required(),
+    lastname: Joi.string().trim().required(),
+    email: Joi.string().email().required(),
+    mobile_no: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    medical_licence: Joi.string().allow(""), // Optional field
+    NPI_no: Joi.string().allow(""), // Optional field
+    district_of_columbia: Joi.string().allow(""),
+    new_york: Joi.string().allow(""),
+    virginia: Joi.string().allow(""),
+    maryland: Joi.string().allow(""),
+    address_1: Joi.string().trim().required(),
+    address_2: Joi.string().trim().allow(""), // Optional field
+    city: Joi.string().trim().required(),
+    state:  Joi.string().trim().required(),
+    zip: Joi.string()
+      .length(6)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    billing_mobile_no: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .allow(""), // Optional field
+    business_name: Joi.string().trim().allow(""), // Optional field
+    business_website: Joi.string().allow(""), // Optional field
+    admin_notes: Joi.string().allow(""), // Optional field
+  }).required(),
 };

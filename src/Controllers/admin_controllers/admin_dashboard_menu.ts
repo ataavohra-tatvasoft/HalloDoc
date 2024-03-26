@@ -1,23 +1,24 @@
 import { Request, Response, NextFunction } from "express";
-import RequestModel from "../../db/models/request_2";
-import User from "../../db/models/user_2";
-import Requestor from "../../db/models/requestor_2";
-import Notes from "../../db/models/notes_2";
-import Order from "../../db/models/order_2";
-import Business from "../../db/models/business-vendor_2";
+import RequestModel from "../../db/models/request";
+import User from "../../db/models/user";
+import Requestor from "../../db/models/requestor";
+import Notes from "../../db/models/notes";
+import Order from "../../db/models/order";
+import Business from "../../db/models/business-vendor";
 import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
 import * as crypto from "crypto";
 import { MEDIUMINT, Op } from "sequelize";
-import Documents from "../../db/models/documents_2";
+import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
 import path, { dirname } from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
-import Logs from "../../db/models/log_2";
+import Logs from "../../db/models/log";
 import { error } from "console";
+import { errorMonitor } from "events";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -100,38 +101,38 @@ export const admin_create_request: Controller = async (
   try {
     const {
       body: {
-        FirstName,
-        LastName,
-        PhoneNumber,
-        Email,
+        firstname,
+        lastname,
+        phone_number,
+        email,
         DOB,
-        Street,
-        City,
-        State,
-        Zip,
-        Room,
-        AdminNotes,
+        street,
+        city,
+        state,
+        zip,
+        room,
+        admin_notes,
       },
     } = req;
-    // const today = new Date();
-    // console.log(today,today.getFullYear(),today.getFullYear().toString(),today.getFullYear().toString().slice(-2));
+
     const patient_data = await User.create({
       type_of_user: "patient",
-      firstname: FirstName,
-      lastname: LastName,
-      mobile_no: PhoneNumber,
-      email: Email,
+      firstname,
+      lastname,
+      mobile_no: phone_number,
+      email,
       dob: new Date(DOB),
-      street: Street,
-      city: City,
-      state: State,
-      zip: Zip,
-      address_1: Room,
+      street,
+      city,
+      state,
+      zip,
+      address_1: room,
     });
+
     if (!patient_data) {
       return res.status(400).json({
         status: false,
-        message: "Failed To Create Patient!!!",
+        message: message_constants.EWCA,
       });
     }
 
@@ -139,7 +140,6 @@ export const admin_create_request: Controller = async (
     const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
     const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
     const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-
     const todaysRequestsCount: any = await RequestModel.count({
       where: {
         createdAt: {
@@ -148,14 +148,14 @@ export const admin_create_request: Controller = async (
         },
       },
     });
-
     const confirmation_no = `${patient_data.state.slice(
       0,
       2
-    )}${year}${month}${day}${LastName.slice(0, 2)}${FirstName.slice(
+    )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
       0,
       2
     )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
+
     const request_data = await RequestModel.create({
       request_state: "new",
       patient_id: patient_data.user_id,
@@ -163,34 +163,66 @@ export const admin_create_request: Controller = async (
       requested_date: new Date(),
       confirmation_no: confirmation_no,
     });
+
+    if (!request_data) {
+      return res.status(400).json({
+        status: false,
+        message: message_constants.EWCR,
+      });
+    }
+
     const admin_note = await Notes.create({
       request_id: request_data.request_id,
       //  requested_by: "Admin",
-      description: AdminNotes,
+      description: admin_notes,
       type_of_note: "admin_notes",
     });
 
-    if (!patient_data && !request_data && !admin_note) {
+    if (!admin_note) {
       return res.status(400).json({
         status: false,
-        message: "Failed To Create Request!!!",
+        message: message_constants.EWCN,
       });
     }
 
     if (patient_data && request_data && admin_note) {
       return res.status(200).json({
         status: true,
-        message: "Created Request Successfully !!!",
+        message: message_constants.RC,
       });
     }
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       status: false,
-      errormessage: "Internal server error " + error.message,
+      error: error.errormessage,
       message: message_constants.ISE,
     });
   }
 };
+export const admin_create_request_verify: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state } = req.body;
+
+    const validStates = ["district_of_columbia", "new_york", "virginia", "maryland"];
+
+    if (!validStates.includes(state)) {
+      return res.status(404).json({ message: message_constants.ADBSA });
+    }
+
+    return res.status(200).json({ message: message_constants.AV });
+  } catch (error: any) {
+    return res.status(500).json({
+      status: false,
+      error: error.errormessage,
+      message: message_constants.ISE,
+    });
+  }
+};
+
 
 /**Old API for request */
 export const requests_by_request_state: Controller = async (
@@ -2203,7 +2235,6 @@ export const view_uploads_download_all: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
 
 // Send Mail and Download All remaining in View Uploads
 

@@ -9,8 +9,8 @@ import {
   DocumentsAttributes,
   DocumentsCreationAttributes,
 } from "../../interfaces/documents_model";
-import Request from "./request_2";
-import User from "./user_2";
+import Request from "./request";
+import User from "./user";
 
 @Table({ timestamps: true, tableName: "documents" })
 export default class Documents extends Model<

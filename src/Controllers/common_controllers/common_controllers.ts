@@ -1,15 +1,15 @@
-import Region from "../../db/models/region_2";
-import Profession from "../../db/models/profession_2";
+import Region from "../../db/models/region";
+import Profession from "../../db/models/profession";
 import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../interfaces/common_interface";
-import User from "../../db/models/user_2";
+import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import * as exceljs from "exceljs";
 import axios from "axios";
 import * as fs from "fs";
 import * as xlsx from "xlsx";
 import path from "path";
-import RequestModel from "../../db/models/request_2";
+import RequestModel from "../../db/models/request";
 
 /** Regions API */
 

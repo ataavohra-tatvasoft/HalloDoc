@@ -11,6 +11,8 @@ import { authmiddleware } from "../../middlewares";
 import {
   admin_profile_reset_password_validation_schema,
   admin_profile_edit_validation_schema,
+  admin_profile_admin_info_edit_validation,
+  admin_profile_mailing_billling_info_edit_validation,
 } from "../../validations";
 
 const router: Router = express.Router();
@@ -20,7 +22,8 @@ const router: Router = express.Router();
 /**
  * no validation in below get API because data is fetched directly by AuthToken
  */
-router.get("/myprofile/admin_profile/view", authmiddleware, admin_profile_view);
+router.get("/myprofile/admin_profile/view", authmiddleware,
+ admin_profile_view);
 router.put(
   "/myprofile/admin_profile/resetpassword",
   authmiddleware,
@@ -30,11 +33,13 @@ router.put(
 router.put(
   "/myprofile/admin_profile/editadmininfo",
   authmiddleware,
+  celebrate(admin_profile_admin_info_edit_validation),
   admin_profile_admin_info_edit
 );
 router.put(
   "/myprofile/admin_profile/editbillingfinfo",
   authmiddleware,
+  celebrate(admin_profile_mailing_billling_info_edit_validation),
   admin_profile_mailing_billling_info_edit
 );
 

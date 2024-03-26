@@ -9,7 +9,7 @@ import {
   NotesAttributes,
   NotesCreationAttributes,
 } from "../../interfaces/notes_model";
-import Request from "./request_2";
+import Request from "./request";
 
 @Table({ timestamps: true, tableName: "notes" })
 export default class Notes extends Model<NotesAttributes, NotesCreationAttributes> {

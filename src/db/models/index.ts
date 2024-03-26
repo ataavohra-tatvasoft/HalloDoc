@@ -1,13 +1,13 @@
 
-export * from "./documents_2";
+export * from "./documents";
 export * from "./associations_2";
-export * from "./order_2";
-export * from "./request_2";
-export * from "./user_2";
-export * from "./requestor_2";
-export * from "./notes_2";
-export * from "./region_2";
-export * from "./profession_2"
+export * from "./order";
+export * from "./request";
+export * from "./user";
+export * from "./requestor";
+export * from "./notes";
+export * from "./region";
+export * from "./profession"
 
 
 

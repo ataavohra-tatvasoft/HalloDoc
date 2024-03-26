@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../../db/models/user_2";
-import Region from "../../db/models/region_2";
+import User from "../../db/models/user";
+import Region from "../../db/models/region";
 import { Controller } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
-
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -20,7 +19,7 @@ dotenv.config({ path: `.env` });
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response containing the formatted admin profile data or an error message.
  */
-export const admin_profile_view: Controller  = async (
+export const admin_profile_view: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -57,17 +56,16 @@ export const admin_profile_view: Controller  = async (
         "state",
         "zip",
         "billing_mobile_no",
+        "district_of_columbia",
+        "new_york",
+        "virginia",
+        "maryland",
       ],
     });
     if (!profile) {
       return res.status(404).json({ error: message_constants.PNF });
     }
-    const regions = await Region.findAll({
-      attributes: ["region_name"],
-    });
-    if (!regions) {
-      res.status(500).json({ error: message_constants.EFRD });
-    }
+
     const formattedRequest: any = {
       user_id: profile.user_id,
       account_information: {
@@ -80,9 +78,10 @@ export const admin_profile_view: Controller  = async (
         lastname: profile.lastname,
         email: profile.email,
         mobile_no: profile.mobile_no,
-        regions: regions?.map((region) => ({
-          region_name: region.region_name,
-        })),
+        district_of_columbia: profile.district_of_columbia,
+        new_york: profile.new_york,
+        virginia: profile.virginia,
+        maryland: profile.maryland,
       },
       mailing_billing_information: {
         address_1: profile.address_1,
@@ -110,7 +109,7 @@ export const admin_profile_view: Controller  = async (
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the password reset operation.
  */
-export const admin_profile_reset_password : Controller = async (
+export const admin_profile_reset_password: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -140,7 +139,7 @@ export const admin_profile_reset_password : Controller = async (
       }
     }
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE});
+    res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -151,7 +150,7 @@ export const admin_profile_reset_password : Controller = async (
  * @param {NextFunction} next - The next middleware function in the request-response cycle.
  * @returns {Response} A JSON response indicating the success or failure of the profile update operation.
  */
-export const admin_profile_edit : Controller = async (
+export const admin_profile_edit: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -225,13 +224,23 @@ export const admin_profile_edit : Controller = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const admin_profile_admin_info_edit: Controller  = async (
+export const admin_profile_admin_info_edit: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, email, mobile_no, admin_id } = req.body;
+    const {
+      firstname,
+      lastname,
+      email,
+      mobile_no,
+      district_of_columbia,
+      new_york,
+      virginia,
+      maryland,
+      admin_id,
+    } = req.body;
     // const { admin_id } = req.params;
     const adminprofile = await User.findOne({
       where: {
@@ -247,6 +256,10 @@ export const admin_profile_admin_info_edit: Controller  = async (
         lastname,
         email,
         mobile_no,
+        district_of_columbia,
+        new_york,
+        virginia,
+        maryland,
       },
       {
         where: {
@@ -261,7 +274,7 @@ export const admin_profile_admin_info_edit: Controller  = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const admin_profile_mailing_billling_info_edit: Controller  = async (
+export const admin_profile_mailing_billling_info_edit: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -302,7 +315,7 @@ export const admin_profile_mailing_billling_info_edit: Controller  = async (
         }
       );
       if (updatestatus) {
-        res.status(200).json({ status:message_constants.US });
+        res.status(200).json({ status: message_constants.US });
       }
     } catch (error) {
       res.status(500).json({ error: message_constants.ISE });

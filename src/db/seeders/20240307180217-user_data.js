@@ -24,6 +24,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Nehrunagar",
+          role: "patient",
         },
         {
           user_id: 3,
@@ -42,6 +43,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Ambavadi",
+          role: "patient",
         },
         {
           user_id: 4,
@@ -60,6 +62,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Bodakdev",
+          role: "patient",
         },
         {
           user_id: 5,
@@ -78,6 +81,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Ambavadi",
+          role: "patient",
         },
         {
           user_id: 6,
@@ -96,6 +100,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Bodakdev",
+          role: "patient",
         },
         {
           user_id: 7,
@@ -114,6 +119,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Prahladnagar",
+          role: "patient",
         },
         {
           user_id: 8,

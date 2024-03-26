@@ -13,6 +13,7 @@ import {
   provider_profile_upload,
   provider_onboarding_upload,
   provider_onboarding_delete,
+  create_provider_account,
 } from "../../../controllers";
 import {
   provider_list_validation,
@@ -28,6 +29,7 @@ import {
   provider_profile_upload_validation,
   provider_onboarding_upload_validation,
   provider_onboarding_delete_validation,
+  create_provider_account_validation,
 } from "../../../validations";
 import { authmiddleware } from "../../../middlewares";
 import { upload } from "../../../utils";
@@ -40,25 +42,25 @@ const router: Router = express.Router();
 router.get(
   "/providermenu/provider_list",
   authmiddleware,
-    celebrate(provider_list_validation),
+  celebrate(provider_list_validation),
   provider_list
 );
 router.put(
   "/providermenu/provider_list/:user_id/stop_notification",
   authmiddleware,
-    celebrate(stop_notification_validation),
+  celebrate(stop_notification_validation),
   stop_notification
 );
 router.post(
   "/providermenu/provider_list/:user_id/contact_provider",
   authmiddleware,
-    celebrate(contact_provider_validation),
+  celebrate(contact_provider_validation),
   contact_provider
 );
 router.get(
   "/providermenu/provider_list/:user_id/view_edit_physician_account",
   authmiddleware,
-    celebrate(view_edit_physician_account_validation),
+  celebrate(view_edit_physician_account_validation),
   view_edit_physician_account
 );
 router.put(
@@ -116,6 +118,13 @@ router.delete(
   authmiddleware,
   celebrate(provider_onboarding_delete_validation),
   provider_onboarding_delete
+);
+router.post(
+  "/providermenu/provider_list/create_provider_account",
+  authmiddleware,
+  celebrate(create_provider_account_validation),
+  upload.any(),
+  create_provider_account
 );
 
 export default router;

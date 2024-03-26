@@ -1,16 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../../../db/models/user_2";
-import RequestModel from "../../../db/models/request_2";
-import Notes from "../../../db/models/notes_2";
-import Order from "../../../db/models/order_2";
+import User from "../../../db/models/user";
+import RequestModel from "../../../db/models/request";
+import Notes from "../../../db/models/notes";
+import Order from "../../../db/models/order";
 import { Controller } from "../../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
-import Documents from "../../../db/models/documents_2";
+import Documents from "../../../db/models/documents";
 import dotenv from "dotenv";
 import message_constants from "../../../public/message_constants";
-import { where } from "sequelize";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -517,11 +516,11 @@ export const save_provider_profile: Controller = async (
           where: {
             user_id,
             business_name,
-          business_website,
+            business_website,
           },
         }
       );
-      if (updatestatus ) {
+      if (updatestatus) {
         res.status(200).json({ status: message_constants.US });
       }
     } catch (error) {
@@ -875,6 +874,195 @@ export const provider_onboarding_delete = async (
       return res.status(200).json({ message: message_constants.EWDD });
     }
     return res.status(200).json({ message: message_constants.DS });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const create_provider_account: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      body: {
+        username,
+        password,
+        role,
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+        medical_licence,
+        NPI_no,
+        district_of_columbia,
+        new_york,
+        virginia,
+        maryland,
+        address_1,
+        address_2,
+        city,
+        state,
+        zip,
+        billing_mobile_no,
+        business_name,
+        business_website,
+        admin_notes,
+      },
+    } = req;
+
+    const hashed_password: string = await bcrypt.hash(password, 10);
+    const uploaded_files: any = req.files || [];
+
+    const profile_picture_path = uploaded_files.find(
+      (file: any) => file.fieldname === "profile_picture"
+    )?.path;
+    const independent_contractor_agreement_path = uploaded_files.find(
+      (file: any) => file.fieldname === "independent_contractor_agreement"
+    )?.path;
+    const background_check_path = uploaded_files.find(
+      (file: any) => file.fieldname === "background_check"
+    )?.path;
+    const HIPAA_path = uploaded_files.find(
+      (file: any) => file.fieldname === "HIPAA"
+    )?.path;
+    const non_diclosure_path = uploaded_files.find(
+      (file: any) => file.fieldname === "non_diclosure"
+    )?.path;
+
+    const user = await User.create({
+      type_of_user: "provider",
+      username,
+      password: hashed_password,
+      role,
+      firstname,
+      lastname,
+      email,
+      mobile_no,
+      medical_licence,
+      NPI_no,
+      district_of_columbia,
+      new_york,
+      virginia,
+      maryland,
+      address_1,
+      address_2,
+      city,
+      state,
+      zip,
+      billing_mobile_no,
+      business_name,
+      business_website,
+      admin_notes,
+      profile_picture: profile_picture_path,
+    });
+
+    if (!user) {
+      return res.status(500).json({
+        message: message_constants.EWCA,
+      });
+    }
+
+    if (independent_contractor_agreement_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user.user_id,
+          document_name: "independent_contractor_agreement",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id: user.user_id,
+          document_name: "independent_contractor_agreement",
+          document_path: independent_contractor_agreement_path,
+        });
+      } else {
+        await Documents.update(
+          { document_path: independent_contractor_agreement_path },
+          {
+            where: {
+              user_id: user.user_id,
+            },
+          }
+        );
+      }
+    }
+    if (background_check_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user.user_id,
+          document_name: "background_check",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id: user.user_id,
+          document_name: "background_check",
+          document_path: background_check_path,
+        });
+      } else {
+        await Documents.update(
+          { document_path: background_check_path },
+          {
+            where: {
+              user_id: user.user_id,
+            },
+          }
+        );
+      }
+    }
+    if (HIPAA_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user.user_id,
+          document_name: "HIPAA",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id: user.user_id,
+          document_name: "HIPAA",
+          document_path: HIPAA_path,
+        });
+      } else {
+        await Documents.update(
+          { document_path: HIPAA_path },
+          {
+            where: {
+              user_id: user.user_id,
+            },
+          }
+        );
+      }
+    }
+    if (non_diclosure_path) {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: user.user_id,
+          document_name: "non_diclosure",
+        },
+      });
+      if (!document_status) {
+        await Documents.create({
+          user_id: user.user_id,
+          document_name: "non_diclosure",
+          document_path: non_diclosure_path,
+        });
+      } else {
+        await Documents.update(
+          { document_path: non_diclosure_path },
+          {
+            where: {
+              user_id: user.user_id,
+            },
+          }
+        );
+      }
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
   }

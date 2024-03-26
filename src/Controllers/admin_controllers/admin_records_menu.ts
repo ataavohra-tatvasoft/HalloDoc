@@ -3,11 +3,12 @@ import { Controller } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import { Op } from "sequelize";
 import message_constants from "../../public/message_constants";
-import User from "../../db/models/user_2";
-import RequestModel from "../../db/models/request_2";
-import Notes from "../../db/models/notes_2";
-import Documents from "../../db/models/documents_2";
-import Logs from "../../db/models/log_2";
+import User from "../../db/models/user";
+import RequestModel from "../../db/models/request";
+import Notes from "../../db/models/notes";
+import Order from "../../db/models/order";
+import Documents from "../../db/models/documents";
+import Logs from "../../db/models/log";
 import { request } from "http";
 
 /** Configs */
@@ -508,29 +509,44 @@ export const search_record_delete: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-
-    const request = RequestModel.findOne({
-      where: {
-        confirmation_no,
-      },
-    });
-    if (!request) {
-      return res.status(404).json({
-        message: message_constants.RNF,
+    try {
+      const request = await RequestModel.findOne({
+        where: { confirmation_no },
+        attributes: ["confirmation_no", "request_id"],
       });
-    }
-    const delete_status = RequestModel.destroy({
-      where: {
-        confirmation_no,
-      },
-    });
-    if (!delete_status) {
-      return res.status(500).json({
-        message: message_constants.EWD,
+      if (!request) {
+        return res.status(404).json({ error: message_constants.RNF });
+      }
+      await Notes.destroy({
+        where: {
+          request_id: request.request_id,
+        },
       });
+      await Order.destroy({
+        where: {
+          request_id: request.request_id,
+        },
+      });
+      await RequestModel.destroy({
+        where: {
+          confirmation_no: confirmation_no,
+        },
+      });
+      await Documents.destroy({
+        where: {
+          request_id: request.request_id,
+        },
+      });
+      return res.status(200).json({
+        status: true,
+        confirmation_no: confirmation_no,
+        message: message_constants.Success,
+      });
+    } catch {
+      res.status(404).json({ error: message_constants.IS });
     }
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -672,7 +688,7 @@ export const cancel_and_block_history: Controller = async (
         ...(date && {
           updatedAt: { [Op.like]: `%${date}%` },
         }),
-        request_state: { [Op.like]: `%${type_of_history}%` }, //cancelled or blocked only
+        request_status: { [Op.like]: `%${type_of_history}%` }, //cancelled or blocked only
       },
       include: [
         {
@@ -687,14 +703,12 @@ export const cancel_and_block_history: Controller = async (
             "status",
           ],
           where: {
-            [Op.or]: {
-              ...(name && {
-                firstname: { [Op.like]: `%${name}%` },
-              }),
-              ...(name && {
-                lastname: { [Op.like]: `%${name}%` },
-              }),
-            },
+            ...(name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${name}%` } },
+                { lastname: { [Op.like]: `%${name}%` } },
+              ],
+            }),
             ...(email && {
               email: { [Op.like]: `%${email}%` },
             }),
@@ -705,6 +719,7 @@ export const cancel_and_block_history: Controller = async (
         },
         {
           model: Notes,
+          as: "Notes",
           attributes: ["note_id", "type_of_note", "description"],
         },
       ],
@@ -747,7 +762,7 @@ export const cancel_and_block_history: Controller = async (
       total_count: count,
     });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -772,6 +787,7 @@ export const block_history_unblock: Controller = async (
     const update_status = RequestModel.update(
       {
         request_status: "new",
+        block_reason: null
       },
       {
         where: {

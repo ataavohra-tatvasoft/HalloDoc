@@ -15,7 +15,7 @@ export interface RequestAttributes {
   date_of_service: Date;
   closed_date: Date;
   request_status: string;
-  block_reason: string;
+  block_reason: string | null;
   transfer_request_status: string;
   agreement_status: string;
   notes_symptoms: string | null;

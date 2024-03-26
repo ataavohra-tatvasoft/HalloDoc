@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../../db/models/user_2";
+import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 
 export const authmiddleware = async (

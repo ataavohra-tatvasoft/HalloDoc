@@ -2,22 +2,22 @@ import { Optional } from "sequelize";
 export interface UserAttributes {
   user_id: number;
   username: string | null;
-  email: string;
-  password?: string; // Optional
-  type_of_user: "admin" | "patient" | "provider";
+  email: string | null;
+  password?: string | null; // Optional
+  type_of_user:string;
 
   // Common fields for all user types
-  firstname: string;
-  lastname: string;
-  mobile_no: string;
+  firstname: string | null;
+  lastname: string | null;
+  mobile_no: string | null;
   reset_token?: string | null;
   reset_token_expiry?: number | null;
-  address_1: string;
+  address_1: string | null;
   address_2?: string | null;
-  city: string;
-  state: string;
+  city: string | null;
+  state: string | null;
   country_code?: string | null;
-  zip: number;
+  zip: number | null;
   role?: string | null;
 
   // Admin-specific fields (optional)
@@ -41,7 +41,7 @@ export interface UserAttributes {
   //Common attributes between Admin and Provider
   open_requests: number | null;
 
-  // Common attributes between Patient and Provider 
+  // Common attributes between Patient and Provider
   business_name: string | null;
 
   //Regions of service
@@ -67,11 +67,19 @@ export interface UserCreationAttributes
     UserAttributes,
     | "user_id"
     | "username"
+    | "email"
     | "password"
     | "country_code"
-    | "reset_token_expiry"
+    | "firstname"
+    | "lastname"
+    | "mobile_no"
     | "reset_token"
+    | "reset_token_expiry"
+    | "address_1"
     | "address_2"
+    | "city"
+    | "state"
+    | "country_code"
     | "zip"
     | "role"
     | "billing_mobile_no"
@@ -85,7 +93,13 @@ export interface UserCreationAttributes
     | "admin_notes"
     | "street"
     | "open_requests"
+    | "business_name"
+    | "district_of_columbia"
+    | "new_york"
+    | "virginia"
+    | "maryland"
     | "tax_id"
+    | "business_website"
     | "profile_picture"
     | "signature_photo"
     | "on_call_status"

@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import { celebrate, Joi } from "celebrate";
 import {
   admin_create_request,
+  admin_create_request_verify,
   view_case_for_request,
   view_notes_for_request,
   save_view_notes_for_request,
@@ -35,6 +36,7 @@ import {
   requests_by_request_state_refactored,
   requests_by_request_state_counts,
   regions,
+
 } from "../../controllers";
 import {
   region_with_thirdparty_API,
@@ -74,6 +76,8 @@ import {
   close_case_for_request_actions_download_validation,
   request_support_validation,
   admin_send_link_validation,
+  admin_create_request_validation,
+  admin_create_request_verify_validation
 } from "../../validations";
 import { upload } from "../../utils";
 const router: Router = express.Router();
@@ -83,8 +87,15 @@ import {handle_joi_errors} from "../../middlewares";
 
 /**Admin Create Request */
 router.post(
+  "/dashboard/requests/createrequestverify",
+  authmiddleware,
+  celebrate(admin_create_request_verify_validation),
+  admin_create_request_verify
+);
+router.post(
   "/dashboard/requests/createrequest",
   authmiddleware,
+  celebrate(admin_create_request_validation),
   admin_create_request
 );
 
