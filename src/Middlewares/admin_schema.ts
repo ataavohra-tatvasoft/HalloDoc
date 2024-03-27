@@ -42,8 +42,8 @@ export const admin_schema_signup = async (
         /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/
       ),
     Confirm_Password: Joi.ref("Password"),
-    Status: Joi.string().valid("Active", "In-Active"),
-    Role: Joi.string().valid("Admin"),
+    Status: Joi.string().valid("active", "in-active"),
+    Role: Joi.string().valid("admin"),
     FirstName: Joi.string().max(8).min(3),
     LastName: Joi.string().max(8).min(3),
     MobileNumber: Joi.string()
