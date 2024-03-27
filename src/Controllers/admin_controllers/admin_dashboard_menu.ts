@@ -207,7 +207,12 @@ export const admin_create_request_verify: Controller = async (
   try {
     const { state } = req.body;
 
-    const validStates = ["district_of_columbia", "new_york", "virginia", "maryland"];
+    const validStates = [
+      "district_of_columbia",
+      "new_york",
+      "virginia",
+      "maryland",
+    ];
 
     if (!validStates.includes(state)) {
       return res.status(404).json({ message: message_constants.ADBSA });
@@ -222,7 +227,6 @@ export const admin_create_request_verify: Controller = async (
     });
   }
 };
-
 
 /**Old API for request */
 export const requests_by_request_state: Controller = async (
@@ -1678,7 +1682,6 @@ export const assign_request_region_physician: Controller = async (
         type_of_user: "provider",
         role: "physician",
         ...(region ? { state: region } : {}),
-        scheduled_status: "no",
       },
     });
     if (!physicians) {
@@ -1718,7 +1721,6 @@ export const assign_request: Controller = async (
         lastname,
         type_of_user: "provider",
         role: "physician",
-        scheduled_status: "no",
       },
     });
     if (!provider) {
@@ -1736,16 +1738,7 @@ export const assign_request: Controller = async (
         },
       }
     );
-    await User.update(
-      {
-        scheduled_status: "yes",
-      },
-      {
-        where: {
-          user_id: physician_id,
-        },
-      }
-    );
+
     return res.status(200).json({
       status: true,
       confirmation_no: confirmation_no,
@@ -2385,7 +2378,6 @@ export const transfer_request_region_physicians: Controller = async (
         type_of_user: "provider",
         role: "physician",
         ...(region ? { state: region } : {}),
-        scheduled_status: "no",
       },
     });
     if (!physicians) {
@@ -2975,7 +2967,6 @@ export const request_support: Controller = async (
       },
       {
         where: {
-          scheduled_status: "no",
           type_of_user: "provider",
           role: "physician",
         },

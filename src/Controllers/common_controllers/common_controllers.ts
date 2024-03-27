@@ -314,3 +314,41 @@ export const actions: Controller = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
+
+/**Physician's API */
+export const physicians: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  {
+    try {
+      const formattedResponse: any = {
+        status: true,
+        data: [],
+      };
+      const physicians = await User.findAll({
+        attributes: ["firstname", "lastname", "type_of_user", "role"],
+        where: {
+          type_of_user: "provider",
+          role: "physician",
+        },
+      });
+
+      if (!physicians) {
+        return res.status(404).json({ error: message_constants.EFPD });
+      }
+      for (const physician of physicians) {
+        const formattedRequest: any = {
+          physician_name: physician.firstname + " " + physician.lastname,
+        };
+        formattedResponse.data.push(formattedRequest);
+      }
+      return res.status(200).json({
+        ...formattedResponse,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+  }
+};

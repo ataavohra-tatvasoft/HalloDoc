@@ -1,8 +1,9 @@
-import { Table, Column, DataType, Model } from "sequelize-typescript";
+import { Table, Column, DataType, Model, HasMany } from "sequelize-typescript";
 import {
   UserAttributes,
   UserCreationAttributes,
 } from "../../interfaces/user_model";
+import Shifts from "./shifts";
 
 @Table({
   timestamps: true,
@@ -195,8 +196,7 @@ export default class User extends Model<
   })
   open_requests: number;
 
-
-  // Common attributes between Patient and Provider  
+  // Common attributes between Patient and Provider
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -205,30 +205,30 @@ export default class User extends Model<
 
   //Regions of service
   @Column({
-    type: DataType.ENUM("yes","no"),
+    type: DataType.ENUM("yes", "no"),
     allowNull: false,
-    defaultValue:"no"
+    defaultValue: "no",
   })
   district_of_columbia: string;
 
   @Column({
-    type: DataType.ENUM("yes","no"),
+    type: DataType.ENUM("yes", "no"),
     allowNull: false,
-    defaultValue:"no"
+    defaultValue: "no",
   })
   new_york: string;
 
   @Column({
-    type: DataType.ENUM("yes","no"),
+    type: DataType.ENUM("yes", "no"),
     allowNull: false,
-    defaultValue:"no"
+    defaultValue: "no",
   })
   virginia: string;
 
   @Column({
-    type: DataType.ENUM("yes","no"),
+    type: DataType.ENUM("yes", "no"),
     allowNull: false,
-    defaultValue:"no"
+    defaultValue: "no",
   })
   maryland: string;
 
@@ -258,17 +258,11 @@ export default class User extends Model<
   signature_photo: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.ENUM("yes","no"),
     allowNull: true,
+    defaultValue: null
   })
   on_call_status: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    defaultValue: "no",
-    allowNull: false,
-  })
-  scheduled_status: string;
 
   @Column({
     type: DataType.STRING,
@@ -276,5 +270,6 @@ export default class User extends Model<
   })
   support_message: string;
 
-
+  @HasMany(() => Shifts, { foreignKey: "user_id" })
+  Shifts: Shifts[];
 }

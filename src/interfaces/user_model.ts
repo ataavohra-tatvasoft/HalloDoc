@@ -56,7 +56,6 @@ export interface UserAttributes {
   profile_picture?: string | null;
   signature_photo: string | null;
   on_call_status?: string | null;
-  scheduled_status?: string | null;
   support_message?: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -103,7 +102,6 @@ export interface UserCreationAttributes
     | "profile_picture"
     | "signature_photo"
     | "on_call_status"
-    | "scheduled_status"
     | "support_message"
     | "createdAt"
     | "updatedAt"

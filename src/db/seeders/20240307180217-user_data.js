@@ -138,6 +138,7 @@ module.exports = {
           dob: dob,
           street: "Prahladnagar",
           role: "physician",
+          on_call_status: "yes",
         },
         {
           user_id: 9,
@@ -156,6 +157,7 @@ module.exports = {
           dob: dob,
           street: "Ambavadi",
           role: "physician",
+          on_call_status: "yes",
         },
         {
           user_id: 10,
@@ -174,6 +176,7 @@ module.exports = {
           dob: dob,
           street: "Nehrunagar",
           role: "physician",
+          on_call_status: "yes",
         },
         {
           user_id: 21,
@@ -193,6 +196,7 @@ module.exports = {
           street: "Nehrunagar",
           role: "physician",
           business_name: "business_1",
+          on_call_status: "yes",
         },
         {
           user_id: 22,
@@ -212,6 +216,7 @@ module.exports = {
           street: "Nehrunagar",
           role: "physician",
           business_name: "business_2",
+          on_call_status: "yes",
         },
         {
           user_id: 23,
@@ -231,6 +236,7 @@ module.exports = {
           street: "Nehrunagar",
           role: "physician",
           business_name: "business_3",
+          on_call_status: "yes",
         },
         {
           user_id: 24,
@@ -250,6 +256,7 @@ module.exports = {
           street: "Nehrunagar",
           role: "physician",
           business_name: "business_4",
+          on_call_status: "yes",
         },
         {
           user_id: 25,
@@ -269,6 +276,7 @@ module.exports = {
           street: "Nehrunagar",
           role: "physician",
           business_name: "business_5",
+          on_call_status: "yes",
         },
       ],
       {}

@@ -6,6 +6,7 @@ export * from "./admin_validations/admin_myprofile";
 export * from "./admin_validations/admin_partner_vendor_menu";
 export * from "./admin_validations/admin_provider_menu/provider";
 export * from "./admin_validations/admin_records_menu";
+export * from "./admin_validations/admin_provider_menu/scheduling"
 
 
 

@@ -51,6 +51,8 @@ const message_constants = {
   EWCAc:"Error while creating access",
   EWCR:"Error while creating request",
   EWCN:"Error while creating notes",
+  EWCS:"Error while creating shifts",
+  EWFS:"Error while finding shifts",
   EWUB: "Error while updating business",
   EWSA: "Error while sending agreement to your mail",
   EFBD: "Error fetching business data",

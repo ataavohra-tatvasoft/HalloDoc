@@ -4,7 +4,6 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("user", {
-      
       user_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -25,7 +24,7 @@ module.exports = {
         allowNull: true,
       },
       type_of_user: {
-        type: Sequelize.ENUM("admin", "patient", "provider","all"),
+        type: Sequelize.ENUM("admin", "patient", "provider", "all"),
         allowNull: false,
       },
 
@@ -76,12 +75,7 @@ module.exports = {
         allowNull: true,
       },
       role: {
-        type: Sequelize.ENUM(
-          "admin",
-          "patient",
-          "physician",
-          "clinical",
-        ),
+        type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
         allowNull: true,
         defaultValue: null,
       },
@@ -148,7 +142,7 @@ module.exports = {
         defaultValue: 0,
       },
 
-      // Common attributes between Patient and Provider 
+      // Common attributes between Patient and Provider
       business_name: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -196,11 +190,6 @@ module.exports = {
       on_call_status: {
         type: Sequelize.STRING,
         allowNull: true,
-      },
-      scheduled_status: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue: "no",
       },
       support_message: {
         type: Sequelize.STRING,
