@@ -19,6 +19,7 @@ export interface RequestAttributes {
   transfer_request_status: string;
   agreement_status: string;
   notes_symptoms: string | null;
+  is_assigned: string | null;
   assign_req_description: string;
   final_report: string;
   createdAt: Date;
@@ -41,6 +42,7 @@ export interface RequestCreationAttributes
     | "transfer_request_status"
     | "agreement_status"
     | "notes_symptoms"
+    | "is_assigned"
     | "assign_req_description"
     | "final_report"
     | "createdAt"

@@ -120,6 +120,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      is_assigned: {
+        type: Sequelize.ENUM("yes", "no"),
+        allowNull: false,
+        defaultValue:"no",
+      },
       assign_req_description: {
         type: Sequelize.STRING,
         allowNull: true,

@@ -15,7 +15,7 @@ import Requestor from "./requestor";
 import {
   RequestCreationAttributes,
   RequestAttributes,
-} from "../../interfaces/request_model";
+} from "../../interfaces/request";
 
 @Table({
   timestamps: true,
@@ -155,6 +155,13 @@ export default class Request extends Model<
     allowNull: true,
   })
   notes_symptoms: string;
+
+  @Column({
+    type: DataType.ENUM("yes", "no"),
+    allowNull: false,
+    defaultValue:"no",
+  })
+  is_assigned: string;
 
   @Column({
     type: DataType.STRING,

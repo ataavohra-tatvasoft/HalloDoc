@@ -8,7 +8,7 @@ import {
 import {
   DocumentsAttributes,
   DocumentsCreationAttributes,
-} from "../../interfaces/documents_model";
+} from "../../interfaces/documents";
 import Request from "./request";
 import User from "./user";
 

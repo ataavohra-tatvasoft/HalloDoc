@@ -2,7 +2,7 @@ import { Table, Column, DataType, Model, BelongsTo } from "sequelize-typescript"
 import {
   ShiftsAttributes,
   ShiftsCreationAttributes,
-} from "../../interfaces/shifts_model";
+} from "../../interfaces/shifts";
 import User from "./user";
 @Table({ timestamps: true, tableName: "shifts" })
 export default class Shifts extends Model<

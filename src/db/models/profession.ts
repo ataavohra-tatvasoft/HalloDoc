@@ -2,7 +2,7 @@ import { Table, Column, DataType, Model } from "sequelize-typescript";
 import {
   ProfessionAttributes,
   ProfessionCreationAttributes,
-} from "../../interfaces/profession_model";
+} from "../../interfaces/profession";
 @Table({ timestamps: true, tableName: "profession" })
 export default class Profession extends Model<ProfessionAttributes, ProfessionCreationAttributes> {
   @Column({

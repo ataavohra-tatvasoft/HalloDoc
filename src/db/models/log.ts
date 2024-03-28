@@ -2,7 +2,7 @@ import { Table, Column, DataType, Model,BelongsTo, Sequelize } from "sequelize-t
 import {
     LogsAttributes,
     LogsCreationAttributes,
-} from "../../interfaces/logs_model";
+} from "../../interfaces/logs";
 
 @Table({ timestamps: true , tableName: "logs" })
 export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> {

@@ -46,6 +46,7 @@ const message_constants = {
   EWDP: "Error while deleting profile",
   EWDB: "Error while deleting business",
   EWU: "Error while updating",
+  EWC: "Error while creating",
   EWCB: "Error while creating business",
   EWCA: "Error while creating account",
   EWCAc:"Error while creating access",

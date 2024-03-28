@@ -8,7 +8,7 @@ import {
 import {
   NotesAttributes,
   NotesCreationAttributes,
-} from "../../interfaces/notes_model";
+} from "../../interfaces/notes";
 import Request from "./request";
 
 @Table({ timestamps: true, tableName: "notes" })

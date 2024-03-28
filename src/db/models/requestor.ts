@@ -7,7 +7,7 @@ import {
 import {
   RequestorCreationAttributes,
   RequestorAttributes,
-} from "../../interfaces/requestor_model";
+} from "../../interfaces/requestor";
 
 @Table({
   timestamps: true,

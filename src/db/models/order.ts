@@ -2,7 +2,7 @@ import { Table, Column, DataType, Model,BelongsTo, Sequelize } from "sequelize-t
 import {
   OrderAttributes,
   OrderCreationAttributes,
-} from "../../interfaces/order_model";
+} from "../../interfaces/order";
 import Request from "./request";
 import Business from "./business-vendor";
 

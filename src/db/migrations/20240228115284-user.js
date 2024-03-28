@@ -148,28 +148,6 @@ module.exports = {
         allowNull: true,
       },
 
-      //Regions of service
-      district_of_columbia: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue: "no",
-      },
-      new_york: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue: "no",
-      },
-      virginia: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue: "no",
-      },
-      maryland: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue: "no",
-      },
-
       // Additional attributes
       tax_id: {
         type: Sequelize.STRING,
@@ -188,8 +166,9 @@ module.exports = {
         allowNull: true,
       },
       on_call_status: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM("yes", "no"),
         allowNull: true,
+        defaultValue: null,
       },
       support_message: {
         type: Sequelize.STRING,

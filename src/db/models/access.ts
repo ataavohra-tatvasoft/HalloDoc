@@ -8,7 +8,7 @@ import {
 import {
   AccessAttributes,
   AccessCreationAttributes,
-} from "../../interfaces/access_model";
+} from "../../interfaces/access";
 import User from "./user";
 @Table({ timestamps: true, tableName: "access" })
 export default class Access extends Model<

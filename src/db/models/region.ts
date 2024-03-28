@@ -1,10 +1,21 @@
-import { Table, Column, DataType, Model } from "sequelize-typescript";
+import {
+  Table,
+  Column,
+  DataType,
+  Model,
+  BelongsToMany,
+} from "sequelize-typescript";
 import {
   RegionAttributes,
   RegionCreationAttributes,
-} from "../../interfaces/region_model";
+} from "../../interfaces/region";
+import User from "./user";
+import UserRegionMapping from "./user-region_mapping";
 @Table({ timestamps: true, tableName: "region" })
-export default class Region extends Model<RegionAttributes, RegionCreationAttributes> {
+export default class Region extends Model<
+  RegionAttributes,
+  RegionCreationAttributes
+> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -18,5 +29,11 @@ export default class Region extends Model<RegionAttributes, RegionCreationAttrib
   })
   region_name: string;
 
+  @BelongsToMany(() => User, {
+    through: () => UserRegionMapping,
+    foreignKey: "region_id",
+    otherKey: "user_id",
+  })
+  Users: User[];
   // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

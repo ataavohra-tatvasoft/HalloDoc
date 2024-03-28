@@ -1,9 +1,8 @@
-import { Table, Column, DataType, Model, HasMany } from "sequelize-typescript";
-import {
-  UserAttributes,
-  UserCreationAttributes,
-} from "../../interfaces/user_model";
+import { Table, Column, DataType, Model, HasMany, BelongsToMany } from "sequelize-typescript";
+import { UserAttributes, UserCreationAttributes } from "../../interfaces/user";
 import Shifts from "./shifts";
+import UserRegionMapping from "./user-region_mapping";
+import Region from "./region";
 
 @Table({
   timestamps: true,
@@ -203,35 +202,6 @@ export default class User extends Model<
   })
   business_name: string;
 
-  //Regions of service
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    allowNull: false,
-    defaultValue: "no",
-  })
-  district_of_columbia: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    allowNull: false,
-    defaultValue: "no",
-  })
-  new_york: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    allowNull: false,
-    defaultValue: "no",
-  })
-  virginia: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    allowNull: false,
-    defaultValue: "no",
-  })
-  maryland: string;
-
   // Additional attributes
   @Column({
     type: DataType.STRING,
@@ -258,9 +228,9 @@ export default class User extends Model<
   signature_photo: string;
 
   @Column({
-    type: DataType.ENUM("yes","no"),
+    type: DataType.ENUM("yes", "no"),
     allowNull: true,
-    defaultValue: null
+    defaultValue: null,
   })
   on_call_status: string;
 
@@ -272,4 +242,11 @@ export default class User extends Model<
 
   @HasMany(() => Shifts, { foreignKey: "user_id" })
   Shifts: Shifts[];
+
+  @BelongsToMany(() => Region, {
+    through: () => UserRegionMapping,
+    foreignKey: "user_id",
+    otherKey: 'region_id',
+  })
+  Regions: Region[];
 }

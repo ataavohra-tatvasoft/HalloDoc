@@ -44,12 +44,6 @@ export interface UserAttributes {
   // Common attributes between Patient and Provider
   business_name: string | null;
 
-  //Regions of service
-  district_of_columbia: string | null;
-  new_york: string | null;
-  virginia: string | null;
-  maryland: string | null;
-
   // Additional attributes (optional)
   tax_id?: string | null;
   business_website?: string | null;
@@ -93,10 +87,6 @@ export interface UserCreationAttributes
     | "street"
     | "open_requests"
     | "business_name"
-    | "district_of_columbia"
-    | "new_york"
-    | "virginia"
-    | "maryland"
     | "tax_id"
     | "business_website"
     | "profile_picture"

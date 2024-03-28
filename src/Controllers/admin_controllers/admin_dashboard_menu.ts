@@ -1729,6 +1729,7 @@ export const assign_request: Controller = async (
     const physician_id = provider.user_id;
     await RequestModel.update(
       {
+        is_assigned: "yes",
         physician_id: physician_id,
         assign_req_description,
       },

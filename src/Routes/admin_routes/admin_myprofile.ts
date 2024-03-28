@@ -31,6 +31,14 @@ router.put(
   admin_profile_reset_password
 );
 router.put(
+  "/myprofile/admin_profile/editadminbillinginfo",
+  authmiddleware,
+  // celebrate(admin_profile_admin_info_edit_validation),
+  admin_profile_edit
+);
+
+//Above API is combined for below two
+router.put(
   "/myprofile/admin_profile/editadmininfo",
   authmiddleware,
   celebrate(admin_profile_admin_info_edit_validation),

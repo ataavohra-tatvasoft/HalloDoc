@@ -3,13 +3,13 @@ import { Joi } from "celebrate";
 export const admin_profile_reset_password_validation_schema = {
   body: Joi.object({
     password: Joi.string().required(),
-    admin_id: Joi.number().integer().positive().required(),
+    user_id: Joi.number().integer().positive().required(),
   }),
 };
 
 export const admin_profile_edit_validation_schema = {
   body: Joi.object({
-    admin_id: Joi.number().integer().positive().required(),
+    user_id: Joi.number().integer().positive().required(),
     firstname: Joi.string(),
     lastname: Joi.string(),
     email: Joi.string().email(),
@@ -28,6 +28,7 @@ export const admin_profile_admin_info_edit_validation = {
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     email: Joi.string().email().required(),
+    confirm_email: Joi.ref("email"),
     mobile_no: Joi.string()
       .length(10)
       .pattern(/^[0-9]+$/)
@@ -36,13 +37,13 @@ export const admin_profile_admin_info_edit_validation = {
     new_york: Joi.boolean().optional(),
     virginia: Joi.boolean().optional(),
     maryland: Joi.boolean().optional(),
-    admin_id: Joi.number().required(),
+    user_id: Joi.number().required(),
   }).required(),
 };
 
 export const admin_profile_mailing_billling_info_edit_validation = {
   body: Joi.object({
-    admin_id: Joi.number().required(),
+    user_id: Joi.number().required(),
     address_1: Joi.string().trim().required(),
     address_2: Joi.string().trim().allow(""), // Optional field
     city: Joi.string().trim().required(),

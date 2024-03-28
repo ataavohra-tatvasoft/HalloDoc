@@ -10,6 +10,8 @@ import twilio from "twilio";
 import Documents from "../../../db/models/documents";
 import dotenv from "dotenv";
 import message_constants from "../../../public/message_constants";
+import Region from "../../../db/models/region";
+import UserRegionMapping from "../../../db/models/user-region_mapping";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -224,10 +226,6 @@ export const view_edit_physician_account: Controller = async (
         "medical_licence",
         "NPI_no",
         "synchronization_email",
-        "district_of_columbia",
-        "new_york",
-        "virginia",
-        "maryland",
         "address_1",
         "address_2",
         "city",
@@ -237,6 +235,9 @@ export const view_edit_physician_account: Controller = async (
         "business_id",
         "admin_notes",
       ],
+      include:[{
+        model: Region
+      }]
     });
     if (!profile) {
       return res.status(404).json({ error: message_constants.PNF });
@@ -272,10 +273,10 @@ export const view_edit_physician_account: Controller = async (
         NPI_number: profile.NPI_no,
         synchronization_email: profile.synchronization_email,
         service_areas_availability: {
-          district_of_columbia: profile.district_of_columbia,
-          new_york: profile.new_york,
-          virginia: profile.virginia,
-          maryland: profile.maryland,
+          regions: profile.Regions?.map((region) => ({
+            region_id: region.region_id,
+            region_name: region.region_name,
+          })),
         },
       },
       mailing_billing_information: {
@@ -419,10 +420,6 @@ export const save_physician_information: Controller = async (
         medical_licence,
         NPI_no,
         synchronization_email,
-        district_of_columbia,
-        new_york,
-        virginia,
-        maryland,
       },
       {
         where: {
@@ -434,6 +431,285 @@ export const save_physician_information: Controller = async (
       return res.status(200).json({
         message: message_constants.US,
       });
+    }
+    if (district_of_columbia == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "District of Columbia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "District of Columbia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (new_york == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "New York",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "New York",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (virginia == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Virginia",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Virginia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (maryland == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Maryland",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Maryland",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
     }
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -942,10 +1218,6 @@ export const create_provider_account: Controller = async (
       mobile_no,
       medical_licence,
       NPI_no,
-      district_of_columbia,
-      new_york,
-      virginia,
-      maryland,
       address_1,
       address_2,
       city,
@@ -962,6 +1234,286 @@ export const create_provider_account: Controller = async (
       return res.status(500).json({
         message: message_constants.EWCA,
       });
+    }
+    
+    if (district_of_columbia == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "District of Columbia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "District of Columbia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (new_york == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "New York",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "New York",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (virginia == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Virginia",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Virginia",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
+    }
+    if (maryland == true) {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Maryland",
+        },
+        attributes: ["region_id"],
+      });
+
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+          {
+            where: {
+              user_id: user.user_id,
+              region_id: region?.region_id,
+            },
+          }
+        );
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        });
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
+          });
+        }
+      }
+    } else {
+      const region = await Region.findOne({
+        where: {
+          region_name: "Maryland",
+        },
+        attributes: ["region_id"],
+      });
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: user.user_id,
+          region_id: region?.region_id,
+        },
+      });
+      if (is_exist) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: user.user_id,
+            region_id: region?.region_id,
+          },
+        });
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
+          });
+        }
+      }
     }
 
     if (independent_contractor_agreement_path) {
