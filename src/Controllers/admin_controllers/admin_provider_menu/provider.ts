@@ -805,6 +805,132 @@ export const save_provider_profile: Controller = async (
   }
 };
 
+export const save_user_information: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      body: {
+        user_id: user_id_str,
+        username,
+        status,
+        role,
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+        medical_licence,
+        NPI_no,
+        synchronization_email,
+        district_of_columbia,
+        new_york,
+        virginia,
+        maryland,
+        address_1,
+        address_2,
+        city,
+        state,
+        zip,
+        billing_mobile_no,
+        business_name,
+        business_website,
+        admin_notes,
+      },
+    } = req;
+
+    // Parse user_id to number
+    const user_id = parseInt(user_id_str, 10);
+
+    // Check if user_id is NaN after parsing
+    if (isNaN(user_id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = await User.findOne({
+      where: { user_id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: message_constants.UNF });
+    }
+
+    const updateUserFields = {
+      username,
+      status,
+      role,
+      firstname,
+      lastname,
+      email,
+      mobile_no,
+      medical_licence,
+      NPI_no,
+      synchronization_email,
+      address_1,
+      address_2,
+      city,
+      state,
+      zip,
+      billing_mobile_no,
+      business_name,
+      business_website,
+      admin_notes,
+    };
+
+    const update_status = await User.update(updateUserFields, { where: { user_id } });
+
+    if (!update_status) {
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+
+    // Update region mappings
+    const regionsToUpdate = [
+      { name: "District of Columbia", value: district_of_columbia },
+      { name: "New York", value: new_york },
+      { name: "Virginia", value: virginia },
+      { name: "Maryland", value: maryland },
+    ];
+
+    for (const regionData of regionsToUpdate) {
+      await updateRegionMapping(user_id, regionData.name, regionData.value);
+    }
+
+    return res.status(200).json({ message: message_constants.US });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+const updateRegionMapping = async (user_id: number, region_name: string, value: boolean) => {
+  const region = await Region.findOne({
+    where: { region_name },
+    attributes: ["region_id"],
+  });
+
+  if (!region) {
+    return; // Region not found, no need to proceed
+  }
+
+  const isExist = await UserRegionMapping.findOne({
+    where: { user_id, region_id: region.region_id },
+  });
+
+  if (value) {
+    if (isExist) {
+      await UserRegionMapping.update(
+        { user_id, region_id: region.region_id },
+        { where: { user_id, region_id: region.region_id } }
+      );
+    } else {
+      await UserRegionMapping.create({ user_id, region_id: region.region_id });
+    }
+  } else {
+    if (isExist) {
+      await UserRegionMapping.destroy({ where: { user_id, region_id: region.region_id } });
+    }
+  }
+};
+
 export const delete_provider_account: Controller = async (
   req: Request,
   res: Response,
@@ -1619,3 +1745,112 @@ export const create_provider_account: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
+export const create_provider_account_refactored: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      body: {
+        username,
+        password,
+        role,
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+        medical_licence,
+        NPI_no,
+        district_of_columbia,
+        new_york,
+        virginia,
+        maryland,
+        address_1,
+        address_2,
+        city,
+        state,
+        zip,
+        billing_mobile_no,
+        business_name,
+        business_website,
+        admin_notes,
+      },
+      files,
+    } = req;
+
+    const hashed_password: string = await bcrypt.hash(password, 10);
+    const uploaded_files: any = files || {};
+
+    const profile_picture_path = getFilepath(uploaded_files, "profile_picture");
+    const independent_contractor_agreement_path = getFilepath(
+      uploaded_files,
+      "independent_contractor_agreement"
+    );
+    const background_check_path = getFilepath(uploaded_files, "background_check");
+    const HIPAA_path = getFilepath(uploaded_files, "HIPAA");
+    const non_diclosure_path = getFilepath(uploaded_files, "non_diclosure");
+
+    const user = await createUser({
+      username,
+      password: hashed_password,
+      role,
+      firstname,
+      lastname,
+      email,
+      mobile_no,
+      medical_licence,
+      NPI_no,
+      address_1,
+      address_2,
+      city,
+      state,
+      zip,
+      billing_mobile_no,
+      business_name,
+      business_website,
+      admin_notes,
+      profile_picture: profile_picture_path,
+    });
+
+    if (!user) {
+      return res.status(500).json({ message: message_constants.EWCA });
+    }
+
+    await updateRegionMapping(user.user_id, "District of Columbia", district_of_columbia);
+    await updateRegionMapping(user.user_id, "New York", new_york);
+    await updateRegionMapping(user.user_id, "Virginia", virginia);
+    await updateRegionMapping(user.user_id, "Maryland", maryland);
+
+    await updateDocument(user.user_id, "independent_contractor_agreement", independent_contractor_agreement_path);
+    await updateDocument(user.user_id, "background_check", background_check_path);
+    await updateDocument(user.user_id, "HIPAA", HIPAA_path);
+    await updateDocument(user.user_id, "non_diclosure", non_diclosure_path);
+
+    return res.status(200).json({ message: message_constants.Success });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+const getFilepath = (files: any, fieldname: string) => {
+  return files.find((file: any) => file.fieldname === fieldname)?.path || null;
+};
+const createUser = async (userData: any) => {
+  try {
+    const user = await User.create({ type_of_user: "provider", ...userData });
+    return user;
+  } catch (error) {
+    return null;
+  }
+};
+const updateDocument = async (user_id: number, document_name: string, document_path: string) => {
+  if (!document_path) return;
+  const document_status = await Documents.findOne({ where: { user_id, document_name } });
+  if (!document_status) {
+    await Documents.create({ user_id, document_name, document_path });
+  } else {
+    await Documents.update({ document_path }, { where: { user_id, document_name } });
+  }
+};
+
