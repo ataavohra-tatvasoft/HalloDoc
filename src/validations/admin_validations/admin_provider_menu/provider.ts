@@ -50,6 +50,65 @@ export const physician_account_reset_password_validation = {
   }),
 };
 
+export const save_user_information_validation = {
+  body: Joi.object({
+    user_id: Joi.number().integer().positive().required(),
+
+    username: Joi.string().alphanum().min(3).max(30).optional(),
+
+    status: Joi.string().allow("active", "in-active").optional(),
+
+    role: Joi.string()
+      .allow("admin", "patient", "physician", "clinical")
+      .optional(),
+
+    firstname: Joi.string().trim().min(2).max(50).optional(),
+    lastname: Joi.string().trim().min(2).max(50).optional(),
+    email: Joi.string().email().lowercase().optional(),
+    mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{10}$/)
+      .optional(),
+
+    // Optional medical credentials
+    medical_licence: Joi.string().allow(null, ""),
+    NPI_no: Joi.string().allow(null, ""),
+
+    // Optional synchronization email
+    synchronization_email: Joi.string().email().allow(null, ""),
+
+    // Optional address fields
+    address_1: Joi.string().trim().allow(null, ""),
+    address_2: Joi.string().trim().allow(null, ""),
+    city: Joi.string().trim().allow(null, ""),
+    state: Joi.string().trim().allow(null, ""),
+    zip: Joi.string().trim().length(6).allow(null, ""),
+
+    // Optional billing phone number
+    billing_mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{10}$/)
+      .allow(null, ""),
+
+    // Business details
+    business_name: Joi.string().trim().optional(),
+    business_website: Joi.string().uri().allow(null, ""), // Optional website URL
+
+    // Optional admin notes
+    admin_notes: Joi.string().allow(null, ""),
+
+    // Region selections
+    district_of_columbia: Joi.boolean().allow(null),
+
+    new_york: Joi.boolean().allow(null),
+
+    virginia: Joi.boolean().allow(null),
+
+    maryland: Joi.boolean().allow(null),
+  }),
+};
+
+//Combined below four validations into above one
 export const save_account_information_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
@@ -58,7 +117,6 @@ export const save_account_information_validation = {
     role: Joi.string().allow(""),
   }),
 };
-
 export const save_physician_information_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
@@ -77,7 +135,6 @@ export const save_physician_information_validation = {
     maryland: Joi.string().optional(),
   }),
 };
-
 export const save_mailing_billing_info_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
@@ -93,7 +150,6 @@ export const save_mailing_billing_info_validation = {
       .allow(""),
   }),
 };
-
 export const save_provider_profile_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
@@ -168,7 +224,7 @@ export const create_provider_account_validation = {
     address_1: Joi.string().trim().required(),
     address_2: Joi.string().trim().allow(""), // Optional field
     city: Joi.string().trim().required(),
-    state:  Joi.string().trim().required(),
+    state: Joi.string().trim().required(),
     zip: Joi.string()
       .length(6)
       .pattern(/^[0-9]+$/)
@@ -181,4 +237,44 @@ export const create_provider_account_validation = {
     business_website: Joi.string().allow(""), // Optional field
     admin_notes: Joi.string().allow(""), // Optional field
   }).required(),
+};
+
+export const create_provider_account_refactored_validation = {
+  body: Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(8).required(),
+    role: Joi.string().allow("physician"),
+    firstname: Joi.string().trim().min(2).max(50).required(),
+    lastname: Joi.string().trim().min(2).max(50).required(),
+    email: Joi.string().email().lowercase().required(),
+    mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{10}$/)
+      .required(),
+    medical_licence: Joi.string().allow(null, ""),
+    NPI_no: Joi.string().allow(null, ""),
+    district_of_columbia: Joi.boolean().allow(null),
+    new_york: Joi.boolean().allow(null),
+    virginia: Joi.boolean().allow(null),
+    maryland: Joi.boolean().allow(null),
+    address_1: Joi.string().trim().allow(null, ""),
+    address_2: Joi.string().trim().allow(null, ""),
+    city: Joi.string().trim().allow(null, ""),
+    state: Joi.string().trim().allow(null, ""),
+    zip: Joi.string().trim().length(6).allow(null, ""),
+    billing_mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{10}$/)
+      .allow(null, ""),
+    business_name: Joi.string().trim().required(),
+    business_website: Joi.string().uri().allow(null, ""),
+    admin_notes: Joi.string().allow(null, ""),
+  }),
+  files: Joi.object({
+    profile_picture: Joi.allow(Joi.string(), null),
+    independent_contractor_agreement: Joi.allow(Joi.string(), null),
+    background_check: Joi.allow(Joi.string(), null),
+    HIPAA: Joi.allow(Joi.string(), null),
+    non_diclosure: Joi.allow(Joi.string(), null),
+  }).optional(),
 };

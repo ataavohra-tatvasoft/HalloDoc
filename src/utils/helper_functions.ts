@@ -1,6 +1,8 @@
 import multer, { diskStorage } from "multer";
 import nodemailer from "nodemailer";
 import path from "path";
+import Region from "../db/models/region";
+import UserRegionMapping from "../db/models/user-region_mapping";
 
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -39,3 +41,39 @@ export const upload = multer({
     }
   },
 });
+
+export const update_region_mapping = async (
+  user_id: number,
+  region_name: string,
+  value: boolean
+) => {
+  const region = await Region.findOne({
+    where: { region_name },
+    attributes: ["region_id"],
+  });
+
+  if (!region) {
+    return;
+  }
+
+  const isExist = await UserRegionMapping.findOne({
+    where: { user_id, region_id: region.region_id },
+  });
+
+  if (value) {
+    if (isExist) {
+      await UserRegionMapping.update(
+        { user_id, region_id: region.region_id },
+        { where: { user_id, region_id: region.region_id } }
+      );
+    } else {
+      await UserRegionMapping.create({ user_id, region_id: region.region_id });
+    }
+  } else {
+    if (isExist) {
+      await UserRegionMapping.destroy({
+        where: { user_id, region_id: region.region_id },
+      });
+    }
+  }
+};

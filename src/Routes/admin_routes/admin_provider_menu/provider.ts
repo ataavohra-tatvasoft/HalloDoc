@@ -5,6 +5,7 @@ import {
   contact_provider,
   view_edit_physician_account,
   physician_account_reset_password,
+  save_user_information,
   save_account_information,
   save_physician_information,
   save_mailing_billing_info,
@@ -14,6 +15,7 @@ import {
   provider_onboarding_upload,
   provider_onboarding_delete,
   create_provider_account,
+  create_provider_account_refactored,
 } from "../../../controllers";
 import {
   provider_list_validation,
@@ -21,6 +23,7 @@ import {
   contact_provider_validation,
   view_edit_physician_account_validation,
   physician_account_reset_password_validation,
+  save_user_information_validation,
   save_account_information_validation,
   save_physician_information_validation,
   save_mailing_billing_info_validation,
@@ -30,6 +33,7 @@ import {
   provider_onboarding_upload_validation,
   provider_onboarding_delete_validation,
   create_provider_account_validation,
+  create_provider_account_refactored_validation,
 } from "../../../validations";
 import { authmiddleware } from "../../../middlewares";
 import { upload } from "../../../utils";
@@ -69,6 +73,14 @@ router.put(
   celebrate(physician_account_reset_password_validation),
   physician_account_reset_password
 );
+
+router.put(
+  "/providermenu/provider_list/save_user_information",
+  authmiddleware,
+  celebrate(save_user_information_validation),
+  save_user_information
+);
+//Combined below four routes into above one
 router.put(
   "/providermenu/provider_list/save_account_information",
   authmiddleware,
@@ -122,9 +134,9 @@ router.delete(
 router.post(
   "/providermenu/provider_list/create_provider_account",
   authmiddleware,
-  celebrate(create_provider_account_validation),
+  // celebrate(create_provider_account_refactored_validation),
   upload.any(),
-  create_provider_account
+  create_provider_account_refactored
 );
 
 export default router;

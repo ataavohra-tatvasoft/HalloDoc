@@ -1611,6 +1611,7 @@ export const cancel_case_for_request: Controller = async (
     }
     await RequestModel.update(
       {
+        request_state: "toclose",
         request_status: "cancelled by provider",
       },
       {
@@ -2705,7 +2706,6 @@ export const close_case_for_request: Controller = async (
         request_state: "toclose",
         request_status: {
           [Op.notIn]: [
-            "cancelled by admin",
             "cancelled by provider",
             "blocked",
             "clear",
@@ -2725,6 +2725,7 @@ export const close_case_for_request: Controller = async (
     }
     await RequestModel.update(
       {
+        request_state: "unpaid",
         request_status: "closed",
       },
       {
