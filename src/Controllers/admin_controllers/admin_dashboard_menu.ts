@@ -33,9 +33,7 @@ export const admin_signup: Controller = async (
   const {
     body: {
       Email,
-      Confirm_Email,
       Password,
-      Confirm_Password,
       Status,
       Role,
       FirstName,
@@ -73,20 +71,20 @@ export const admin_signup: Controller = async (
     if (!adminData) {
       return res.status(400).json({
         status: false,
-        message: "Failed To SignUp!!!",
+        message: message_constants.FS,
       });
     }
 
     if (adminData) {
       return res.status(200).json({
         status: true,
-        message: "SignedUp Successfully !!!",
+        message: message_constants.SS,
       });
     }
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       status: false,
-      errormessage: "Internal server error  " + error.message,
+      errormessage: message_constants.ISE + error.message,
       message: message_constants.ISE,
     });
   }
@@ -305,7 +303,7 @@ export const requests_by_request_state: Controller = async (
             },
             {
               model: Notes,
-              attributes: ["noteId", "typeOfNote", "description"],
+              attributes: ["note_id", "type_of_note", "description"],
             },
           ],
           limit,
@@ -423,7 +421,7 @@ export const requests_by_request_state: Controller = async (
             },
             {
               model: Notes,
-              attributes: ["noteId", "typeOfNote", "description"],
+              attributes: ["note_id", "type_of_note", "description"],
             },
           ],
           limit,
@@ -600,12 +598,7 @@ export const requests_by_request_state: Controller = async (
         const requests = await RequestModel.findAndCountAll({
           where: {
             request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
+              [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
             },
             request_state: state,
             ...(requestor ? { requested_by: requestor } : {}),
@@ -655,7 +648,7 @@ export const requests_by_request_state: Controller = async (
             },
             {
               model: Notes,
-              attributes: ["noteId", "typeOfNote", "description"],
+              attributes: ["note_id", "type_of_note", "description"],
             },
           ],
           limit,
@@ -813,12 +806,12 @@ export const requests_by_request_state: Controller = async (
         // });
       }
       default: {
-        res.status(500).json({ message: "Invalid State !!!" });
+        return res.status(500).json({ message: message_constants.IS });
       }
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -1110,15 +1103,23 @@ export const requests_by_request_state_refactored: Controller = async (
       };
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
-          request_status: {
-            [Op.notIn]: [
-              "cancelled by admin",
-              "cancelled by provider",
-              "blocked",
-              "clear",
-            ],
-          },
           request_state: state,
+          ...(state == "toclose"
+            ? {
+                request_status: {
+                  [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
+                },
+              }
+            : {
+                request_status: {
+                  [Op.notIn]: [
+                    "cancelled by admin",
+                    "cancelled by provider",
+                    "blocked",
+                    "clear",
+                  ],
+                },
+              }),
           ...(requestor ? { requested_by: requestor } : {}),
         },
         attributes: [
@@ -1191,18 +1192,18 @@ export const requests_by_request_state_refactored: Controller = async (
           request_state: request.request_state,
           confirmationNo: request.confirmation_no,
           requestor: request.requested_by,
-          requested_date: request.requested_date.toISOString().split("T")[0],
+          requested_date: request.requested_date?.toISOString().split("T")[0],
           ...(state !== "new"
             ? {
                 date_of_service: request.date_of_service
-                  .toISOString()
+                  ?.toISOString()
                   .split("T")[0],
               }
             : {}),
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,
-            DOB: request.Patient.dob.toISOString().split("T")[0],
+            DOB: request.Patient.dob?.toISOString().split("T")[0],
             mobile_no: request.Patient.mobile_no,
             address:
               request.Patient.address_1 +
@@ -1220,7 +1221,7 @@ export const requests_by_request_state_refactored: Controller = async (
                     request.Physician.firstname +
                     " " +
                     request.Physician.lastname,
-                  DOB: request.Physician.dob.toISOString().split("T")[0],
+                  DOB: request.Physician.dob?.toISOString().split("T")[0],
                   mobile_no: request.Physician.mobile_no,
                   address:
                     request.Physician.address_1 +
@@ -1273,10 +1274,11 @@ export const requests_by_request_state_refactored: Controller = async (
           "patient_id",
         ]);
       default:
-        return res.status(500).json({ message: "Invalid State !!!" });
+        return res.status(500).json({ message: message_constants.IS });
     }
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -1612,7 +1614,7 @@ export const cancel_case_for_request: Controller = async (
     await RequestModel.update(
       {
         request_state: "toclose",
-        request_status: "cancelled by provider",
+        request_status: "cancelled by admin",
       },
       {
         where: {
@@ -1655,7 +1657,7 @@ export const cancel_case_for_request: Controller = async (
       message: message_constants.Success,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -2498,23 +2500,28 @@ export const clear_case_for_request: Controller = async (
           request_id: request.request_id,
         },
       });
-      await RequestModel.destroy({
-        where: {
-          confirmation_no: confirmation_no,
-        },
-      });
       await Documents.destroy({
         where: {
           request_id: request.request_id,
         },
       });
+      await RequestModel.update(
+        {
+          request_status: "clear",
+        },
+        {
+          where: {
+            confirmation_no: confirmation_no,
+          },
+        }
+      );
       return res.status(200).json({
         status: true,
         confirmation_no: confirmation_no,
         message: message_constants.Success,
       });
     } catch {
-      res.status(404).json({ error: message_constants.IS });
+      return res.status(404).json({ error: message_constants.IS });
     }
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -2705,11 +2712,7 @@ export const close_case_for_request: Controller = async (
         confirmation_no: confirmation_no,
         request_state: "toclose",
         request_status: {
-          [Op.notIn]: [
-            "cancelled by provider",
-            "blocked",
-            "clear",
-          ],
+          [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
         },
       },
       include: [
