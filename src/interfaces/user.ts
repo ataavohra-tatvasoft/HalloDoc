@@ -18,7 +18,7 @@ export interface UserAttributes {
   state: string | null;
   country_code?: string | null;
   zip: number | null;
-  role?: string | null;
+  role_id?: number | null;
 
   // Admin-specific fields (optional)
   billing_mobile_no?: number | null;
@@ -74,7 +74,7 @@ export interface UserCreationAttributes
     | "state"
     | "country_code"
     | "zip"
-    | "role"
+    | "role_id"
     | "billing_mobile_no"
     | "status"
     | "dob"

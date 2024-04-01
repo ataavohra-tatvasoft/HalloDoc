@@ -59,7 +59,6 @@ export const save_user_information_validation = {
     status: Joi.string().allow("active", "in-active").optional(),
 
     role: Joi.string()
-      .allow("admin", "patient", "physician", "clinical")
       .optional(),
 
     firstname: Joi.string().trim().min(2).max(50).optional(),
@@ -207,7 +206,7 @@ export const create_provider_account_validation = {
   body: Joi.object({
     username: Joi.string().alphanum().min(3).max(30).required(),
     password: Joi.string().min(6).required(),
-    role: Joi.string().allow("provider").required(),
+    role: Joi.string().optional(),
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     email: Joi.string().email().required(),
@@ -243,7 +242,7 @@ export const create_provider_account_refactored_validation = {
   body: Joi.object({
     username: Joi.string().alphanum().min(3).max(30).required(),
     password: Joi.string().min(8).required(),
-    role: Joi.string().allow("physician"),
+    role: Joi.string().optional(),
     firstname: Joi.string().trim().min(2).max(50).required(),
     lastname: Joi.string().trim().min(2).max(50).required(),
     email: Joi.string().email().lowercase().required(),

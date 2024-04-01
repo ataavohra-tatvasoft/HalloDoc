@@ -13,6 +13,7 @@ import message_constants from "../../../public/message_constants";
 import Region from "../../../db/models/region";
 import UserRegionMapping from "../../../db/models/user-region_mapping";
 import { update_region_mapping } from "../../../utils/helper_functions";
+import Role from "../../../db/models/role";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -44,23 +45,30 @@ export const provider_list: Controller = async (
         "stop_notification_status",
         "firstname",
         "lastname",
-        "role",
+        "role_id",
         "on_call_status",
         "status",
       ],
       where: {
         ...(region && { state: region }),
-        type_of_user: "provider",
+        type_of_user: "physician",
       },
     });
+
+  
     var i = offset + 1;
     for (const provider of providers) {
+      const role = await Role.findOne({
+        where:{
+          role_id: provider.role_id
+        }
+      });
       const formattedRequest: any = {
         sr_no: i,
         user_id: provider.user_id,
         stop_notification: provider.stop_notification_status,
         provider_name: provider.firstname + " " + provider.lastname,
-        role: provider.role,
+        role: role?.role_name,
         on_call_status: provider.on_call_status,
         status: provider.status,
       };
@@ -126,7 +134,7 @@ export const contact_provider: Controller = async (
     const user = await User.findOne({
       where: {
         user_id,
-        type_of_user: "provider",
+        type_of_user: "physician",
       },
       attributes: ["user_id", "email", "mobile_no"],
     });
@@ -212,14 +220,14 @@ export const view_edit_physician_account: Controller = async (
     const profile = await User.findOne({
       where: {
         user_id,
-        type_of_user: "provider",
+        type_of_user: "physician",
       },
       attributes: [
         "type_of_user",
         "user_id",
         "username",
         "status",
-        "role",
+        "role_id",
         "firstname",
         "lastname",
         "email",
@@ -260,12 +268,17 @@ export const view_edit_physician_account: Controller = async (
     if (!documents) {
       res.status(500).json({ error: message_constants.DNF });
     }
+    const role = await Role.findOne({
+      where:{
+        role_id: profile.role_id
+      }
+    });
     const formattedRequest: any = {
       user_id: profile.user_id,
       account_information: {
         username: profile.username,
         status: profile.status,
-        role: profile.role,
+        role: role?.role_name,
       },
       physician_information: {
         firstname: profile.firstname,
@@ -389,11 +402,20 @@ export const save_user_information: Controller = async (
     if (!user) {
       return res.status(404).json({ message: message_constants.UNF });
     }
-
+    const is_role = await Role.findOne({
+      where:{
+        role_name: role
+      }
+    });
+    if(!is_role){
+      return res.status(500).json({
+        message:message_constants.RoNF
+      })
+    }
     const update_user_fields = {
       username,
       status,
-      role,
+      role_id: is_role.role_id,
       firstname,
       lastname,
       email,
@@ -458,8 +480,18 @@ export const save_account_information: Controller = async (
     if (!user) {
       return res.status(404).json({ message: message_constants.UNF });
     }
+    const is_role = await Role.findOne({
+      where:{
+        role_name: role
+      }
+    });
+    if(!is_role){
+      return res.status(500).json({
+        message:message_constants.RoNF
+      })
+    }
     const update_status = await User.update(
-      { username, status, role },
+      { username, status, role_id: is_role.role_id },
       {
         where: {
           user_id,
@@ -1074,8 +1106,7 @@ export const provider_onboarding_upload = async (
     const user = await User.findOne({
       where: {
         user_id,
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
       },
     });
     if (!user) {
@@ -1301,12 +1332,21 @@ export const create_provider_account: Controller = async (
     const non_diclosure_path = uploaded_files.find(
       (file: any) => file.fieldname === "non_diclosure"
     )?.path;
-
+    const is_role = await Role.findOne({
+      where:{
+        role_name: role
+      }
+    });
+    if(!is_role){
+      return res.status(500).json({
+        message:message_constants.RoNF
+      })
+    }
     const user = await User.create({
-      type_of_user: "provider",
+      type_of_user: "physician",
       username,
       password: hashed_password,
-      role,
+      role_id : is_role.role_id,
       firstname,
       lastname,
       email,
@@ -1781,12 +1821,21 @@ export const create_provider_account_refactored: Controller = async (
     );
     const HIPAA_path = get_file_path(uploaded_files, "HIPAA");
     const non_diclosure_path = get_file_path(uploaded_files, "non_diclosure");
-
+    const is_role = await Role.findOne({
+      where:{
+        role_name: role
+      }
+    });
+    if(!is_role){
+      return res.status(500).json({
+        message:message_constants.RoNF
+      })
+    }
     const user = await User.create({
-      type_of_user: "provider",
+      type_of_user: "physician",
       username,
       password: hashed_password,
-      role,
+      role_id: is_role.role_id,
       firstname,
       lastname,
       email,

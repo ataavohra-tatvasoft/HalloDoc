@@ -10,15 +10,13 @@ import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
 import * as crypto from "crypto";
-import { MEDIUMINT, Op } from "sequelize";
+import { Op } from "sequelize";
 import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
 import path, { dirname } from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
-import { error } from "console";
-import { errorMonitor } from "events";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -55,7 +53,7 @@ export const admin_signup: Controller = async (
       email: Email,
       password: hashedPassword,
       status: Status,
-      role: Role,
+      role_id: null,
       firstname: FirstName,
       lastname: LastName,
       mobile_no: MobileNumber,
@@ -411,8 +409,7 @@ export const requests_by_request_state: Controller = async (
                 "address_2",
               ],
               where: {
-                type_of_user: "provider",
-                role: "physician",
+                type_of_user: "physician",
               },
             },
             {
@@ -540,8 +537,7 @@ export const requests_by_request_state: Controller = async (
                 "address_2",
               ],
               where: {
-                type_of_user: "provider",
-                role: "physician",
+                type_of_user: "physician",
               },
             },
           ],
@@ -642,8 +638,7 @@ export const requests_by_request_state: Controller = async (
                 "address_2",
               ],
               where: {
-                type_of_user: "provider",
-                role: "physician",
+                type_of_user: "physician",
               },
             },
             {
@@ -755,8 +750,7 @@ export const requests_by_request_state: Controller = async (
                 "lastname",
               ],
               where: {
-                type_of_user: "provider",
-                role: "physician",
+                type_of_user: "physician",
               },
             },
           ],
@@ -912,8 +906,7 @@ export const manage_requests_by_State: Controller = async (
                     "address_2",
                   ],
                   where: {
-                    type_of_user: "provider",
-                    role: "physician",
+                    type_of_user: "physician",
                   },
                 },
               ]
@@ -1165,8 +1158,7 @@ export const requests_by_request_state_refactored: Controller = async (
                     "address_2",
                   ],
                   where: {
-                    type_of_user: "provider",
-                    role: "physician",
+                    type_of_user: "physician",
                   },
                 },
               ]
@@ -1680,10 +1672,9 @@ export const assign_request_region_physician: Controller = async (
       data: [],
     };
     const physicians = await User.findAll({
-      attributes: ["state", "role", "firstname", "lastname"],
+      attributes: ["state", "role_id", "firstname", "lastname"],
       where: {
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
         ...(region ? { state: region } : {}),
       },
     });
@@ -1722,8 +1713,7 @@ export const assign_request: Controller = async (
       where: {
         firstname,
         lastname,
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
       },
     });
     if (!provider) {
@@ -2377,10 +2367,9 @@ export const transfer_request_region_physicians: Controller = async (
       data: [],
     };
     const physicians = await User.findAll({
-      attributes: ["state", "role", "firstname", "lastname"],
+      attributes: ["state", "role_id", "firstname", "lastname"],
       where: {
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
         ...(region ? { state: region } : {}),
       },
     });
@@ -2421,8 +2410,7 @@ export const transfer_request: Controller = async (
       where: {
         firstname,
         lastname,
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
       },
     });
     if (!provider) {
@@ -2972,8 +2960,7 @@ export const request_support: Controller = async (
       },
       {
         where: {
-          type_of_user: "provider",
-          role: "physician",
+          type_of_user: "physician",
         },
       }
     );

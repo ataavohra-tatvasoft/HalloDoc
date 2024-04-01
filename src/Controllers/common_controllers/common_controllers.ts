@@ -10,6 +10,7 @@ import * as fs from "fs";
 import * as xlsx from "xlsx";
 import path from "path";
 import RequestModel from "../../db/models/request";
+import Role from "../../db/models/role";
 
 /** Regions API */
 
@@ -330,8 +331,7 @@ export const physicians: Controller = async (
       const physicians = await User.findAll({
         attributes: ["firstname", "lastname", "type_of_user", "role"],
         where: {
-          type_of_user: "provider",
-          role: "physician",
+          type_of_user: "physician",
         },
       });
 
@@ -341,6 +341,45 @@ export const physicians: Controller = async (
       for (const physician of physicians) {
         const formattedRequest: any = {
           physician_name: physician.firstname + " " + physician.lastname,
+        };
+        formattedResponse.data.push(formattedRequest);
+      }
+      return res.status(200).json({
+        ...formattedResponse,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+  }
+};
+
+/**Role's API */
+export const roles: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  {
+    try {
+      const {account_type} = req.params;
+      const formattedResponse: any = {
+        status: true,
+        data: [],
+      };
+      const roles = await Role.findAll({
+        attributes: ["role_id", "role_name"],
+        where: {
+          account_type,
+        },
+      });
+
+      if (!roles) {
+        return res.status(404).json({ error: message_constants.EFPD });
+      }
+      for (const role of roles) {
+        const formattedRequest: any = {
+          role_id: role.role_id ,
+          role_name: role.role_name
         };
         formattedResponse.data.push(formattedRequest);
       }

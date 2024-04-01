@@ -13,9 +13,12 @@ export const admin_create_request_validation = {
     DOB: Joi.date().iso().required(),
     street: Joi.string().trim().required(),
     city: Joi.string().trim().required(),
-    state: Joi.string().trim().length(2).uppercase().required(),
+    state: Joi.string()
+    .trim()
+    .required()
+    .valid("District Of Columbia", "New York", "Virginia", "Maryland"),
     zip: Joi.string()
-      .length(5)
+      .length(6)
       .pattern(/^[0-9]+$/)
       .required(),
     room: Joi.string().trim().optional().allow(""), // Optional room number

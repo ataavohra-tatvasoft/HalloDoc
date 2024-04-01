@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import UserRegionMapping from "../../db/models/user-region_mapping";
+import Role from "../../db/models/role";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -45,7 +46,7 @@ export const admin_profile_view: Controller = async (
       attributes: [
         "user_id",
         // "username",
-        "role",
+        "role_id",
         "status",
         "firstname",
         "lastname",
@@ -62,18 +63,32 @@ export const admin_profile_view: Controller = async (
         {
           model: Region,
         },
+        {
+          model: Role
+        }
       ],
     });
     if (!profile) {
       return res.status(404).json({ error: message_constants.PNF });
     }
     console.log(profile.Regions);
+
+    const is_role = await Role.findOne({
+      where:{
+        role_id: profile.role_id
+      }
+    });
+    if(!is_role){
+      return res.status(500).json({
+        message:message_constants.RoNF
+      })
+    }
     const formattedRequest: any = {
       user_id: profile.user_id,
       account_information: {
         username: "dummy",
         status: profile.status,
-        role: profile.role,
+        role: is_role.role_name,
       },
       administrator_information: {
         firstname: profile.firstname,

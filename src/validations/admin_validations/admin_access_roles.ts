@@ -50,7 +50,7 @@ export const access_account_access_create_access_validation = {
   body: Joi.object({
     role_name: Joi.string().trim().required(),
     account_type: Joi.string().trim().required(),
-    regions: Joi.array().items(Joi.string()).optional().allow(null), // Optional array of strings
+    regions: Joi.boolean().optional(),
     scheduling: Joi.boolean().optional(),
     history: Joi.boolean().optional(),
     accounts: Joi.boolean().optional(),

@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import Shifts from "../../../db/models/shifts";
 import { DATE, Op } from "sequelize";
 import { start } from "repl";
+import Role from "../../../db/models/role";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -38,13 +39,12 @@ export const provider_shifts_list: Controller = async (
         "firstname",
         "lastname",
         "type_of_user",
-        "role",
+        "role_id",
         "status",
         "on_call_status",
       ],
       where: {
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
         on_call_status: "yes",
       },
       include: [
@@ -70,11 +70,21 @@ export const provider_shifts_list: Controller = async (
     });
     var i = offset + 1;
     for (const provider of providers) {
+      const is_role = await Role.findOne({
+        where:{
+          role_id: provider.role_id
+        }
+      });
+      if(!is_role){
+        return res.status(500).json({
+          message:message_constants.RoNF
+        })
+      }
       const formattedRequest: any = {
         sr_no: i,
         user_id: provider.user_id,
         provider_name: provider.firstname + " " + provider.lastname,
-        type_of_user: provider.type_of_user + " and subtype: " + provider.role,
+        type_of_user: provider.type_of_user,
         status: provider.status,
         shifts: provider.Shifts?.map((shift) => ({
           shift_id: shift.shift_id,
@@ -130,13 +140,12 @@ export const provider_on_call: Controller = async (
         "firstname",
         "lastname",
         "type_of_user",
-        "role",
+        "role_id",
         "status",
         "on_call_status",
       ],
       where: {
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
       },
     });
     var i = offset + 1;
@@ -147,7 +156,7 @@ export const provider_on_call: Controller = async (
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
           type_of_user:
-            provider.type_of_user + " and subtype: " + provider.role,
+            provider.type_of_user,
           status: provider.status,
           on_call_status: provider.on_call_status,
         };
@@ -158,7 +167,7 @@ export const provider_on_call: Controller = async (
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
           type_of_user:
-            provider.type_of_user + " and subtype: " + provider.role,
+            provider.type_of_user,
           status: provider.status,
           on_call_status: provider.on_call_status + " i.e NO",
         };
@@ -207,10 +216,9 @@ export const requested_shifts: Controller = async (
       data: [],
     };
     const { count, rows: providers } = await User.findAndCountAll({
-      attributes: ["user_id", "firstname", "lastname", "type_of_user", "role"],
+      attributes: ["user_id", "firstname", "lastname", "type_of_user", "role_id"],
       where: {
-        type_of_user: "provider",
-        role: "physician",
+        type_of_user: "physician",
         on_call_status: "yes",
       },
       include: [

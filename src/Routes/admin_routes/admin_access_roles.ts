@@ -39,7 +39,7 @@ router.get(
   access_accountaccess
 );
 router.get(
-  "/access/accountaccess/:user_id/edit",
+  "/access/accountaccess/:role_id/edit",
   authmiddleware,
   celebrate(access_accountaccess_edit_validation),
   access_accountaccess_edit
@@ -55,13 +55,13 @@ router.get(
   manage_account_access
 );
 router.put(
-  "/access/accountaccess/:user_id/edit/save",
+  "/access/accountaccess/:role_id/edit/save",
   authmiddleware,
   celebrate(access_account_access_edit_save_validation),
   access_account_access_edit_save
 );
 router.delete(
-  "/access/accountaccess/:user_id/delete",
+  "/access/accountaccess/:role_id/delete",
   authmiddleware,
   celebrate(access_account_access_delete_validation),
   access_account_access_delete

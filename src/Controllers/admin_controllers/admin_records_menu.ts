@@ -39,7 +39,6 @@ export const patient_history: Controller = async (
 
     const whereClause_patient = {
       type_of_user: "patient",
-      role: "patient",
       ...(firstname && {
         firstname: { [Op.like]: `%${firstname}%` },
       }),

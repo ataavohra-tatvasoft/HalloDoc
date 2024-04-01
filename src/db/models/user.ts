@@ -1,8 +1,9 @@
-import { Table, Column, DataType, Model, HasMany, BelongsToMany } from "sequelize-typescript";
+import { Table, Column, DataType, Model, HasMany, BelongsToMany,BelongsTo } from "sequelize-typescript";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces/user";
 import Shifts from "./shifts";
 import UserRegionMapping from "./user-region_mapping";
 import Region from "./region";
+import Role from "./role";
 
 @Table({
   timestamps: true,
@@ -40,7 +41,7 @@ export default class User extends Model<
   password: string;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "provider", "all"),
+    type: DataType.ENUM("admin", "patient", "physician"),
     allowNull: false,
   })
   type_of_user: string;
@@ -114,11 +115,11 @@ export default class User extends Model<
   zip: number;
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "physician", "clinical"),
+    type: DataType.INTEGER,
     allowNull: true,
     defaultValue: null,
   })
-  role: string;
+  role_id: number;
 
   // Admin-specific fields
   @Column({
@@ -243,10 +244,18 @@ export default class User extends Model<
   @HasMany(() => Shifts, { foreignKey: "user_id" })
   Shifts: Shifts[];
 
+  
+  @BelongsTo(() => Role, {
+    foreignKey: "role_id",
+    targetKey: "role_id",
+  })
+  Role: Role;
+  
   @BelongsToMany(() => Region, {
     through: () => UserRegionMapping,
     foreignKey: "user_id",
     otherKey: 'region_id',
   })
   Regions: Region[];
+
 }

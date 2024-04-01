@@ -24,7 +24,7 @@ module.exports = {
         allowNull: true,
       },
       type_of_user: {
-        type: Sequelize.ENUM("admin", "patient", "provider", "all"),
+        type: Sequelize.ENUM("admin", "patient", "physician"),
         allowNull: false,
       },
 
@@ -74,10 +74,16 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-      role: {
-        type: Sequelize.ENUM("admin", "patient", "physician", "clinical"),
+      role_id: {
+        type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null,
+        references: {
+          model: "role",
+          key: "role_id",
+          onDelete: "SET NULL",
+          onUpdate: "CASCADE",
+        },
       },
 
       // Admin-specific fields
