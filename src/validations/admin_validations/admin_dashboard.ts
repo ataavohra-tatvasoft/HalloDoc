@@ -46,7 +46,7 @@ export const manage_requests_by_state_validation = {
     region: Joi.string(),
     requestor: Joi.string(),
     page: Joi.number().integer().min(1),
-    pageSize: Joi.number().integer().min(1),
+    page_size: Joi.number().integer().min(1),
   }),
 };
 

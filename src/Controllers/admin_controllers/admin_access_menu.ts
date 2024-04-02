@@ -22,14 +22,14 @@ export const access_accountaccess: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, pageSize } = req.query as {
+    const { page, page_size } = req.query as {
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
-    const formattedResponse: any = {
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -45,20 +45,20 @@ export const access_accountaccess: Controller = async (
 
     var i = offset + 1;
     for (const role of roles) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         role_id: role.role_id,
         name: role.role_name,
         account_type: role.account_type,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
       i++;
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -71,7 +71,7 @@ export const access_accountaccess_edit: Controller = async (
 ) => {
   try {
     const { role_id } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -84,15 +84,15 @@ export const access_accountaccess_edit: Controller = async (
     if (!role) {
       return res.status(404).json({ error: message_constants.AcNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       role_id: role.role_id,
       role_name: role.role_name,
       account_type: role.account_type,
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1350,8 +1350,6 @@ export const access_account_access_create_access_refactored: Controller = async 
   }
 };
 
-
-
 /**
  * Manages account access based on the specified action.
  *
@@ -1359,123 +1357,6 @@ export const access_account_access_create_access_refactored: Controller = async 
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const manage_account_access: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { action } = req.query;
-
-    switch (action) {
-      case "list": {
-        try {
-          const { page, pageSize } = req.query as {
-            page: string;
-            pageSize: string;
-          };
-          const pageNumber = parseInt(page) || 1;
-          const limit = parseInt(pageSize) || 10;
-          const offset = (pageNumber - 1) * limit;
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          const { count, rows: accounts } = await User.findAndCountAll({
-            where: {
-              status: "active",
-            },
-            attributes: ["user_id", "firstname", "lastname", "type_of_user"],
-            limit,
-            offset,
-          });
-
-          if (!accounts) {
-            return res.status(404).json({ error: message_constants.AcNF });
-          }
-
-          let i = offset + 1;
-          for (const account of accounts) {
-            const formattedRequest: any = {
-              sr_no: i,
-              user_id: account.user_id,
-              name: `${account.firstname} ${account.lastname}`,
-              account_type: account.type_of_user,
-            };
-            formattedResponse.data.push(formattedRequest);
-            i++;
-          }
-
-          return res.status(200).json({
-            ...formattedResponse,
-            totalPages: Math.ceil(count / limit),
-            currentPage: pageNumber,
-          });
-        } catch (error) {
-          res.status(500).json({ error: message_constants.ISE });
-        }
-      }
-      case "view": {
-        try {
-          const { user_id } = req.params;
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          const account = await User.findOne({
-            where: {
-              user_id: user_id,
-              status: "active",
-            },
-            attributes: [
-              "user_id",
-              "firstname",
-              "lastname",
-              "mobile_no",
-              "address_1",
-              "address_2",
-              "city",
-              "state",
-              "zip",
-              "dob",
-              "state",
-              "type_of_user",
-            ],
-          });
-          if (!account) {
-            return res.status(404).json({ error: message_constants.AcNF });
-          }
-          const formattedRequest: any = {
-            user_id: account.user_id,
-            firstname: account.firstname,
-            lastname: account.lastname,
-            mobile_no: account.mobile_no,
-            address_1: account.address_1,
-            address_2: account.address_2,
-            city: account.city,
-            region: account.state,
-            zip: account.zip,
-            dob: account.dob.toISOString().split("T")[0],
-            state: account.state,
-            account_type: account.type_of_user,
-          };
-          formattedResponse.data.push(formattedRequest);
-
-          return res.status(200).json({
-            ...formattedResponse,
-          });
-        } catch (error) {
-          res.status(500).json({ error: message_constants.ISE });
-        }
-      }
-      default:
-        return res.status(400).json({ error: "Invalid action" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
-  }
-};
-
 export const access_account_access_edit_save: Controller = async (
   req: Request,
   res: Response,
@@ -1568,149 +1449,6 @@ export const access_account_access_delete: Controller = async (
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const manage_user_access: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { action } = req.query; // Get action parameter from query string
-
-    switch (action) {
-      // Action to retrieve users based on role
-      case "list": {
-        try {
-          const { role } = req.query; // Get role parameter from query string
-          const whereClause: { [key: string]: any } = {};
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          if (role) {
-            whereClause.firstname = {
-              [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
-            };
-          }
-
-          // Retrieve users from the database based on search criteria
-          const accounts = await User.findAll({
-            attributes: [
-              "role_id",
-              "firstname",
-              "lastname",
-              "mobile_no",
-              "status",
-              "open_requests",
-            ],
-            where: whereClause,
-          });
-
-          if (!accounts) {
-            return res.status(404).json({ error: message_constants.ANF });
-          }
-
-          // Format retrieved users for response
-          for (const account of accounts) {
-            const is_role = await Role.findOne({
-              where:{
-                role_id: account.role_id
-              }
-            });
-            if(!is_role){
-              return res.status(500).json({
-                message:message_constants.RoNF
-              })
-            }
-            const formattedRequest: any = {
-              account_type: is_role.role_name,
-              account_poc: `${account.firstname} ${account.lastname}`,
-              phone: account.mobile_no,
-              status: account.status,
-              open_requests: account.open_requests,
-            };
-            formattedResponse.data.push(formattedRequest);
-          }
-
-          // Send formatted response
-          return res.status(200).json({
-            ...formattedResponse,
-          });
-        } catch (error) {
-          res.status(500).json({ error: message_constants.ISE });
-        }
-      }
-      // Action to retrieve a user for editing
-      case "edit": {
-        try {
-          const { user_id } = req.params; // Get user_id parameter from request parameters
-          const formattedResponse: any = {
-            status: true,
-            data: [],
-          };
-          // Retrieve user from the database
-          const account = await User.findOne({
-            where: {
-              user_id: user_id,
-            },
-            attributes: [
-              "firstname",
-              "lastname",
-              "mobile_no",
-              "address_1",
-              "address_2",
-              "city",
-              "state",
-              "zip",
-              "dob",
-              "role_id",
-              "status",
-            ],
-          });
-          if (!account) {
-            return res.status(404).json({ error: message_constants.ANF });
-          }
-
-          const is_role = await Role.findOne({
-            where:{
-              role_id: account.role_id
-            }
-          });
-          if(!is_role){
-            return res.status(500).json({
-              message:message_constants.RoNF
-            })
-          }
-          // Format retrieved user for response
-          const formattedRequest: any = {
-            firstname: account.firstname,
-            lastname: account.lastname,
-            phone: account.mobile_no,
-            address_1: account.address_1,
-            address_2: account.address_2,
-            city: account.city,
-            region: account.state,
-            zip: account.zip,
-            DOB: account.dob,
-            account_type: is_role.role_name,
-            status: account.status,
-          };
-          formattedResponse.data.push(formattedRequest);
-
-          // Send formatted response
-          return res.status(200).json({
-            ...formattedResponse,
-          });
-        } catch (error) {
-          res.status(500).json({ error: message_constants.ISE });
-        }
-      }
-      default:
-        return res.status(400).json({ error: message_constants.IA });
-    }
-  } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
-  }
-};
 
 export const access_useraccess: Controller = async (
   req: Request,
@@ -1719,13 +1457,13 @@ export const access_useraccess: Controller = async (
 ) => {
   try {
     const { role } = req.query; // Get search parameters from query string
-    const whereClause: { [key: string]: any } = {};
-    const formattedResponse: any = {
+    const where_clause: { [key: string]: any } = {};
+    const formatted_response: any = {
       status: true,
       data: [],
     };
     if (role) {
-      whereClause.role = {
+      where_clause.role = {
         [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
       };
     }
@@ -1733,6 +1471,7 @@ export const access_useraccess: Controller = async (
     const accounts = await User.findAll({
       attributes: [
         "role_id",
+        "user_id",
         "type_of_user",
         "firstname",
         "lastname",
@@ -1740,24 +1479,25 @@ export const access_useraccess: Controller = async (
         "status",
         "open_requests",
       ],
-      where: whereClause, // Apply constructed search criteria
+      where: where_clause, // Apply constructed search criteria
     });
 
     if (!accounts) {
       return res.status(404).json({ error: message_constants.ANF });
     }
     for (const account of accounts) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
+        user_id: account.user_id,
         account_type: account.type_of_user,
         account_poc: account.firstname + " " + account.lastname,
         phone: account.mobile_no,
         status: account.status,
         open_requests: account.open_requests,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -1770,7 +1510,7 @@ export const access_useraccess_edit: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1797,7 +1537,7 @@ export const access_useraccess_edit: Controller = async (
       return res.status(404).json({ error: message_constants.ANF });
     }
 
-    const formattedRequest: any = {
+    const formatted_request: any = {
       firstname: account.firstname,
       lastname: account.lastname,
       phone: account.mobile_no,
@@ -1810,10 +1550,10 @@ export const access_useraccess_edit: Controller = async (
       account_type: account.type_of_user,
       status: account.status,
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });

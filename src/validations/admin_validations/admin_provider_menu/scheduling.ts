@@ -5,14 +5,14 @@ export const provider_shifts_list_validation = {
     region: Joi.string().allow("", null).optional(),
     type_of_shift: Joi.string().allow("", null).optional(),
     page: Joi.number().integer().min(1).optional(),
-    pageSize: Joi.number().integer().min(1).optional(),
+    page_size: Joi.number().integer().min(1).optional(),
   }),
 };
 
 export const provider_on_call_validation = {
   query: Joi.object({
     page: Joi.number().integer().min(1).optional(),
-    pageSize: Joi.number().integer().min(1).optional(),
+    page_size: Joi.number().integer().min(1).optional(),
   }),
 };
 
@@ -21,7 +21,7 @@ export const requested_shifts_validation = {
     region: Joi.string().allow("", null).optional(),
     view_current_month_shift: Joi.string().allow("", null).optional(),
     page: Joi.number().integer().min(1).optional(),
-    pageSize: Joi.number().integer().min(1).optional(),
+    page_size: Joi.number().integer().min(1).optional(),
   }),
 };
 

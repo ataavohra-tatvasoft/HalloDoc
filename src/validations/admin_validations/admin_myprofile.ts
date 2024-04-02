@@ -11,31 +11,32 @@ export const admin_profile_reset_password_validation_schema = {
 export const admin_profile_edit_validation = {
   body: Joi.object({
     user_id: Joi.number().integer().positive().required(),
-    firstname: Joi.string().trim().min(2).max(50).required(),
-    lastname: Joi.string().trim().min(2).max(50).required(),
-    email: Joi.string().email().lowercase().required(),
+    firstname: Joi.string().trim().min(2).max(50).optional(),
+    lastname: Joi.string().trim().min(2).max(50).optional(),
+    email: Joi.string().email().lowercase().optional(),
     confirm_email: Joi.ref("email"),
     mobile_no: Joi.string()
       .trim()
       .pattern(/^\d{10}$/)
-      .required(),
+      .optional(),
 
     // Optional address fields
-    address_1: Joi.string().trim().allow(null, ""),
-    address_2: Joi.string().trim().allow(null, ""),
-    city: Joi.string().trim().allow(null, ""),
-    state: Joi.string().trim().allow(null, ""),
-    zip: Joi.string().trim().length(6).allow(null, ""),
+    address_1: Joi.string().trim().allow(null, "").optional(),
+    address_2: Joi.string().trim().allow(null, "").optional(),
+    city: Joi.string().trim().allow(null, "").optional(),
+    state: Joi.string().trim().allow(null, "").optional(),
+    zip: Joi.string().trim().length(6).allow(null, "").optional(),
 
     billing_mobile_no: Joi.string()
       .trim()
       .pattern(/^\d{10}$/)
-      .allow(null, ""),
+      .allow(null, "")
+      .optional(),
 
-    district_of_columbia: Joi.boolean().allow(null),
-    new_york: Joi.boolean().allow(null),
-    virginia: Joi.boolean().allow(null),
-    maryland: Joi.boolean().allow(null),
+    district_of_columbia: Joi.boolean().allow(null).optional(),
+    new_york: Joi.boolean().allow(null).optional(),
+    virginia: Joi.boolean().allow(null).optional(),
+    maryland: Joi.boolean().allow(null).optional(),
   }),
 };
 

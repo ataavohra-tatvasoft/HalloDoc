@@ -14,6 +14,7 @@ import Region from "../../../db/models/region";
 import UserRegionMapping from "../../../db/models/user-region_mapping";
 import { update_region_mapping } from "../../../utils/helper_functions";
 import Role from "../../../db/models/role";
+import { number } from "joi";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -26,16 +27,16 @@ export const provider_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, page, pageSize } = req.query as {
+    const { region, page, page_size } = req.query as {
       region: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -55,15 +56,14 @@ export const provider_list: Controller = async (
       },
     });
 
-  
     var i = offset + 1;
     for (const provider of providers) {
       const role = await Role.findOne({
-        where:{
-          role_id: provider.role_id
-        }
+        where: {
+          role_id: provider.role_id,
+        },
       });
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         user_id: provider.user_id,
         stop_notification: provider.stop_notification_status,
@@ -73,13 +73,13 @@ export const provider_list: Controller = async (
         status: provider.status,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -213,7 +213,7 @@ export const view_edit_physician_account: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -241,7 +241,6 @@ export const view_edit_physician_account: Controller = async (
         "state",
         "zip",
         "billing_mobile_no",
-        "business_id",
         "admin_notes",
       ],
       include: [
@@ -269,11 +268,11 @@ export const view_edit_physician_account: Controller = async (
       res.status(500).json({ error: message_constants.DNF });
     }
     const role = await Role.findOne({
-      where:{
-        role_id: profile.role_id
-      }
+      where: {
+        role_id: profile.role_id,
+      },
     });
-    const formattedRequest: any = {
+    const formatted_request: any = {
       user_id: profile.user_id,
       account_information: {
         username: profile.username,
@@ -316,12 +315,13 @@ export const view_edit_physician_account: Controller = async (
         })),
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: message_constants.ISE });
   }
 };
@@ -367,55 +367,10 @@ export const save_user_information: Controller = async (
 ) => {
   try {
     const {
-      body: {
-        user_id,
-        username,
-        status,
-        role,
-        firstname,
-        lastname,
-        email,
-        mobile_no,
-        medical_licence,
-        NPI_no,
-        synchronization_email,
-        district_of_columbia,
-        new_york,
-        virginia,
-        maryland,
-        address_1,
-        address_2,
-        city,
-        state,
-        zip,
-        billing_mobile_no,
-        business_name,
-        business_website,
-        admin_notes,
-      },
-    } = req;
-
-    const user = await User.findOne({
-      where: { user_id },
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: message_constants.UNF });
-    }
-    const is_role = await Role.findOne({
-      where:{
-        role_name: role
-      }
-    });
-    if(!is_role){
-      return res.status(500).json({
-        message:message_constants.RoNF
-      })
-    }
-    const update_user_fields = {
+      user_id,
       username,
       status,
-      role_id: is_role.role_id,
+      role,
       firstname,
       lastname,
       email,
@@ -423,6 +378,50 @@ export const save_user_information: Controller = async (
       medical_licence,
       NPI_no,
       synchronization_email,
+      district_of_columbia,
+      new_york,
+      virginia,
+      maryland,
+      address_1,
+      address_2,
+      city,
+      state,
+      zip,
+      billing_mobile_no,
+      business_name,
+      business_website,
+      admin_notes,
+    } = req.body;
+
+    const user = await User.findOne({ where: { user_id } });
+
+    if (!user) {
+      return res.status(404).json({ message: message_constants.UNF });
+    }
+
+    let found_role;
+    if (role) {
+      found_role = await Role.findOne({ where: { role_name: role } });
+      if (!found_role) {
+        return res.status(500).json({ message: message_constants.RoNF });
+      }
+    }
+
+    const update_user_fields = {
+      username,
+      status,
+      role_id: found_role?.role_id || null, 
+      firstname,
+      lastname,
+      email,
+      mobile_no,
+      medical_licence,
+      NPI_no,
+      synchronization_email,
+      district_of_columbia,
+      new_york,
+      virginia,
+      maryland,
       address_1,
       address_2,
       city,
@@ -456,6 +455,7 @@ export const save_user_information: Controller = async (
 
     return res.status(200).json({ message: message_constants.US });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
@@ -481,14 +481,14 @@ export const save_account_information: Controller = async (
       return res.status(404).json({ message: message_constants.UNF });
     }
     const is_role = await Role.findOne({
-      where:{
-        role_name: role
-      }
+      where: {
+        role_name: role,
+      },
     });
-    if(!is_role){
+    if (!is_role) {
       return res.status(500).json({
-        message:message_constants.RoNF
-      })
+        message: message_constants.RoNF,
+      });
     }
     const update_status = await User.update(
       { username, status, role_id: is_role.role_id },
@@ -930,7 +930,6 @@ export const save_provider_profile: Controller = async (
   }
 };
 
-
 export const delete_provider_account: Controller = async (
   req: Request,
   res: Response,
@@ -983,6 +982,17 @@ export const delete_provider_account: Controller = async (
 
         await RequestModel.destroy({ where: { physician_id: user_id } });
       }
+
+      const delete_region_data = await UserRegionMapping.destroy({
+        where: {
+          user_id,
+        },
+      });
+
+      if (!delete_region_data) {
+        return res.status(404).json({ error: message_constants.EWD });
+      }
+
       const delete_profile = await User.destroy({
         where: {
           user_id,
@@ -996,7 +1006,8 @@ export const delete_provider_account: Controller = async (
         message: message_constants.DS,
       });
     } catch (error) {
-      res.status(500).json({ error: message_constants.ISE });
+      console.log(error);
+      return res.status(500).json({ error: message_constants.ISE });
     }
   }
 };
@@ -1009,6 +1020,18 @@ export const provider_profile_upload = async (
   try {
     const { user_id } = req.params;
     const uploaded_files: any = req.files || [];
+
+    const user = await User.findOne({
+      where: {
+        user_id,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
 
     const profile_picture_path = uploaded_files.find(
       (file: any) => file.fieldname === "profile_picture"
@@ -1025,7 +1048,7 @@ export const provider_profile_upload = async (
         },
         { where: { user_id } }
       );
-
+      console.log(updated_user);
       if (updated_user[0] === 1) {
         return res.status(200).json({ status: message_constants.US });
       } else {
@@ -1033,6 +1056,7 @@ export const provider_profile_upload = async (
       }
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
@@ -1333,20 +1357,20 @@ export const create_provider_account: Controller = async (
       (file: any) => file.fieldname === "non_diclosure"
     )?.path;
     const is_role = await Role.findOne({
-      where:{
-        role_name: role
-      }
+      where: {
+        role_name: role,
+      },
     });
-    if(!is_role){
+    if (!is_role) {
       return res.status(500).json({
-        message:message_constants.RoNF
-      })
+        message: message_constants.RoNF,
+      });
     }
     const user = await User.create({
       type_of_user: "physician",
       username,
       password: hashed_password,
-      role_id : is_role.role_id,
+      role_id: is_role.role_id,
       firstname,
       lastname,
       email,
@@ -1821,15 +1845,16 @@ export const create_provider_account_refactored: Controller = async (
     );
     const HIPAA_path = get_file_path(uploaded_files, "HIPAA");
     const non_diclosure_path = get_file_path(uploaded_files, "non_diclosure");
+
     const is_role = await Role.findOne({
-      where:{
-        role_name: role
-      }
+      where: {
+        role_name: role,
+      },
     });
-    if(!is_role){
+    if (!is_role) {
       return res.status(500).json({
-        message:message_constants.RoNF
-      })
+        message: message_constants.RoNF,
+      });
     }
     const user = await User.create({
       type_of_user: "physician",

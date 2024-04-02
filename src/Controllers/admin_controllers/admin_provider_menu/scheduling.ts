@@ -19,17 +19,17 @@ export const provider_shifts_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, type_of_shift, page, pageSize } = req.query as {
+    const { region, type_of_shift, page, page_size } = req.query as {
       region: string;
       type_of_shift: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -80,7 +80,7 @@ export const provider_shifts_list: Controller = async (
           message:message_constants.RoNF
         })
       }
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         user_id: provider.user_id,
         provider_name: provider.firstname + " " + provider.lastname,
@@ -100,13 +100,13 @@ export const provider_shifts_list: Controller = async (
         })),
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -121,15 +121,15 @@ export const provider_on_call: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, pageSize } = req.query as {
+    const { page, page_size } = req.query as {
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       provider_on_call: [],
       provider_off_duty: [],
@@ -151,7 +151,7 @@ export const provider_on_call: Controller = async (
     var i = offset + 1;
     for (const provider of providers_on_call) {
       if (provider.on_call_status == "yes") {
-        const formattedRequest_1: any = {
+        const formatted_request_1: any = {
           sr_no: i,
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
@@ -160,9 +160,9 @@ export const provider_on_call: Controller = async (
           status: provider.status,
           on_call_status: provider.on_call_status,
         };
-        formattedResponse.provider_on_call.push(formattedRequest_1);
+        formatted_response.provider_on_call.push(formatted_request_1);
       } else {
-        const formattedRequest_2: any = {
+        const formatted_request_2: any = {
           sr_no: i,
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
@@ -171,15 +171,15 @@ export const provider_on_call: Controller = async (
           status: provider.status,
           on_call_status: provider.on_call_status + " i.e NO",
         };
-        formattedResponse.provider_off_duty.push(formattedRequest_2);
+        formatted_response.provider_off_duty.push(formatted_request_2);
       }
       i++;
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -193,11 +193,11 @@ export const requested_shifts: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, view_current_month_shift, page, pageSize } = req.query as {
+    const { region, view_current_month_shift, page, page_size } = req.query as {
       region: string;
       view_current_month_shift: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
     function get_current_month(): [number, number] {
       const today = new Date();
@@ -207,11 +207,11 @@ export const requested_shifts: Controller = async (
     }
 
     const [currentYear, currentMonth] = get_current_month();
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -263,7 +263,7 @@ export const requested_shifts: Controller = async (
     });
     var i = offset + 1;
     for (const provider of providers) {
-      const formattedRequest_1: any = {
+      const formatted_request_1: any = {
         sr_no: i,
         user_id: provider.user_id,
         staff: provider.firstname + " " + provider.lastname,
@@ -280,14 +280,14 @@ export const requested_shifts: Controller = async (
         // status: provider.status,
         // on_call_status: provider.on_call_status,
       };
-      formattedResponse.data.push(formattedRequest_1);
+      formatted_response.data.push(formatted_request_1);
       i++;
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -432,7 +432,7 @@ export const view_shift: Controller = async (
     const { shift_id } = req.query as {
       shift_id: string;
     };
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -445,20 +445,20 @@ export const view_shift: Controller = async (
 
     if (!shift) {
       return res.status(500).json({
-        message: message_constants.EWFS,
+        message: message_constants.NF,
       });
     }
-    const formattedRequest_1: any = {
+    const formatted_request_1: any = {
       region: shift.region,
       physician: shift.physician,
       shift_date: shift.shift_date.toISOString().split("T")[0],
       start: shift.start,
       end: shift.end,
     };
-    formattedResponse.data.push(formattedRequest_1);
+    formatted_response.data.push(formatted_request_1);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     console.log(error);

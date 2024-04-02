@@ -4,18 +4,15 @@ import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../interfaces/common_interface";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
-import * as exceljs from "exceljs";
-import axios from "axios";
-import * as fs from "fs";
-import * as xlsx from "xlsx";
-import path from "path";
 import RequestModel from "../../db/models/request";
 import Role from "../../db/models/role";
-import ExcelJS from 'exceljs';
-
+import ExcelJS from "exceljs";
+import { Op } from "sequelize";
+import Requestor from "../../db/models/requestor";
+import Notes from "../../db/models/notes";
+import { request } from "http";
 
 /** Regions API */
-
 export const region_with_thirdparty_API: Controller = async (
   req: Request,
   res: Response,
@@ -49,7 +46,7 @@ export const region_for_request_states: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -67,13 +64,13 @@ export const region_for_request_states: Controller = async (
     const uniqueRegions = [...new Set(regions.map((region) => region.state))];
 
     for (const region of uniqueRegions) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         region_name: region,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -85,7 +82,7 @@ export const transfer_request_regions: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -100,13 +97,13 @@ export const transfer_request_regions: Controller = async (
     const uniqueRegions = [...new Set(regions.map((region) => region.state))];
 
     for (const region of uniqueRegions) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         region_name: region,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -118,7 +115,7 @@ export const regions: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -130,20 +127,20 @@ export const regions: Controller = async (
       return res.status(404).json({ error: message_constants.EFRD });
     }
     for (const region of regions) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         region_name: region.region_name,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-/** Professions API */
 
+/** Professions API */
 export const professions_for_send_orders: Controller = async (
   req: Request,
   res: Response,
@@ -173,7 +170,7 @@ export const professions: Controller = async (
 ) => {
   {
     try {
-      const formattedResponse: any = {
+      const formatted_response: any = {
         status: true,
         data: [],
       };
@@ -185,13 +182,13 @@ export const professions: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const profession of professions) {
-        const formattedRequest: any = {
+        const formatted_request: any = {
           profession_name: profession.profession_name,
         };
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
       return res.status(200).json({
-        ...formattedResponse,
+        ...formatted_response,
       });
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });
@@ -200,106 +197,25 @@ export const professions: Controller = async (
 };
 
 /**Exports API */
-
-export const export_one: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  {
-    try {
-      const token = req.headers.authorization;
-      console.log(token);
-      const { search, region, requestor, state } = req.query as {
-        search: string;
-        region: string;
-        requestor: string;
-        state: string;
-      };
-      const get_patient_requests = async (
-        search?: string,
-        region?: string,
-        requestor?: string,
-        state?: string
-      ): Promise<any> => {
-        const response = await axios.get(
-          "http://localhost:7000/admin/dashboard/requests",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params: {
-              search,
-              region,
-              requestor,
-              state,
-            },
-          }
-        );
-        console.log(response);
-        if (response.status !== 200) {
-          throw new Error(
-            `Failed to fetch patient requests: ${response.statusText}`
-          );
-        }
-        const data = await response.data;
-        return data;
-      };
-
-      const create_export_excel = async (requests: any[]): Promise<any> => {
-        const workbook = xlsx.utils.book_new();
-        const worksheet = xlsx.utils.json_to_sheet(requests);
-        xlsx.utils.book_append_sheet(workbook, worksheet, "Patient Requests");
-
-        const buffer = xlsx.write(workbook, {
-          bookType: "xlsx",
-          type: "binary",
-        });
-        const filePath = path.join(
-          __dirname,
-          "public",
-          "uploads",
-          "patient_requests.xlsx"
-        );
-
-        // Create the directory if it doesn't exist (optional)
-        fs.mkdirSync(path.dirname(filePath), { recursive: true }); // Create directories recursively
-
-        fs.writeFileSync(filePath, buffer, "binary");
-        console.log("Excel file created successfully:", filePath);
-      };
-      const requests = await get_patient_requests(
-        search,
-        region,
-        requestor,
-        state
-      );
-      create_export_excel(requests);
-      return res.json({ message: "Excel file exported successfully!" });
-    } catch (error) {
-      return res.status(500).json({ error: message_constants.ISE });
-    }
-  }
-};
-export const export_two: Controller = async (
+export const export_single: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { state, search, region, requestor, page, pageSize } = req.query as {
+    const { state, search, region, requestor, page, page_size } = req.query as {
       state: string;
       search: string;
       region: string;
       requestor: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClause_patient = {
+    const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
         [Op.or]: [
@@ -310,8 +226,8 @@ export const export_two: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handleRequestState = async (additionalAttributes?: any) => {
-      const formattedResponse: any = {
+    const handle_request_state = async (additional_attributes?: any) => {
+      const formatted_response: any = {
         status: true,
         data: [],
       };
@@ -345,7 +261,7 @@ export const export_two: Controller = async (
           "date_of_service",
           "physician_id",
           "patient_id",
-          ...(additionalAttributes || []),
+          ...(additional_attributes || []),
         ],
         include: [
           {
@@ -361,7 +277,7 @@ export const export_two: Controller = async (
               "address_1",
               "state",
             ],
-            where: whereClause_patient,
+            where: where_clause_patient,
           },
           ...(state !== "new"
             ? [
@@ -399,7 +315,7 @@ export const export_two: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formattedRequest: any = {
+        const formatted_request: any = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -460,28 +376,28 @@ export const export_two: Controller = async (
           })),
         };
         i++;
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
 
-      return formattedResponse;
+      return formatted_response;
     };
 
-    let formattedResponse = null;
+    let formatted_response = null;
 
     switch (state) {
       case "new":
-        formattedResponse = await handleRequestState();
+        formatted_response = await handle_request_state();
         break;
       case "pending":
       case "active":
       case "conclude":
-        formattedResponse = await handleRequestState();
+        formatted_response = await handle_request_state();
         break;
       case "toclose":
-        formattedResponse = await handleRequestState();
+        formatted_response = await handle_request_state();
         break;
       case "unpaid":
-        formattedResponse = await handleRequestState([
+        formatted_response = await handle_request_state([
           "date_of_service",
           "physician_id",
           "patient_id",
@@ -491,19 +407,19 @@ export const export_two: Controller = async (
         return res.status(500).json({ message: message_constants.IS });
     }
 
-    // Create a new Excel workbook and worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Requests');
+    // Create a new Excel work_book and worksheet
+    const work_book = new ExcelJS.Workbook();
+    const worksheet = work_book.addWorksheet("Requests");
 
     // Define headers for the Excel sheet
     const headers = [
-      'SR No',
-      'Request ID',
-      'Request State',
-      'Confirmation No',
-      'Requestor',
-      'Requested Date',
-      'Date of Service',
+      "SR No",
+      "Request ID",
+      "Request State",
+      "Confirmation No",
+      "Requestor",
+      "Requested Date",
+      "Date of Service",
       // Add more headers as needed
     ];
 
@@ -511,7 +427,7 @@ export const export_two: Controller = async (
     worksheet.addRow(headers);
 
     // Add data to the worksheet
-    for (const request of formattedResponse.data) {
+    for (const request of formatted_response.data) {
       const rowData = [
         request.sr_no,
         request.request_id,
@@ -529,37 +445,39 @@ export const export_two: Controller = async (
     const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
 
     // Set the response headers for file download
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Write the workbook to the response
-    await workbook.xlsx.write(res);
+    // Write the work_book to the response
+    await work_book.xlsx.write(res);
 
     return res.end();
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
   }
 };
-export const export_three_all: Controller = async (
+export const export_all: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { search, region, requestor, page, pageSize } = req.query as {
+    const { search, region, requestor, page, page_size } = req.query as {
       search: string;
       region: string;
       requestor: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClause_patient = {
+    const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
         [Op.or]: [
@@ -570,13 +488,20 @@ export const export_three_all: Controller = async (
       ...(region && { state: region }),
     };
 
-    const states = ["new", "pending", "active", "conclude", "toclose", "unpaid"];
+    const states = [
+      "new",
+      "pending",
+      "active",
+      "conclude",
+      "toclose",
+      "unpaid",
+    ];
 
-    const workbook = new ExcelJS.Workbook();
+    const work_book = new ExcelJS.Workbook();
 
     for (const state of states) {
-      const handleRequestState = async (additionalAttributes?: any) => {
-        const formattedResponse: any = {
+      const handle_request_state = async (additional_attributes?: any) => {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -610,7 +535,7 @@ export const export_three_all: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
-            ...(additionalAttributes || []),
+            ...(additional_attributes || []),
           ],
           include: [
             {
@@ -626,7 +551,7 @@ export const export_three_all: Controller = async (
                 "address_1",
                 "state",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             ...(state !== "new"
               ? [
@@ -663,7 +588,7 @@ export const export_three_all: Controller = async (
         });
 
         for (const request of requests) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             request_id: request.request_id,
             request_state: request.request_state,
             confirmationNo: request.confirmation_no,
@@ -722,25 +647,23 @@ export const export_three_all: Controller = async (
               description: note.description,
             })),
           };
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
-        return formattedResponse;
+        return formatted_response;
       };
-
-      const formattedResponse = await handleRequestState();
-
+      const formatted_response = await handle_request_state();
       // Create a new worksheet for each state
-      const worksheet = workbook.addWorksheet(state);
+      const worksheet = work_book.addWorksheet(state);
 
       // Define headers for the Excel sheet
       const headers = [
-        'Request ID',
-        'Request State',
-        'Confirmation No',
-        'Requestor',
-        'Requested Date',
-        'Date of Service',
+        "Request ID",
+        "Request State",
+        "Confirmation No",
+        "Requestor",
+        "Requested Date",
+        "Date of Service",
         // Add more headers as needed
       ];
 
@@ -748,7 +671,7 @@ export const export_three_all: Controller = async (
       worksheet.addRow(headers);
 
       // Add data to the worksheet
-      for (const request of formattedResponse.data) {
+      for (const request of formatted_response.data) {
         const rowData = [
           request.request_id,
           request.request_state,
@@ -756,7 +679,6 @@ export const export_three_all: Controller = async (
           request.requestor,
           request.requested_date,
           request.date_of_service,
-          // Add more data fields as needed
         ];
         worksheet.addRow(rowData);
       }
@@ -766,14 +688,16 @@ export const export_three_all: Controller = async (
     const filename = `requests_${new Date().toISOString()}.xlsx`;
 
     // Set the response headers for file download
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Write the workbook to the response
-    await workbook.xlsx.write(res);
-
+    // Write the work_book to the response
+    await work_book.xlsx.write(res);
+    console.log(res);
     return res.end();
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
@@ -788,7 +712,7 @@ export const actions: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -801,15 +725,15 @@ export const actions: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -824,7 +748,7 @@ export const physicians: Controller = async (
 ) => {
   {
     try {
-      const formattedResponse: any = {
+      const formatted_response: any = {
         status: true,
         data: [],
       };
@@ -839,13 +763,13 @@ export const physicians: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const physician of physicians) {
-        const formattedRequest: any = {
+        const formatted_request: any = {
           physician_name: physician.firstname + " " + physician.lastname,
         };
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
       return res.status(200).json({
-        ...formattedResponse,
+        ...formatted_response,
       });
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });
@@ -861,15 +785,17 @@ export const roles: Controller = async (
 ) => {
   {
     try {
-      const {account_type} = req.params;
-      const formattedResponse: any = {
+      const { account_type } = req.query as {
+        account_type: string;
+      };
+      const formatted_response: any = {
         status: true,
         data: [],
       };
       const roles = await Role.findAll({
         attributes: ["role_id", "role_name"],
         where: {
-          account_type,
+          ...(account_type ? { account_type } : {}),
         },
       });
 
@@ -877,14 +803,14 @@ export const roles: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const role of roles) {
-        const formattedRequest: any = {
-          role_id: role.role_id ,
-          role_name: role.role_name
+        const formatted_request: any = {
+          role_id: role.role_id,
+          role_name: role.role_name,
         };
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
       return res.status(200).json({
-        ...formattedResponse,
+        ...formatted_response,
       });
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });

@@ -13,18 +13,18 @@ export const partner_vendor_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, profession, page, pageSize } = req.query as {
+    const { firstname, lastname, profession, page, page_size } = req.query as {
       firstname: string;
       lastname: string;
       profession: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -51,7 +51,7 @@ export const partner_vendor_list: Controller = async (
     }
     var i = offset + 1;
     for (const business of businesses) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         business_id: business.business_id,
         profession: business.profession,
@@ -62,13 +62,13 @@ export const partner_vendor_list: Controller = async (
         business_contact: business.business_contact,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {

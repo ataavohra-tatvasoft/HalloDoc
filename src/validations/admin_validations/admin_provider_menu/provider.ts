@@ -6,9 +6,9 @@ export const provider_list_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }),
 };
 
@@ -20,10 +20,10 @@ export const stop_notification_validation = {
 
 export const contact_provider_validation = {
   query: Joi.object({
-    email: Joi.string().email().required(), // Require email if mobile_no is absent
+    email: Joi.string().email().optional(), // Require email if mobile_no is absent
     mobile_no: Joi.string()
       .pattern(/^\d+$/, "mobile number must be a string of digits")
-      .required(),
+      .optional(),
   }),
 
   body: Joi.object({
@@ -39,10 +39,10 @@ export const view_edit_physician_account_validation = {
 
 export const physician_account_reset_password_validation = {
   body: Joi.object({
-    user_id: Joi.string().required(),
+    user_id: Joi.number().required(),
     password: Joi.string()
       .required()
-      .min(6)
+      .min(4)
       .pattern(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
         "Password must be at least 6 characters and contain a lowercase, uppercase, number, and special symbol"

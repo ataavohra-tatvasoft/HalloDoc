@@ -231,7 +231,7 @@ export const requests_by_request_state: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { state, firstname, lastname, region, requestor, page, pageSize } =
+    const { state, firstname, lastname, region, requestor, page, page_size } =
       req.query as {
         state: string;
         firstname: string;
@@ -239,13 +239,13 @@ export const requests_by_request_state: Controller = async (
         region: string;
         requestor: string;
         page: string;
-        pageSize: string;
+        page_size: string;
       };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClause_patient = {
+    const where_clause_patient = {
       type_of_user: "patient",
       ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
       ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
@@ -254,7 +254,7 @@ export const requests_by_request_state: Controller = async (
 
     switch (state) {
       case "new": {
-        const formattedResponse: any = {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -293,7 +293,7 @@ export const requests_by_request_state: Controller = async (
                 "address_1",
                 "address_2",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             {
               model: Requestor,
@@ -310,7 +310,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -340,19 +340,19 @@ export const requests_by_request_state: Controller = async (
             })),
           };
           i++;
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
         return res.status(200).json({
-          ...formattedResponse,
+          ...formatted_response,
           totalPages: Math.ceil(count / limit),
-          currentPage: pageNumber,
+          currentPage: page_number,
           total_count: count,
         });
       }
       case "pending":
       case "active": {
-        const formattedResponse: any = {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -393,7 +393,7 @@ export const requests_by_request_state: Controller = async (
                 "address_1",
                 "state",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             {
               as: "Physician",
@@ -427,7 +427,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -469,18 +469,18 @@ export const requests_by_request_state: Controller = async (
             })),
           };
           i++;
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
         return res.status(200).json({
-          ...formattedResponse,
+          ...formatted_response,
           totalPages: Math.ceil(requests.count / limit),
-          currentPage: pageNumber,
+          currentPage: page_number,
           total_count: requests.count,
         });
       }
       case "conclude": {
-        const formattedResponse: any = {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -521,7 +521,7 @@ export const requests_by_request_state: Controller = async (
                 "address_1",
                 "state",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             {
               as: "Physician",
@@ -547,7 +547,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -576,18 +576,18 @@ export const requests_by_request_state: Controller = async (
             },
           };
           i++;
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
         return res.status(200).json({
-          ...formattedResponse,
+          ...formatted_response,
           totalPages: Math.ceil(requests.count / limit),
-          currentPage: pageNumber,
+          currentPage: page_number,
           total_count: requests.count,
         });
       }
       case "toclose": {
-        const formattedResponse: any = {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -622,7 +622,7 @@ export const requests_by_request_state: Controller = async (
                 "address_1",
                 "state",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             {
               as: "Physician",
@@ -652,7 +652,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -686,18 +686,18 @@ export const requests_by_request_state: Controller = async (
             })),
           };
           i++;
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
         return res.status(200).json({
-          ...formattedResponse,
+          ...formatted_response,
           totalPages: Math.ceil(requests.count / limit),
-          currentPage: pageNumber,
+          currentPage: page_number,
           total_count: requests.count,
         });
       }
       case "unpaid": {
-        const formattedResponse: any = {
+        const formatted_response: any = {
           status: true,
           data: [],
         };
@@ -737,7 +737,7 @@ export const requests_by_request_state: Controller = async (
                 "address_1",
                 "address_2",
               ],
-              where: whereClause_patient,
+              where: where_clause_patient,
             },
             {
               as: "Physician",
@@ -760,7 +760,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formattedRequest: any = {
+          const formatted_request: any = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -785,18 +785,18 @@ export const requests_by_request_state: Controller = async (
             },
           };
           i++;
-          formattedResponse.data.push(formattedRequest);
+          formatted_response.data.push(formatted_request);
         }
 
         return res.status(200).json({
           status: true,
-          ...formattedResponse,
+          ...formatted_response,
           totalPages: Math.ceil(requests.count / limit),
-          currentPage: pageNumber,
+          currentPage: page_number,
           total_count: requests.count,
         });
         // return res.status(200).json({
-        //   formattedResponse,
+        //   formatted_response,
         // });
       }
       default: {
@@ -824,7 +824,7 @@ export const manage_requests_by_State: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { state, firstname, lastname, region, requestor, page, pageSize } =
+    const { state, firstname, lastname, region, requestor, page, page_size } =
       req.query as {
         state: string;
         firstname: string;
@@ -832,21 +832,21 @@ export const manage_requests_by_State: Controller = async (
         region: string;
         requestor: string;
         page: string;
-        pageSize: string;
+        page_size: string;
       };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClausePatient = {
+    const where_clausePatient = {
       type_of_user: "patient",
       ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
       ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
       ...(region && { state: region }),
     };
 
-    const handleRequestState = async (additionalAttributes?: any) => {
-      const formattedResponse: any = {
+    const handle_request_state = async (additionalAttributes?: any) => {
+      const formatted_response: any = {
         status: true,
         data: [],
       };
@@ -888,7 +888,7 @@ export const manage_requests_by_State: Controller = async (
               "address_1",
               "state",
             ],
-            where: whereClausePatient,
+            where: where_clausePatient,
           },
           ...(state !== "new"
             ? [
@@ -926,7 +926,7 @@ export const manage_requests_by_State: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formattedRequest: any = {
+        const formatted_request: any = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -981,13 +981,13 @@ export const manage_requests_by_State: Controller = async (
           })),
         };
         i++;
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
 
       return res.status(200).json({
-        ...formattedResponse,
+        ...formatted_response,
         totalPages: Math.ceil(count / limit),
-        currentPage: pageNumber,
+        currentPage: page_number,
         total_count: count,
       });
     };
@@ -999,7 +999,7 @@ export const manage_requests_by_State: Controller = async (
       case "conclude":
       case "toclose":
       case "unpaid":
-        return await handleRequestState(
+        return await handle_request_state(
           state === "unpaid"
             ? ["date_of_service", "physician_id", "patient_id"]
             : undefined
@@ -1027,7 +1027,7 @@ export const requests_by_request_state_counts: Controller = async (
       "toclose",
       "unpaid",
     ];
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1046,15 +1046,15 @@ export const requests_by_request_state_counts: Controller = async (
         },
       });
       console.log(count);
-      const formattedRequest: any = {
+      const formatted_request: any = {
         request_state: state,
         counts: count,
       };
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -1066,19 +1066,19 @@ export const requests_by_request_state_refactored: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { state, search, region, requestor, page, pageSize } = req.query as {
+    const { state, search, region, requestor, page, page_size } = req.query as {
       state: string;
       search: string;
       region: string;
       requestor: string;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClause_patient = {
+    const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
         [Op.or]: [
@@ -1089,8 +1089,8 @@ export const requests_by_request_state_refactored: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handleRequestState = async (additionalAttributes?: any) => {
-      const formattedResponse: any = {
+    const handle_request_state = async (additionalAttributes?: any) => {
+      const formatted_response: any = {
         status: true,
         data: [],
       };
@@ -1140,7 +1140,7 @@ export const requests_by_request_state_refactored: Controller = async (
               "address_1",
               "state",
             ],
-            where: whereClause_patient,
+            where: where_clause_patient,
           },
           ...(state !== "new"
             ? [
@@ -1178,7 +1178,7 @@ export const requests_by_request_state_refactored: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formattedRequest: any = {
+        const formatted_request: any = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -1239,28 +1239,28 @@ export const requests_by_request_state_refactored: Controller = async (
           })),
         };
         i++;
-        formattedResponse.data.push(formattedRequest);
+        formatted_response.data.push(formatted_request);
       }
 
       return res.status(200).json({
-        ...formattedResponse,
+        ...formatted_response,
         totalPages: Math.ceil(count / limit),
-        currentPage: pageNumber,
+        currentPage: page_number,
         total_count: count,
       });
     };
 
     switch (state) {
       case "new":
-        return await handleRequestState();
+        return await handle_request_state();
       case "pending":
       case "active":
       case "conclude":
-        return await handleRequestState();
+        return await handle_request_state();
       case "toclose":
-        return await handleRequestState();
+        return await handle_request_state();
       case "unpaid":
-        return await handleRequestState([
+        return await handle_request_state([
           "date_of_service",
           "physician_id",
           "patient_id",
@@ -1286,7 +1286,7 @@ export const view_case_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1334,7 +1334,7 @@ export const view_case_for_request: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
@@ -1365,10 +1365,10 @@ export const view_case_for_request: Controller = async (
         },
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1385,7 +1385,7 @@ export const view_notes_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1426,7 +1426,7 @@ export const view_notes_for_request: Controller = async (
       },
       attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
-    const formattedRequest: any = {
+    const formatted_request: any = {
       confirmation_no: confirmation_no,
       transfer_notes: {
         notes: transfer_notes_list?.map((note) => ({
@@ -1451,9 +1451,9 @@ export const view_notes_for_request: Controller = async (
       },
     };
 
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1529,7 +1529,7 @@ export const cancel_case_for_request_view_data: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1562,7 +1562,7 @@ export const cancel_case_for_request_view_data: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formattedRequest: any = {
+    const formatted_request: any = {
       confirmation_no: request.confirmation_no,
       patient_data: {
         first_name: request.Patient.firstname,
@@ -1570,9 +1570,9 @@ export const cancel_case_for_request_view_data: Controller = async (
       },
     };
 
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1665,7 +1665,7 @@ export const assign_request_region_physician: Controller = async (
     const { confirmation_no } = req.params;
     const { region } = req.query as { region: string };
     var i = 1;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       message: "Successfull !!!",
       confirmation_no: confirmation_no,
@@ -1685,17 +1685,17 @@ export const assign_request_region_physician: Controller = async (
       });
     }
     for (const physician of physicians) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         confirmation_no: confirmation_no,
         firstname: physician.firstname,
         lastname: physician.lastname,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1753,7 +1753,7 @@ export const block_case_for_request_view: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       confirmation_no: confirmation_no,
       data: [],
@@ -1786,7 +1786,7 @@ export const block_case_for_request_view: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formattedRequest: any = {
+    const formatted_request: any = {
       confirmation_no: confirmation_no,
       patient_data: {
         user_id: request.Patient.user_id,
@@ -1794,10 +1794,10 @@ export const block_case_for_request_view: Controller = async (
         lastname: request.Patient.lastname,
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1861,7 +1861,7 @@ export const view_uploads_view_data: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -1902,7 +1902,7 @@ export const view_uploads_view_data: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
@@ -1916,9 +1916,9 @@ export const view_uploads_view_data: Controller = async (
         createdAt: document.createdAt.toISOString().split("T")[0],
       })),
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -1954,11 +1954,11 @@ export const view_uploads_upload: Controller = async (
       return res.status(404).json({ error: message_constants.ISE });
     }
 
-    const newDocument = await Documents.create({
+    const new_document = await Documents.create({
       request_id: request.request_id,
       document_path: file.path,
     });
-    if (!newDocument) {
+    if (!new_document) {
       return res.status(404).json({ error: message_constants.FTU });
     }
     return res.status(200).json({
@@ -2067,15 +2067,15 @@ export const view_uploads_actions_download: Controller = async (
       return res.status(404).json({ error: message_constants.DNF });
     }
 
-    let filePath = document.document_path;
+    let file_path = document.document_path;
 
     // Handle relative paths by joining with `__dirname` and "uploads"
-    if (!path.isAbsolute(filePath)) {
-      filePath = path.join(__dirname, "uploads", filePath);
+    if (!path.isAbsolute(file_path)) {
+      file_path = path.join(__dirname, "uploads", file_path);
     }
 
     // Check for file existence and send error if not found
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(file_path)) {
       return res.status(404).json({ error: message_constants.FNF });
     }
 
@@ -2087,7 +2087,7 @@ export const view_uploads_actions_download: Controller = async (
     );
 
     // Initiate file download with `res.download`
-    res.download(filePath, (error) => {
+    res.download(file_path, (error) => {
       if (error) {
         return res.status(500).json({ error: message_constants.ISE });
       } else {
@@ -2123,20 +2123,20 @@ export const view_uploads_delete_all: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const deletedCount = await Documents.destroy({
+    const deleted_count = await Documents.destroy({
       where: {
         request_id: request.request_id,
       },
     });
 
-    if (deletedCount === 0) {
+    if (deleted_count === 0) {
       return res.status(200).json({ message: message_constants.NDF });
     }
 
     return res.status(200).json({
       status: true,
       confirmation_no: confirmation_no,
-      message: `Successfully deleted ${deletedCount} document(s)`,
+      message: `Successfully deleted ${deleted_count} document(s)`,
     });
   } catch (error) {
     console.error("Error deleting documents:", error);
@@ -2186,12 +2186,12 @@ export const view_uploads_download_all: Controller = async (
     }
 
     // Function to handle individual file download (reusable)
-    const downloadFile = async (filePath: string, filename: string) => {
+    const download_file = async (file_path: string, filename: string) => {
       res.setHeader("Content-Type", "application/octet-stream");
       res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
       try {
-        await res.download(filePath); // Download the file
+        await res.download(file_path); // Download the file
         console.log(`Successfully downloaded: ${filename}`); // Optional logging
       } catch (error) {
         console.error(`Error downloading ${filename}:`, error);
@@ -2201,14 +2201,14 @@ export const view_uploads_download_all: Controller = async (
 
     // Initiate downloads for all valid documents using a loop
     for (const file of documents) {
-      const filePath = file.document_path;
-      const filename = path.basename(filePath);
+      const file_path = file.document_path;
+      const filename = path.basename(file_path);
 
       // Check for file existence before download attempt
-      if (fs.existsSync(filePath)) {
-        await downloadFile(filePath, filename);
+      if (fs.existsSync(file_path)) {
+        await download_file(file_path, filename);
       } else {
-        console.error(`File not found: ${filePath}`); // Handle missing files here (e.g., log or send response)
+        console.error(`File not found: ${file_path}`); // Handle missing files here (e.g., log or send response)
       }
     }
 
@@ -2235,13 +2235,13 @@ export const business_name_for_send_orders: Controller = async (
 ) => {
   try {
     const profession = req.query as { profession: string };
-    const whereClause = {
+    const where_clause = {
       // profession: profession  // Commented out for dynamic filtering
       ...(profession && { profession: profession }),
     };
     const businesses = await Business.findAll({
       attributes: ["business_name"],
-      // where: whereClause,
+      // where: where_clause,
     });
     if (!businesses) {
       res.status(500).json({ error: message_constants.EFBD });
@@ -2265,7 +2265,7 @@ export const view_send_orders_for_request: Controller = async (
       profession: string;
       business: string;
     };
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -2278,14 +2278,14 @@ export const view_send_orders_for_request: Controller = async (
     if (!business_data) {
       return res.status(404).json({ error: message_constants.BNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       business_contact: business_data?.business_contact,
       email: business_data?.email,
       fax_number: business_data?.fax_number,
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -2361,7 +2361,7 @@ export const transfer_request_region_physicians: Controller = async (
     // const {confirmation_no} = req.params;
     const { region } = req.query as { region: string };
     var i = 1;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       // confirmation_no: confirmation_no,
       data: [],
@@ -2380,19 +2380,19 @@ export const transfer_request_region_physicians: Controller = async (
       });
     }
     for (const physician of physicians) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         // firstname: physician.firstname,
         // lastname: physician.lastname,
         physician_name: physician.firstname + " " + physician.lastname,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
       status: true,
       message: message_constants.Success,
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
@@ -2573,7 +2573,7 @@ export const send_agreement: Controller = async (
     const resetToken = crypto.createHash("sha256").update(email).digest("hex");
 
     const resetUrl = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
-    const mailContent = `
+    const mail_content = `
           <html>
           <form action = "${resetUrl}" method="POST"> 
           <p>Tell us that you accept the agreement or not:</p>
@@ -2610,7 +2610,7 @@ export const send_agreement: Controller = async (
       from: "vohraatta@gmail.com",
       to: email,
       subject: "Agreement",
-      html: mailContent,
+      html: mail_content,
     });
     if (!info) {
       return res.status(500).json({
@@ -2742,7 +2742,7 @@ export const close_case_for_request_view_details: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -2787,7 +2787,7 @@ export const close_case_for_request_view_details: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       confirmation_no: request.confirmation_no,
       patient_data: {
@@ -2804,10 +2804,10 @@ export const close_case_for_request_view_details: Controller = async (
         })),
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -2911,13 +2911,13 @@ export const close_case_for_request_actions_download: Controller = async (
       return res.status(404).json({ error: message_constants.DNF });
     }
 
-    let filePath = document.document_path;
+    let file_path = document.document_path;
 
-    if (!path.isAbsolute(filePath)) {
-      filePath = path.join(__dirname, "uploads", filePath);
+    if (!path.isAbsolute(file_path)) {
+      file_path = path.join(__dirname, "uploads", file_path);
     }
 
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(file_path)) {
       return res.status(404).json({ error: message_constants.FNF });
     }
 
@@ -2927,7 +2927,7 @@ export const close_case_for_request_actions_download: Controller = async (
       `attachment; filename=${document.document_path}"}`
     );
 
-    res.download(filePath, (error) => {
+    res.download(file_path, (error) => {
       if (error) {
         res.status(500).json({ error: message_constants.ISE });
       } else {
@@ -3014,7 +3014,7 @@ export const admin_send_link: Controller = async (
         },
       });
 
-      const mailContent = `
+      const mail_content = `
         <html>
         <p>Given below is a create request link for patient</p>
         </br>
@@ -3029,7 +3029,7 @@ export const admin_send_link: Controller = async (
         from: "vohraatta@gmail.com",
         to: email,
         subject: "Create Request Link",
-        html: mailContent,
+        html: mail_content,
       });
 
       if (!info) {
@@ -3054,9 +3054,9 @@ export const admin_send_link: Controller = async (
     }
 
     if (mobile_no) {
-      const accountSid = "AC755f57f9b0f3440c6d2a207bd5678bdd";
-      const authToken = "a795f37433f7542bea73622828e66841";
-      const client = twilio(accountSid, authToken);
+      const account_sid = "AC755f57f9b0f3440c6d2a207bd5678bdd";
+      const auth_token = "a795f37433f7542bea73622828e66841";
+      const client = twilio(account_sid, auth_token);
 
       client.messages
         .create({

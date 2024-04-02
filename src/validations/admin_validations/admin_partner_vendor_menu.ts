@@ -6,7 +6,7 @@ export const partner_vendor_list_validation = {
     lastname: joi.string().allow("", null).optional(),
     profession: joi.string().allow("", null).optional(),
     page: joi.number().integer().min(1).optional(),
-    pageSize: joi.number().integer().min(1).optional(),
+    page_size: joi.number().integer().min(1).optional(),
   }),
 };
 

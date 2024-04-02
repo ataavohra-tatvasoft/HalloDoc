@@ -20,24 +20,24 @@ export const patient_history: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, email, phone_no, page, pageSize } =
+    const { firstname, lastname, email, phone_no, page, page_size } =
       req.query as {
         firstname: string;
         lastname: string;
         email: string;
         phone_no: any;
         page: string;
-        pageSize: string;
+        page_size: string;
       };
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
 
-    const whereClause_patient = {
+    const where_clause_patient = {
       type_of_user: "patient",
       ...(firstname && {
         firstname: { [Op.like]: `%${firstname}%` },
@@ -61,7 +61,7 @@ export const patient_history: Controller = async (
         "address_2",
         "state",
       ],
-      where: whereClause_patient,
+      where: where_clause_patient,
       limit,
       offset,
     });
@@ -72,7 +72,7 @@ export const patient_history: Controller = async (
     }
     var i = offset + 1;
     for (const user of users) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         firstname: user.firstname,
         lastname: user.lastname,
@@ -81,13 +81,13 @@ export const patient_history: Controller = async (
         address: user.address_1 + " " + user.address_2 + " " + user.state,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -101,14 +101,14 @@ export const patient_records: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, pageSize } = req.query as {
+    const { page, page_size } = req.query as {
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
-    const formattedResponse: any = {
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -143,30 +143,31 @@ export const patient_records: Controller = async (
     }
     var i = offset + 1;
     for (const request of requests) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         client_member:
-          request.Patient.firstname + " " + request.Patient.lastname,
+          request.Patient?.firstname + " " + request.Patient?.lastname,
         created_at: request.createdAt,
         confirmation_no: request.confirmation_no,
         provider_name:
-          request.Physician.firstname + " " + request.Physician.lastname,
-        concluded_date: request.concluded_date,
+          request.Physician?.firstname + " " + request.Physician?.lastname,
+        concluded_date: request?.concluded_date,
         status: request.request_status,
-        final_report: request.final_report,
+        final_report: request?.final_report,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -177,7 +178,7 @@ export const patient_records_view_documents: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -218,7 +219,7 @@ export const patient_records_view_documents: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
@@ -232,9 +233,9 @@ export const patient_records_view_documents: Controller = async (
         createdAt: document.createdAt.toISOString().split("T")[0],
       })),
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -248,7 +249,7 @@ export const patient_records_view_case: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formattedResponse: any = {
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -296,7 +297,7 @@ export const patient_records_view_case: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formattedRequest: any = {
+    const formatted_request: any = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
@@ -327,10 +328,10 @@ export const patient_records_view_case: Controller = async (
         },
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -353,7 +354,7 @@ export const search_records: Controller = async (
       email,
       phone_no,
       page,
-      pageSize,
+      page_size,
     } = req.query as {
       request_status: string;
       patient_name: string;
@@ -364,12 +365,12 @@ export const search_records: Controller = async (
       email: string;
       phone_no: any;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
-    const formattedResponse: any = {
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -454,7 +455,7 @@ export const search_records: Controller = async (
     }
     var i: any = offset + 1;
     for (const request of requests) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         request_id: request.request_id,
         confirmation_no: request.confirmation_no,
@@ -486,13 +487,13 @@ export const search_records: Controller = async (
         })),
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -564,7 +565,7 @@ export const logs_history: Controller = async (
       created_date,
       sent_date,
       page,
-      pageSize,
+      page_size,
     } = req.query as {
       type_of_log: string;
       search_by_role: string;
@@ -574,12 +575,12 @@ export const logs_history: Controller = async (
       created_date: any;
       sent_date: any;
       page: string;
-      pageSize: string;
+      page_size: string;
     };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
-    const formattedResponse: any = {
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -626,7 +627,7 @@ export const logs_history: Controller = async (
     }
     var i = offset + 1;
     for (const log of logs) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         recipient: log.recipient,
         action: log.action,
@@ -637,13 +638,13 @@ export const logs_history: Controller = async (
         sent: log.sent,
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -657,7 +658,7 @@ export const cancel_and_block_history: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { type_of_history, name, date, email, phone_no, page, pageSize } =
+    const { type_of_history, name, date, email, phone_no, page, page_size } =
       req.query as {
         type_of_history: string;
         name: string;
@@ -665,12 +666,12 @@ export const cancel_and_block_history: Controller = async (
         email: string;
         phone_no: any;
         page: string;
-        pageSize: string;
+        page_size: string;
       };
-    const pageNumber = parseInt(page) || 1;
-    const limit = parseInt(pageSize) || 10;
-    const offset = (pageNumber - 1) * limit;
-    const formattedResponse: any = {
+    const page_number = parseInt(page) || 1;
+    const limit = parseInt(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: any = {
       status: true,
       data: [],
     };
@@ -733,7 +734,7 @@ export const cancel_and_block_history: Controller = async (
     }
     var i = offset + 1;
     for (const request of requests) {
-      const formattedRequest: any = {
+      const formatted_request: any = {
         sr_no: i,
         type_of_history: request.request_status,
         request_confirmation_no: request.confirmation_no,
@@ -751,13 +752,13 @@ export const cancel_and_block_history: Controller = async (
         })),
       };
       i++;
-      formattedResponse.data.push(formattedRequest);
+      formatted_response.data.push(formatted_request);
     }
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
       totalPages: Math.ceil(count / limit),
-      currentPage: pageNumber,
+      currentPage: page_number,
       total_count: count,
     });
   } catch (error) {

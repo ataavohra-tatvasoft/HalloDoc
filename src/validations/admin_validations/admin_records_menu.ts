@@ -10,9 +10,9 @@ export const patient_history_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
   // Empty body (optional)
@@ -25,9 +25,9 @@ export const patient_records_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
   // Empty body (optional)
@@ -74,9 +74,9 @@ export const search_records_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
   // Empty body (optional)
@@ -106,9 +106,9 @@ export const logs_history_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
   // Empty body (optional)
@@ -126,9 +126,9 @@ export const cancel_and_block_history_validation = {
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
-    pageSize: Joi.string()
+    page_size: Joi.string()
       .required()
-      .pattern(/^\d+$/, "pageSize must be a positive integer"),
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
   // Empty body (optional)

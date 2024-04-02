@@ -64,24 +64,27 @@ export const admin_profile_view: Controller = async (
           model: Region,
         },
         {
-          model: Role
-        }
+          model: Role,
+        },
       ],
     });
     if (!profile) {
       return res.status(404).json({ error: message_constants.PNF });
     }
-    console.log(profile.Regions);
+
+    console.log(profile.role_id);
+    console.log(profile.mobile_no);
 
     const is_role = await Role.findOne({
-      where:{
-        role_id: profile.role_id
-      }
+      where: {
+        role_id: profile.role_id,
+      },
     });
-    if(!is_role){
+    console.log(is_role);
+    if (!is_role) {
       return res.status(500).json({
-        message:message_constants.RoNF
-      })
+        message: message_constants.RoNF,
+      });
     }
     const formattedRequest: any = {
       user_id: profile.user_id,
