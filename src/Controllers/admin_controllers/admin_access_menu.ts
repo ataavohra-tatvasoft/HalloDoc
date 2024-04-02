@@ -1221,6 +1221,137 @@ export const access_account_access_create_access: Controller = async (
   }
 };
 
+export const access_account_access_create_access_refactored: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      role_name,
+      account_type,
+      regions,
+      scheduling,
+      history,
+      accounts,
+      role,
+      provider,
+      request_data,
+      vendorship,
+      profession,
+      email_logs,
+      halo_administrators,
+      halo_users,
+      cancelled_history,
+      provider_location,
+      halo_employee,
+      halo_work_place,
+      patient_records,
+      blocked_history,
+      sms_logs,
+      my_schedule,
+      dashboard,
+      my_profile,
+      send_order,
+      chat,
+      invoicing,
+    } = req.body;
+
+    const new_role = await Role.create({
+      role_name,
+      account_type,
+    });
+
+    if (!new_role) {
+      return res.status(500).json({
+        message: message_constants.EWCA,
+      });
+    }
+
+    const accessList = [
+      { name: "regions", value: regions },
+      { name: "scheduling", value: scheduling },
+      { name: "history", value: history },
+      { name: "accounts", value: accounts },
+      { name: "role", value: role },
+      { name: "provider", value: provider },
+      { name: "request_data", value: request_data },
+      { name: "vendorship", value: vendorship },
+      { name: "profession", value: profession },
+      { name: "email_logs", value: email_logs },
+      { name: "halo_administrators", value: halo_administrators },
+      { name: "halo_users", value: halo_users },
+      { name: "cancelled_history", value: cancelled_history },
+      { name: "provider_location", value: provider_location },
+      { name: "halo_employee", value: halo_employee },
+      { name: "halo_work_place", value: halo_work_place },
+      { name: "patient_records", value: patient_records },
+      { name: "blocked_history", value: blocked_history },
+      { name: "sms_logs", value: sms_logs },
+      { name: "my_schedule", value: my_schedule },
+      { name: "dashboard", value: dashboard },
+      { name: "my_profile", value: my_profile },
+      { name: "send_order", value: send_order },
+      { name: "chat", value: chat },
+      { name: "invoicing", value: invoicing },
+    ];
+
+    const handleAccess = async (roleId:any, accessName:any) => {
+      try {
+        const access = await Access.findOne({
+          where: {
+            access_name: accessName,
+          },
+        });
+    
+        if (!access) {
+          return res.status(500).json({
+            message: message_constants.AccNF,
+          });
+        }
+    
+        const isAccess = await RoleAccessMapping.findOne({
+          where: {
+            role_id: roleId,
+            access_id: access.access_id,
+          },
+        });
+    
+        if (!isAccess) {
+          await RoleAccessMapping.create({
+            role_id: roleId,
+            access_id: access.access_id,
+          });
+        } else {
+          await RoleAccessMapping.destroy({
+            where: {
+              role_id: roleId,
+              access_id: access.access_id,
+            },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: message_constants.ISE });
+      }
+    };
+    for (const accessItem of accessList) {
+      if (accessItem.value) {
+        await handleAccess(new_role.role_id, accessItem.name);
+      }
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+
+
 /**
  * Manages account access based on the specified action.
  *

@@ -11,6 +11,8 @@ import * as xlsx from "xlsx";
 import path from "path";
 import RequestModel from "../../db/models/request";
 import Role from "../../db/models/role";
+import ExcelJS from 'exceljs';
+
 
 /** Regions API */
 
@@ -277,6 +279,504 @@ export const export_one: Controller = async (
     } catch (error) {
       return res.status(500).json({ error: message_constants.ISE });
     }
+  }
+};
+export const export_two: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { state, search, region, requestor, page, pageSize } = req.query as {
+      state: string;
+      search: string;
+      region: string;
+      requestor: string;
+      page: string;
+      pageSize: string;
+    };
+    const pageNumber = parseInt(page) || 1;
+    const limit = parseInt(pageSize) || 10;
+    const offset = (pageNumber - 1) * limit;
+
+    const whereClause_patient = {
+      type_of_user: "patient",
+      ...(search && {
+        [Op.or]: [
+          { firstname: { [Op.like]: `%${search}%` } },
+          { lastname: { [Op.like]: `%${search}%` } },
+        ],
+      }),
+      ...(region && { state: region }),
+    };
+
+    const handleRequestState = async (additionalAttributes?: any) => {
+      const formattedResponse: any = {
+        status: true,
+        data: [],
+      };
+      const { count, rows: requests } = await RequestModel.findAndCountAll({
+        where: {
+          request_state: state,
+          ...(state == "toclose"
+            ? {
+                request_status: {
+                  [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
+                },
+              }
+            : {
+                request_status: {
+                  [Op.notIn]: [
+                    "cancelled by admin",
+                    "cancelled by provider",
+                    "blocked",
+                    "clear",
+                  ],
+                },
+              }),
+          ...(requestor ? { requested_by: requestor } : {}),
+        },
+        attributes: [
+          "request_id",
+          "request_state",
+          "confirmation_no",
+          "requested_by",
+          "requested_date",
+          "date_of_service",
+          "physician_id",
+          "patient_id",
+          ...(additionalAttributes || []),
+        ],
+        include: [
+          {
+            as: "Patient",
+            model: User,
+            attributes: [
+              "user_id",
+              "type_of_user",
+              "firstname",
+              "lastname",
+              "dob",
+              "mobile_no",
+              "address_1",
+              "state",
+            ],
+            where: whereClause_patient,
+          },
+          ...(state !== "new"
+            ? [
+                {
+                  as: "Physician",
+                  model: User,
+                  attributes: [
+                    "user_id",
+                    "type_of_user",
+                    "firstname",
+                    "lastname",
+                    "dob",
+                    "mobile_no",
+                    "address_1",
+                    "address_2",
+                  ],
+                  where: {
+                    type_of_user: "physician",
+                  },
+                },
+              ]
+            : []),
+          {
+            model: Requestor,
+            attributes: ["user_id", "first_name", "last_name"],
+          },
+          {
+            model: Notes,
+            attributes: ["note_id", "type_of_note", "description"],
+          },
+        ],
+        limit,
+        offset,
+      });
+
+      var i = offset + 1;
+      for (const request of requests) {
+        const formattedRequest: any = {
+          sr_no: i,
+          request_id: request.request_id,
+          request_state: request.request_state,
+          confirmationNo: request.confirmation_no,
+          requestor: request.requested_by,
+          requested_date: request.requested_date?.toISOString().split("T")[0],
+          ...(state !== "new"
+            ? {
+                date_of_service: request.date_of_service
+                  ?.toISOString()
+                  .split("T")[0],
+              }
+            : {}),
+          patient_data: {
+            user_id: request.Patient.user_id,
+            name: request.Patient.firstname + " " + request.Patient.lastname,
+            DOB: request.Patient.dob?.toISOString().split("T")[0],
+            mobile_no: request.Patient.mobile_no,
+            address:
+              request.Patient.address_1 +
+              " " +
+              request.Patient.address_2 +
+              " " +
+              request.Patient.state,
+            ...(state === "toclose" ? { region: request.Patient.state } : {}),
+          },
+          ...(state !== "new"
+            ? {
+                physician_data: {
+                  user_id: request.Physician.user_id,
+                  name:
+                    request.Physician.firstname +
+                    " " +
+                    request.Physician.lastname,
+                  DOB: request.Physician.dob?.toISOString().split("T")[0],
+                  mobile_no: request.Physician.mobile_no,
+                  address:
+                    request.Physician.address_1 +
+                    " " +
+                    request.Physician.address_2 +
+                    " " +
+                    request.Patient.state,
+                },
+              }
+            : {}),
+          requestor_data: {
+            user_id: request.Requestor?.user_id || null,
+            first_name:
+              request.Requestor?.first_name ||
+              null + " " + request.Requestor?.last_name ||
+              null,
+            last_name: request.Requestor?.last_name || null,
+          },
+          notes: request.Notes?.map((note) => ({
+            note_id: note.note_id,
+            type_of_note: note.type_of_note,
+            description: note.description,
+          })),
+        };
+        i++;
+        formattedResponse.data.push(formattedRequest);
+      }
+
+      return formattedResponse;
+    };
+
+    let formattedResponse = null;
+
+    switch (state) {
+      case "new":
+        formattedResponse = await handleRequestState();
+        break;
+      case "pending":
+      case "active":
+      case "conclude":
+        formattedResponse = await handleRequestState();
+        break;
+      case "toclose":
+        formattedResponse = await handleRequestState();
+        break;
+      case "unpaid":
+        formattedResponse = await handleRequestState([
+          "date_of_service",
+          "physician_id",
+          "patient_id",
+        ]);
+        break;
+      default:
+        return res.status(500).json({ message: message_constants.IS });
+    }
+
+    // Create a new Excel workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Requests');
+
+    // Define headers for the Excel sheet
+    const headers = [
+      'SR No',
+      'Request ID',
+      'Request State',
+      'Confirmation No',
+      'Requestor',
+      'Requested Date',
+      'Date of Service',
+      // Add more headers as needed
+    ];
+
+    // Add headers to the worksheet
+    worksheet.addRow(headers);
+
+    // Add data to the worksheet
+    for (const request of formattedResponse.data) {
+      const rowData = [
+        request.sr_no,
+        request.request_id,
+        request.request_state,
+        request.confirmationNo,
+        request.requestor,
+        request.requested_date,
+        request.date_of_service,
+        // Add more data fields as needed
+      ];
+      worksheet.addRow(rowData);
+    }
+
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
+
+    // Set the response headers for file download
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    // Write the workbook to the response
+    await workbook.xlsx.write(res);
+
+    return res.end();
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+export const export_three_all: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { search, region, requestor, page, pageSize } = req.query as {
+      search: string;
+      region: string;
+      requestor: string;
+      page: string;
+      pageSize: string;
+    };
+    const pageNumber = parseInt(page) || 1;
+    const limit = parseInt(pageSize) || 10;
+    const offset = (pageNumber - 1) * limit;
+
+    const whereClause_patient = {
+      type_of_user: "patient",
+      ...(search && {
+        [Op.or]: [
+          { firstname: { [Op.like]: `%${search}%` } },
+          { lastname: { [Op.like]: `%${search}%` } },
+        ],
+      }),
+      ...(region && { state: region }),
+    };
+
+    const states = ["new", "pending", "active", "conclude", "toclose", "unpaid"];
+
+    const workbook = new ExcelJS.Workbook();
+
+    for (const state of states) {
+      const handleRequestState = async (additionalAttributes?: any) => {
+        const formattedResponse: any = {
+          status: true,
+          data: [],
+        };
+        const { count, rows: requests } = await RequestModel.findAndCountAll({
+          where: {
+            request_state: state,
+            ...(state == "toclose"
+              ? {
+                  request_status: {
+                    [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
+                  },
+                }
+              : {
+                  request_status: {
+                    [Op.notIn]: [
+                      "cancelled by admin",
+                      "cancelled by provider",
+                      "blocked",
+                      "clear",
+                    ],
+                  },
+                }),
+            ...(requestor ? { requested_by: requestor } : {}),
+          },
+          attributes: [
+            "request_id",
+            "request_state",
+            "confirmation_no",
+            "requested_by",
+            "requested_date",
+            "date_of_service",
+            "physician_id",
+            "patient_id",
+            ...(additionalAttributes || []),
+          ],
+          include: [
+            {
+              as: "Patient",
+              model: User,
+              attributes: [
+                "user_id",
+                "type_of_user",
+                "firstname",
+                "lastname",
+                "dob",
+                "mobile_no",
+                "address_1",
+                "state",
+              ],
+              where: whereClause_patient,
+            },
+            ...(state !== "new"
+              ? [
+                  {
+                    as: "Physician",
+                    model: User,
+                    attributes: [
+                      "user_id",
+                      "type_of_user",
+                      "firstname",
+                      "lastname",
+                      "dob",
+                      "mobile_no",
+                      "address_1",
+                      "address_2",
+                    ],
+                    where: {
+                      type_of_user: "physician",
+                    },
+                  },
+                ]
+              : []),
+            {
+              model: Requestor,
+              attributes: ["user_id", "first_name", "last_name"],
+            },
+            {
+              model: Notes,
+              attributes: ["note_id", "type_of_note", "description"],
+            },
+          ],
+          limit,
+          offset,
+        });
+
+        for (const request of requests) {
+          const formattedRequest: any = {
+            request_id: request.request_id,
+            request_state: request.request_state,
+            confirmationNo: request.confirmation_no,
+            requestor: request.requested_by,
+            requested_date: request.requested_date?.toISOString().split("T")[0],
+            ...(state !== "new"
+              ? {
+                  date_of_service: request.date_of_service
+                    ?.toISOString()
+                    .split("T")[0],
+                }
+              : {}),
+            patient_data: {
+              user_id: request.Patient.user_id,
+              name: request.Patient.firstname + " " + request.Patient.lastname,
+              DOB: request.Patient.dob?.toISOString().split("T")[0],
+              mobile_no: request.Patient.mobile_no,
+              address:
+                request.Patient.address_1 +
+                " " +
+                request.Patient.address_2 +
+                " " +
+                request.Patient.state,
+              ...(state === "toclose" ? { region: request.Patient.state } : {}),
+            },
+            ...(state !== "new"
+              ? {
+                  physician_data: {
+                    user_id: request.Physician.user_id,
+                    name:
+                      request.Physician.firstname +
+                      " " +
+                      request.Physician.lastname,
+                    DOB: request.Physician.dob?.toISOString().split("T")[0],
+                    mobile_no: request.Physician.mobile_no,
+                    address:
+                      request.Physician.address_1 +
+                      " " +
+                      request.Physician.address_2 +
+                      " " +
+                      request.Patient.state,
+                  },
+                }
+              : {}),
+            requestor_data: {
+              user_id: request.Requestor?.user_id || null,
+              first_name:
+                request.Requestor?.first_name ||
+                null + " " + request.Requestor?.last_name ||
+                null,
+              last_name: request.Requestor?.last_name || null,
+            },
+            notes: request.Notes?.map((note) => ({
+              note_id: note.note_id,
+              type_of_note: note.type_of_note,
+              description: note.description,
+            })),
+          };
+          formattedResponse.data.push(formattedRequest);
+        }
+
+        return formattedResponse;
+      };
+
+      const formattedResponse = await handleRequestState();
+
+      // Create a new worksheet for each state
+      const worksheet = workbook.addWorksheet(state);
+
+      // Define headers for the Excel sheet
+      const headers = [
+        'Request ID',
+        'Request State',
+        'Confirmation No',
+        'Requestor',
+        'Requested Date',
+        'Date of Service',
+        // Add more headers as needed
+      ];
+
+      // Add headers to the worksheet
+      worksheet.addRow(headers);
+
+      // Add data to the worksheet
+      for (const request of formattedResponse.data) {
+        const rowData = [
+          request.request_id,
+          request.request_state,
+          request.confirmationNo,
+          request.requestor,
+          request.requested_date,
+          request.date_of_service,
+          // Add more data fields as needed
+        ];
+        worksheet.addRow(rowData);
+      }
+    }
+
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${new Date().toISOString()}.xlsx`;
+
+    // Set the response headers for file download
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    // Write the workbook to the response
+    await workbook.xlsx.write(res);
+
+    return res.end();
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
