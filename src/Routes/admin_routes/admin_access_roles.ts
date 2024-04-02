@@ -2,7 +2,6 @@ import express, { Router } from "express";
 import {
   access_accountaccess,
   access_accountaccess_edit,
-  access_account_access_edit_save,
   access_account_access_delete,
   access_useraccess,
   access_useraccess_edit,
@@ -46,12 +45,7 @@ router.get(
  */
 
 
-router.put(
-  "/access/accountaccess/:role_id/edit/save",
-  authmiddleware,
-  celebrate(access_account_access_edit_save_validation),
-  access_account_access_edit_save
-);
+
 router.delete(
   "/access/accountaccess/:role_id/delete",
   authmiddleware,
@@ -65,6 +59,7 @@ router.post(
   celebrate(access_account_access_create_access_validation),
   access_account_access_create_access
 );
+
 
 /** Admin User Access */
 

@@ -13,6 +13,7 @@ import Role from "../../db/models/role";
 /** Configs */
 dotenv.config({ path: `.env` });
 
+
 /**                             Admin in Access Roles                                     */
 /** Admin Account Access */
 
@@ -75,27 +76,39 @@ export const access_accountaccess_edit: Controller = async (
       status: true,
       data: [],
     };
-    const role = await Role.findOne({
+    const { count, rows: users } = await User.findAndCountAll({
       where: {
         role_id,
       },
-      attributes: ["role_id", "role_name", "account_type"],
+      attributes: [
+        "user_id",
+        "firstname",
+        "lastname",
+        "type_of_user",
+        "mobile_no",
+        "status",
+        "open_requests",
+      ],
     });
-    if (!role) {
-      return res.status(404).json({ error: message_constants.AcNF });
+    if (!users) {
+      return res.status(404).json({ error: message_constants.UNF });
     }
-    const formatted_request: any = {
-      role_id: role.role_id,
-      role_name: role.role_name,
-      account_type: role.account_type,
-    };
-    formatted_response.data.push(formatted_request);
-
+    for (const user of users) {
+      const formatted_request: any = {
+        user_id: user.user_id,
+        account_type: user.type_of_user,
+        account_POC: user.firstname + " " + user.lastname,
+        phone: user.mobile_no,
+        status: user.status,
+        open_requests: user.open_requests,
+      };
+      formatted_response.data.push(formatted_request);
+    }
     return res.status(200).json({
       ...formatted_response,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+   return res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const access_account_access_create_access: Controller = async (
@@ -1221,134 +1234,131 @@ export const access_account_access_create_access: Controller = async (
   }
 };
 
-export const access_account_access_create_access_refactored: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const {
-      role_name,
-      account_type,
-      regions,
-      scheduling,
-      history,
-      accounts,
-      role,
-      provider,
-      request_data,
-      vendorship,
-      profession,
-      email_logs,
-      halo_administrators,
-      halo_users,
-      cancelled_history,
-      provider_location,
-      halo_employee,
-      halo_work_place,
-      patient_records,
-      blocked_history,
-      sms_logs,
-      my_schedule,
-      dashboard,
-      my_profile,
-      send_order,
-      chat,
-      invoicing,
-    } = req.body;
+export const access_account_access_create_access_refactored: Controller =
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const {
+        role_name,
+        account_type,
+        regions,
+        scheduling,
+        history,
+        accounts,
+        role,
+        provider,
+        request_data,
+        vendorship,
+        profession,
+        email_logs,
+        halo_administrators,
+        halo_users,
+        cancelled_history,
+        provider_location,
+        halo_employee,
+        halo_work_place,
+        patient_records,
+        blocked_history,
+        sms_logs,
+        my_schedule,
+        dashboard,
+        my_profile,
+        send_order,
+        chat,
+        invoicing,
+      } = req.body;
 
-    const new_role = await Role.create({
-      role_name,
-      account_type,
-    });
-
-    if (!new_role) {
-      return res.status(500).json({
-        message: message_constants.EWCA,
+      const new_role = await Role.create({
+        role_name,
+        account_type,
       });
-    }
 
-    const accessList = [
-      { name: "regions", value: regions },
-      { name: "scheduling", value: scheduling },
-      { name: "history", value: history },
-      { name: "accounts", value: accounts },
-      { name: "role", value: role },
-      { name: "provider", value: provider },
-      { name: "request_data", value: request_data },
-      { name: "vendorship", value: vendorship },
-      { name: "profession", value: profession },
-      { name: "email_logs", value: email_logs },
-      { name: "halo_administrators", value: halo_administrators },
-      { name: "halo_users", value: halo_users },
-      { name: "cancelled_history", value: cancelled_history },
-      { name: "provider_location", value: provider_location },
-      { name: "halo_employee", value: halo_employee },
-      { name: "halo_work_place", value: halo_work_place },
-      { name: "patient_records", value: patient_records },
-      { name: "blocked_history", value: blocked_history },
-      { name: "sms_logs", value: sms_logs },
-      { name: "my_schedule", value: my_schedule },
-      { name: "dashboard", value: dashboard },
-      { name: "my_profile", value: my_profile },
-      { name: "send_order", value: send_order },
-      { name: "chat", value: chat },
-      { name: "invoicing", value: invoicing },
-    ];
+      if (!new_role) {
+        return res.status(500).json({
+          message: message_constants.EWCA,
+        });
+      }
 
-    const handleAccess = async (roleId:any, accessName:any) => {
-      try {
-        const access = await Access.findOne({
-          where: {
-            access_name: accessName,
-          },
-        });
-    
-        if (!access) {
-          return res.status(500).json({
-            message: message_constants.AccNF,
+      const accessList = [
+        { name: "regions", value: regions },
+        { name: "scheduling", value: scheduling },
+        { name: "history", value: history },
+        { name: "accounts", value: accounts },
+        { name: "role", value: role },
+        { name: "provider", value: provider },
+        { name: "request_data", value: request_data },
+        { name: "vendorship", value: vendorship },
+        { name: "profession", value: profession },
+        { name: "email_logs", value: email_logs },
+        { name: "halo_administrators", value: halo_administrators },
+        { name: "halo_users", value: halo_users },
+        { name: "cancelled_history", value: cancelled_history },
+        { name: "provider_location", value: provider_location },
+        { name: "halo_employee", value: halo_employee },
+        { name: "halo_work_place", value: halo_work_place },
+        { name: "patient_records", value: patient_records },
+        { name: "blocked_history", value: blocked_history },
+        { name: "sms_logs", value: sms_logs },
+        { name: "my_schedule", value: my_schedule },
+        { name: "dashboard", value: dashboard },
+        { name: "my_profile", value: my_profile },
+        { name: "send_order", value: send_order },
+        { name: "chat", value: chat },
+        { name: "invoicing", value: invoicing },
+      ];
+
+      const handleAccess = async (roleId: any, accessName: any) => {
+        try {
+          const access = await Access.findOne({
+            where: {
+              access_name: accessName,
+            },
           });
-        }
-    
-        const isAccess = await RoleAccessMapping.findOne({
-          where: {
-            role_id: roleId,
-            access_id: access.access_id,
-          },
-        });
-    
-        if (!isAccess) {
-          await RoleAccessMapping.create({
-            role_id: roleId,
-            access_id: access.access_id,
-          });
-        } else {
-          await RoleAccessMapping.destroy({
+
+          if (!access) {
+            return res.status(500).json({
+              message: message_constants.AccNF,
+            });
+          }
+
+          const isAccess = await RoleAccessMapping.findOne({
             where: {
               role_id: roleId,
               access_id: access.access_id,
             },
           });
-        }
-      } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: message_constants.ISE });
-      }
-    };
-    for (const accessItem of accessList) {
-      if (accessItem.value) {
-        await handleAccess(new_role.role_id, accessItem.name);
-      }
-    }
 
-    return res.status(200).json({
-      message: message_constants.Success,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
-  }
-};
+          if (!isAccess) {
+            await RoleAccessMapping.create({
+              role_id: roleId,
+              access_id: access.access_id,
+            });
+          } else {
+            await RoleAccessMapping.destroy({
+              where: {
+                role_id: roleId,
+                access_id: access.access_id,
+              },
+            });
+          }
+        } catch (error) {
+          console.log(error);
+          return res.status(500).json({ error: message_constants.ISE });
+        }
+      };
+      for (const accessItem of accessList) {
+        if (accessItem.value) {
+          await handleAccess(new_role.role_id, accessItem.name);
+        }
+      }
+
+      return res.status(200).json({
+        message: message_constants.Success,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+  };
 
 /**
  * Manages account access based on the specified action.
@@ -1357,44 +1367,6 @@ export const access_account_access_create_access_refactored: Controller = async 
  * @param res Express Response object
  * @param next Express NextFunction object
  */
-export const access_account_access_edit_save: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { role_id } = req.params;
-    const { role_name, account_type } = req.body;
-    const role = await Role.findOne({
-      where: {
-        role_id: role_id,
-      },
-    });
-    if (!role) {
-      return res.status(404).json({ error: message_constants.AcNF });
-    }
-    const account_data = await Role.update(
-      {
-        role_name,
-        account_type,
-      },
-      {
-        where: {
-          role_id,
-        },
-      }
-    );
-    if (!account_data) {
-      return res.status(404).json({ error: message_constants.EWDI });
-    }
-    return res.status(200).json({
-      status: true,
-      message: message_constants.US,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: message_constants.ISE });
-  }
-};
 export const access_account_access_delete: Controller = async (
   req: Request,
   res: Response,
