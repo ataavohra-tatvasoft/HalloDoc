@@ -11,6 +11,7 @@ import { Op } from "sequelize";
 import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import { request } from "http";
+import Access from "../../db/models/access";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -806,6 +807,41 @@ export const roles: Controller = async (
         const formatted_request: any = {
           role_id: role.role_id,
           role_name: role.role_name,
+        };
+        formatted_response.data.push(formatted_request);
+      }
+      return res.status(200).json({
+        ...formatted_response,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: message_constants.ISE });
+    }
+  }
+};
+
+/**Access ID's */
+export const access: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  {
+    try {
+      const formatted_response: any = {
+        status: true,
+        data: [],
+      };
+      const accesses = await Access.findAll({
+        attributes: ["access_id", "access_name"],
+      });
+
+      if (!accesses) {
+        return res.status(404).json({ error: message_constants.NF });
+      }
+      for (const access of accesses) {
+        const formatted_request: any = {
+          access_id: access.access_id,
+          access_name: access.access_name,
         };
         formatted_response.data.push(formatted_request);
       }

@@ -1,5 +1,6 @@
 import { Joi } from "celebrate";
 
+
 export const access_accountaccess_validation = {
   query: Joi.object({
     page: Joi.number().integer().min(1).optional(),
@@ -13,6 +14,10 @@ export const access_accountaccess_edit_validation = {
       .required()
       .pattern(/^[0-9]+$/),
   }),
+};
+
+export const access_accountaccess_edit_save_validation = {
+  
 };
 
 export const access_account_access_create_access_validation = {
@@ -47,20 +52,6 @@ export const access_account_access_create_access_validation = {
   }).required(),
 };
 
-export const access_account_access_edit_save_validation = {
-  params: {
-    role_id: Joi.number().required().error(new Error('role_id is required and must be a number')),
-  },
-  body: {
-    role_name: Joi.string().trim().min(3).max(255)
-      .required()
-      .error(new Error('role_name is required, must be a string, and have a length between 3 and 255 characters')),
-    account_type: Joi.string().trim()
-      .required()
-      .error(new Error('account_type is required, must be a string, and be a valid account type')),
-  },
-};
-
 export const access_account_access_delete_validation = {
   params: Joi.object({
     role_id: Joi.string()
@@ -68,6 +59,7 @@ export const access_account_access_delete_validation = {
       .pattern(/^[0-9]+$/),
   }),
 };
+
 
 export const access_useraccess_validation = {
   query: Joi.object({

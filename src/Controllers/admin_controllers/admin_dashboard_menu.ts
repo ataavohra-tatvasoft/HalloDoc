@@ -2427,6 +2427,7 @@ export const transfer_request: Controller = async (
             "clear",
           ],
         },
+        is_assigned:"yes",
       },
     });
     if (!request) {

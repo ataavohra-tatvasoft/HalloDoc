@@ -34,7 +34,7 @@ router.use("/admin", admin_records_menu);
 router.use("/admin", admin_dashboard);
 
 /** Provider Routes */
-router.use("/admin", admin_dashboard);
+router.use("/provider", provider_dashboard);
 
 
 router.use(common_routes);

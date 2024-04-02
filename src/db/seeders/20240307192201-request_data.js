@@ -14,7 +14,6 @@ module.exports = {
           confirmation_no: "Gu240307PaRo0001",
           request_state: "new",
           patient_id: "2",
-          physician_id: "8",
           requestor_id: "1",
           requested_by: "family/friend",
           requested_date: date_of_request,
@@ -24,7 +23,6 @@ module.exports = {
           confirmation_no: "Ma240307RaRu0002",
           request_state: "new",
           patient_id: "3",
-          physician_id: "8",
           requestor_id: "2",
           requested_by: "concierge",
           requested_date: date_of_request,
@@ -34,7 +32,6 @@ module.exports = {
           confirmation_no: "Gu240307VoAt0003",
           request_state: "new",
           patient_id: "4",
-          physician_id: "9",
           requested_by: "business",
           requestor_id: "3",
           requested_date: date_of_request,
@@ -44,7 +41,6 @@ module.exports = {
           confirmation_no: "Te240307TeSa0004",
           request_state: "new",
           patient_id: "5",
-          physician_id: "9",
           requested_by: "vip",
           requestor_id: "4",
           requested_date: date_of_request,
@@ -54,7 +50,6 @@ module.exports = {
         //   confirmation_no: " Ma240307ShRo0005",
         //   request_state: "new",
         //   patient_id: "6",
-        //   physician_id: "10",
         //   requestor_id: "5",
         //   requested_by: "patient",
         //   requested_date: date_of_request,
@@ -64,7 +59,6 @@ module.exports = {
           confirmation_no: "Ut240307GaBi0006",
           request_state: "new",
           patient_id: "7",
-          physician_id: "10",
           requestor_id: "6",
           requested_by: "patient",
           requested_date: date_of_request,
@@ -79,6 +73,7 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
         },
         {
           request_id: 8,
@@ -90,6 +85,8 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 9,
@@ -101,6 +98,8 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 10,
@@ -112,6 +111,8 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 11,
@@ -134,6 +135,8 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 13,
@@ -145,6 +148,8 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 14,
@@ -167,6 +172,8 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 16,
@@ -189,6 +196,8 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 18,
@@ -200,6 +209,8 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 19,
@@ -222,6 +233,8 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 21,
@@ -244,6 +257,8 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 23,
@@ -255,6 +270,8 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 24,
@@ -277,6 +294,8 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 26,
@@ -299,6 +318,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 28,
@@ -310,6 +331,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 29,
@@ -332,6 +355,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 31,
@@ -354,6 +379,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 33,
@@ -365,6 +392,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 34,
@@ -387,6 +416,8 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          is_assigned: "yes"
+
         },
         {
           request_id: 36,

@@ -7,16 +7,17 @@ import {
   access_useraccess_edit,
   access_useraccess_edit_save,
   access_account_access_create_access,
+  access_accountaccess_edit_save,
 } from "../../controllers";
 import {
   access_accountaccess_validation,
   access_accountaccess_edit_validation,
   access_account_access_create_access_validation,
-  access_account_access_edit_save_validation,
   access_account_access_delete_validation,
   access_useraccess_validation,
   access_useraccess_edit_validation,
   access_useraccess_edit_save_validation,
+  access_accountaccess_edit_save_validation
 } from "../../validations";
 import { celebrate, Joi } from "celebrate";
 import { authmiddleware } from "../../middlewares";
@@ -39,12 +40,16 @@ router.get(
   celebrate(access_accountaccess_edit_validation),
   access_accountaccess_edit
 );
+router.put(
+  "/access/accountaccess/:role_id/save_edit",
+  authmiddleware,
+  celebrate(access_accountaccess_edit_save_validation),
+  access_accountaccess_edit_save
+);
 
 /**
  * combined above two routes into one
  */
-
-
 
 router.delete(
   "/access/accountaccess/:role_id/delete",
@@ -59,6 +64,7 @@ router.post(
   celebrate(access_account_access_create_access_validation),
   access_account_access_create_access
 );
+
 
 
 /** Admin User Access */
@@ -79,7 +85,6 @@ router.get(
 /**
  * combined above two routes into one
  */
-
 
 router.put(
   "/access/useraccess/:user_id/edit/save",
