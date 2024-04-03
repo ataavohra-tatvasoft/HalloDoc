@@ -15,8 +15,16 @@ dotenv.config({ path: `.env` });
 
 
 /**                             Admin in Access Roles                                     */
-/** Admin Account Access */
 
+
+/** Admin Account Access */
+/**
+ * Manages account access based on the specified action.
+ *
+ * @param req Express Request object
+ * @param res Express Response object
+ * @param next Express NextFunction object
+ */
 export const access_accountaccess: Controller = async (
   req: Request,
   res: Response,
@@ -77,7 +85,33 @@ export const access_accountaccess_edit: Controller = async (
       data: [],
     };
 
-    /**Left From HERE */
+    const is_role = await Role.findOne({
+      where: {
+        role_id,
+      },
+      include: [Access],
+    });
+    if (!is_role) {
+      return res.status(404).json({
+        message: message_constants.NF,
+      });
+    }
+
+    const formatted_request: any = {
+      role_id: is_role.role_id,
+      role_name: is_role.role_name,
+      account_type: is_role.account_type,
+      accesses: is_role.Access?.map((access) => ({
+        access_id: access.access_id,
+        access_name: access.access_name,
+      })),
+    };
+
+    formatted_response.data.push(formatted_request);
+
+    return res.status(200).json({
+      ...formatted_response,
+    });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
   }
@@ -89,95 +123,50 @@ export const access_accountaccess_edit_save: Controller = async (
 ) => {
   try {
     const { role_id } = req.params;
-    const formatted_response: any = {
-      status: true,
-      data: [],
+
+    const { role_name, account_type, access_ids } = req.body as {
+      role_name: string;
+      account_type: string;
+      access_ids: Array<number>;
     };
 
-    /**Left From HERE */
-  } catch (error) {
-    return res.status(500).json({ error: message_constants.ISE });
-  }
-};
-export const access_account_access_create_access: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const {
-      role_name,
-      account_type,
-      regions,
-      scheduling,
-      history,
-      accounts,
-      role,
-      provider,
-      request_data,
-      vendorship,
-      profession,
-      email_logs,
-      halo_administrators,
-      halo_users,
-      cancelled_history,
-      provider_location,
-      halo_employee,
-      halo_work_place,
-      patient_records,
-      blocked_history,
-      sms_logs,
-      my_schedule,
-      dashboard,
-      my_profile,
-      send_order,
-      chat,
-      invoicing,
-    } = req.body;
-
-    const new_role = await Role.create({
-      role_name,
-      account_type,
+    const is_role = await Role.findOne({
+      where: {
+        role_id,
+      },
+      include: {
+        model: Access,
+      },
     });
+    if (!is_role) {
+      return res.status(404).json({
+        message: message_constants.NF,
+      });
+    }
 
-    if (!new_role) {
+    const update_role = await Role.update(
+      {
+        role_name,
+        account_type,
+      },
+      {
+        where: {
+          role_id,
+        },
+      }
+    );
+    if (!update_role) {
       return res.status(500).json({
-        message: message_constants.EWCA,
+        message: message_constants.EWU,
       });
     }
 
-    if (regions) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "regions",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
+    if (access_ids) {
+      for (const access of is_role.Access) {
         const delete_access = await RoleAccessMapping.destroy({
           where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
+            role_id,
+            access_id: access.access_id,
           },
         });
         if (!delete_access) {
@@ -186,1061 +175,78 @@ export const access_account_access_create_access: Controller = async (
           });
         }
       }
-    }
-    if (scheduling) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "scheduling",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
+
+      for (const access of access_ids) {
+        const is_access = await Access.findOne({
+          where: {
+            access_id: access,
+          },
         });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
+        if (!is_access) {
+          return res.status(500).json({
+            message: message_constants.NF,
+          });
+        }
+        const create_access = RoleAccessMapping.create({
+          role_id: is_role.role_id,
+          access_id: access,
         });
         if (!create_access) {
           return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (history) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "history",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (accounts) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "accounts",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (role) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "role",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (provider) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "provider",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (request_data) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "request_data",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (vendorship) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "vendorship",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (profession) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "profession",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (email_logs) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "email_logs",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (halo_administrators) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "halo_administrators",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (halo_users) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "halo_users",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (cancelled_history) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "cancelled_history",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (provider_location) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "provider_location",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (halo_employee) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "halo_employee",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (halo_work_place) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "halo_work_place",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (patient_records) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "patient_records",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (blocked_history) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "blocked_history",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (sms_logs) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "sms_logs",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (my_schedule) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "my_schedule",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (dashboard) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "dashboard",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (my_profile) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "my_profile",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (send_order) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "send_order",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (my_schedule) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "my_schedule",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (chat) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "chat",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (invoicing) {
-      const access = await Access.findOne({
-        where: {
-          access_name: "invoicing",
-        },
-      });
-      if (!access) {
-        return res.status(500).json({
-          message: message_constants.AccNF,
-        });
-      }
-      const is_access = await await RoleAccessMapping.findOne({
-        where: {
-          role_id: new_role.role_id,
-          access_id: access.access_id,
-        },
-      });
-      if (!is_access) {
-        const create_access = await RoleAccessMapping.create({
-          role_id: new_role.role_id,
-          access_id: access?.access_id,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      } else {
-        const delete_access = await RoleAccessMapping.destroy({
-          where: {
-            role_id: new_role.role_id,
-            access_id: access?.access_id,
-          },
-        });
-        if (!delete_access) {
-          return res.status(500).json({
-            message: message_constants.EWD,
+            message: message_constants.EWC + " for " + access,
           });
         }
       }
     }
 
     return res.status(200).json({
-      message: message_constants.Success,
+      message: message_constants.US,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
-export const access_account_access_create_access_refactored: Controller =
+export const access_account_access_create_access: Controller =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { role_name, access_ids } = req.body;
+      const { role_name, account_type, access_ids } = req.body as {
+        role_name: string;
+        account_type: string;
+        access_ids: Array<number>;
+      };
+
+      const new_role = await Role.create({
+        role_name,
+        account_type,
+      });
+
+      if (!new_role) {
+        return res.status(500).json({
+          message: message_constants.EWCA,
+        });
+      }
 
       for (const access of access_ids) {
-        const access_delete = await RoleAccessMapping.destroy({
+        const is_access = await Access.findOne({
           where: {
             access_id: access,
           },
         });
-        if (!access_delete) {
+        if (!is_access) {
           return res.status(500).json({
-            message: message_constants.EWD,
+            message: message_constants.NF,
+          });
+        }
+        const create_access = RoleAccessMapping.create({
+          role_id: new_role.role_id,
+          access_id: access,
+        });
+        if (!create_access) {
+          return res.status(500).json({
+            message: message_constants.EWC + " for " + access,
           });
         }
       }
-
-      /**Left From HERE */
 
       return res.status(200).json({
         message: message_constants.Success,
@@ -1250,62 +256,53 @@ export const access_account_access_create_access_refactored: Controller =
       return res.status(500).json({ error: message_constants.ISE });
     }
   };
-
-/**
- * Manages account access based on the specified action.
- *
- * @param req Express Request object
- * @param res Express Response object
- * @param next Express NextFunction object
- */
-export const access_account_access_delete: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { role_id } = req.params;
-    const role = await Role.findOne({
-      where: {
-        role_id,
-      },
-    });
-
-    if (!role) {
-      return res.status(404).json({ error: message_constants.AcNF });
-    }
-
-    const mapping = await RoleAccessMapping.destroy({
-      where: { role_id },
-    });
-
-    if (!mapping) {
-      return res.status(500).json({
-        message: message_constants.EWD,
+  export const access_account_access_delete: Controller = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { role_id } = req.params;
+      const role = await Role.findOne({
+        where: {
+          role_id,
+        },
       });
-    }
-
-    const delete_role = await Role.destroy({
-      where: {
-        role_id,
-      },
-    });
-    if (!delete_role) {
-      return res.status(500).json({
-        message: message_constants.EWD,
+  
+      if (!role) {
+        return res.status(404).json({ error: message_constants.AcNF });
+      }
+  
+      const mapping = await RoleAccessMapping.destroy({
+        where: { role_id },
       });
+  
+      if (!mapping) {
+        return res.status(500).json({
+          message: message_constants.EWD,
+        });
+      }
+  
+      const delete_role = await Role.destroy({
+        where: {
+          role_id,
+        },
+      });
+      if (!delete_role) {
+        return res.status(500).json({
+          message: message_constants.EWD,
+        });
+      }
+      return res
+        .status(200)
+        .json({ status: true, message: message_constants.DS });
+    } catch (error) {
+      return res.status(500).json({ error: message_constants.ISE });
     }
-    return res
-      .status(200)
-      .json({ status: true, message: message_constants.DS });
-  } catch (error) {
-    return res.status(500).json({ error: message_constants.ISE });
-  }
-};
+  };
 
 
 /** Admin User Access */
-
 /**
  * Manages user access based on the specified action.
  *

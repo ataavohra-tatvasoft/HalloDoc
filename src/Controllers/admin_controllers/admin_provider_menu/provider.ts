@@ -43,6 +43,8 @@ export const provider_list: Controller = async (
     const { count, rows: providers } = await User.findAndCountAll({
       attributes: [
         "user_id",
+        "email",
+        "mobile_no",
         "stop_notification_status",
         "firstname",
         "lastname",
@@ -68,6 +70,8 @@ export const provider_list: Controller = async (
         user_id: provider.user_id,
         stop_notification: provider.stop_notification_status,
         provider_name: provider.firstname + " " + provider.lastname,
+        email: provider?.email,
+        mobile_no: provider?.mobile_no,
         role: role?.role_name,
         on_call_status: provider.on_call_status,
         status: provider.status,
@@ -410,7 +414,7 @@ export const save_user_information: Controller = async (
     const update_user_fields = {
       username,
       status,
-      role_id: found_role?.role_id || null, 
+      role_id: found_role?.role_id || null,
       firstname,
       lastname,
       email,
@@ -459,7 +463,6 @@ export const save_user_information: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
 
 //Combined below four API into above one
 export const save_account_information: Controller = async (
