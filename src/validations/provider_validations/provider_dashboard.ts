@@ -11,8 +11,17 @@ export const requests_by_request_state_provider_validation = {
 };
 
 export const provider_accept_request_validation = {
-    params: Joi.object({
-        confirmation_no: Joi.string().required().min(1), // You can adjust minimum length based on your confirmation number format
-      }),
-  };
-  
+  params: Joi.object({
+    confirmation_no: Joi.string().required().min(1), // You can adjust minimum length based on your confirmation number format
+  }),
+};
+
+export const transfer_request_provider_validation = {
+  params: Joi.object({
+    confirmation_no: Joi.string().required().min(1),
+  }),
+
+  body: Joi.object({
+    description: Joi.string().required().min(1),
+  }),
+};

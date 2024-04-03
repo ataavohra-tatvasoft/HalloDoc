@@ -14,7 +14,6 @@ import {
   provider_profile_upload,
   provider_onboarding_upload,
   provider_onboarding_delete,
-  create_provider_account,
   create_provider_account_refactored,
 } from "../../../controllers";
 import {
@@ -32,7 +31,6 @@ import {
   provider_profile_upload_validation,
   provider_onboarding_upload_validation,
   provider_onboarding_delete_validation,
-  create_provider_account_validation,
   create_provider_account_refactored_validation,
 } from "../../../validations";
 import { authmiddleware } from "../../../middlewares";
@@ -105,6 +103,7 @@ router.put(
   celebrate(save_provider_profile_validation),
   save_provider_profile
 );
+
 router.delete(
   "/providermenu/provider_list/:user_id/delete_provider_account",
   authmiddleware,

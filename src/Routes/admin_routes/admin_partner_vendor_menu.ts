@@ -24,21 +24,18 @@ router.get(
   celebrate(partner_vendor_list_validation),
   partner_vendor_list
 );
-
 router.post(
   "/partners/add_business",
   authmiddleware,
   celebrate(add_business_validation),
   add_business
 );
-
 router.put(
   "/partners/:business_id/update_business",
   authmiddleware,
   celebrate(update_business_validation),
   update_business
 );
-
 router.delete(
   "/partners/:business_id/delete_vendor",
   authmiddleware,
@@ -47,4 +44,3 @@ router.delete(
 );
 
 export default router;
-

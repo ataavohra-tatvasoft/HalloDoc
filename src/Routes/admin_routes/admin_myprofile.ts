@@ -22,9 +22,7 @@ const router: Router = express.Router();
 /**
  * no validation in below get API because data is fetched directly by AuthToken
  */
-router.get("/myprofile/admin_profile/view", authmiddleware,
- admin_profile_view);
-
+router.get("/myprofile/admin_profile/view", authmiddleware, admin_profile_view);
 
 router.put(
   "/myprofile/admin_profile/resetpassword",
@@ -32,7 +30,6 @@ router.put(
   celebrate(admin_profile_reset_password_validation_schema),
   admin_profile_reset_password
 );
-
 router.put(
   "/myprofile/admin_profile/editadmininfo",
   authmiddleware,

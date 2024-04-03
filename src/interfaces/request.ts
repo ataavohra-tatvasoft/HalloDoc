@@ -6,8 +6,7 @@ export interface RequestAttributes {
   confirmation_no: string;
   request_state: string;
   patient_id: number;
-  physician_id: number;
-  provider_id: number;
+  physician_id: number | null;
   requested_by: string;
   requestor_id: number;
   requested_date: Date;
@@ -16,10 +15,8 @@ export interface RequestAttributes {
   closed_date: Date;
   request_status: string;
   block_reason: string | null;
-  transfer_request_status: string;
   agreement_status: string;
   notes_symptoms: string | null;
-  is_assigned: string | null;
   assign_req_description: string;
   final_report: string;
   createdAt: Date;
@@ -32,17 +29,14 @@ export interface RequestCreationAttributes
     | "confirmation_no"
     | "patient_id"
     | "physician_id"
-    | "provider_id"
     | "requestor_id"
     | "concluded_date"
     | "date_of_service"
     | "closed_date"
     | "request_status"
     | "block_reason"
-    | "transfer_request_status"
     | "agreement_status"
     | "notes_symptoms"
-    | "is_assigned"
     | "assign_req_description"
     | "final_report"
     | "createdAt"

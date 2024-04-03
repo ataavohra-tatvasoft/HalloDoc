@@ -46,18 +46,12 @@ router.put(
   celebrate(access_accountaccess_edit_save_validation),
   access_accountaccess_edit_save
 );
-
-/**
- * combined above two routes into one
- */
-
 router.delete(
   "/access/accountaccess/:role_id/delete",
   authmiddleware,
   celebrate(access_account_access_delete_validation),
   access_account_access_delete
 );
-
 router.post(
   "/access/accountaccess/create_access",
   authmiddleware,
@@ -81,11 +75,6 @@ router.get(
   celebrate(access_useraccess_edit_validation),
   access_useraccess_edit
 );
-
-/**
- * combined above two routes into one
- */
-
 router.put(
   "/access/useraccess/:user_id/edit/save",
   authmiddleware,

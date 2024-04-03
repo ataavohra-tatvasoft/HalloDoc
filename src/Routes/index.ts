@@ -2,7 +2,6 @@ import express, { Router } from "express";
 import login_routes from "./login_recover";
 import signup_routes from "./signup";
 
-/**Admin Routes */
 import admin_dashboard from "./admin_routes/admin_dashboard";
 import admin_myprofile from "./admin_routes/admin_myprofile";
 import admin_access_roles from "./admin_routes/admin_access_roles";
@@ -11,11 +10,12 @@ import admin_provider_menu_2 from "./admin_routes/admin_provider_menu/scheduling
 import admin_partner_vendor_menu from "./admin_routes/admin_partner_vendor_menu";
 import admin_records_menu from "./admin_routes/admin_records_menu";
 
-/**Provider Routes */
 import provider_dashboard from "./provider_routes/provider_dashboard";
 
-
 import common_routes from "./common_routes/common_routes";
+import common_request_actions from "./common_routes/common_request_actions";
+
+
 
 const router: Router = express.Router();
 
@@ -36,7 +36,8 @@ router.use("/admin", admin_dashboard);
 /** Provider Routes */
 router.use("/provider", provider_dashboard);
 
-
-router.use(common_routes);
+/**Common Routes */
+router.use("/common", common_routes);
+router.use("/common",common_request_actions);
 
 export default router;

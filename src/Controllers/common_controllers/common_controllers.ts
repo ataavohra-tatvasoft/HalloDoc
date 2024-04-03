@@ -10,8 +10,8 @@ import ExcelJS from "exceljs";
 import { Op } from "sequelize";
 import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
-import { request } from "http";
 import Access from "../../db/models/access";
+import JSZip from "jszip";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -477,6 +477,7 @@ export const export_all: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
+    const zip = new JSZip();
 
     const where_clause_patient = {
       type_of_user: "patient",
@@ -654,6 +655,7 @@ export const export_all: Controller = async (
         return formatted_response;
       };
       const formatted_response = await handle_request_state();
+
       // Create a new worksheet for each state
       const worksheet = work_book.addWorksheet(state);
 
@@ -665,13 +667,10 @@ export const export_all: Controller = async (
         "Requestor",
         "Requested Date",
         "Date of Service",
-        // Add more headers as needed
       ];
 
-      // Add headers to the worksheet
       worksheet.addRow(headers);
 
-      // Add data to the worksheet
       for (const request of formatted_response.data) {
         const rowData = [
           request.request_id,
@@ -683,6 +682,12 @@ export const export_all: Controller = async (
         ];
         worksheet.addRow(rowData);
       }
+
+      // Create a buffer containing the Excel workbook data
+      const excelBuffer = await work_book.xlsx.writeBuffer();
+
+      // Add the workbook data to the ZIP file with a descriptive filename
+      zip.file(`${state}.xlsx`, excelBuffer);
     }
 
     // Generate a unique filename for the Excel file
@@ -695,10 +700,22 @@ export const export_all: Controller = async (
     );
     res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Write the work_book to the response
-    await work_book.xlsx.write(res);
-    console.log(res);
-    return res.end();
+    // Write the ZIP file to the response
+    const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
+    if (zip_archive) {
+      // console.log(res);
+      return res.end(zip_archive);
+    } else {
+      return res.status(500).json({ message: message_constants.ISE });
+    }
+
+    // // Alternate Way
+    // await zip
+    //   .generateAsync({ type: "nodebuffer" })
+    //   .then((content) => res.end(content))
+    //   .catch((error) => console.error(error));
+
+    // return res.end();
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });

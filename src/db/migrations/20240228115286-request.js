@@ -46,16 +46,6 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
-      provider_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: "user",
-          key: "user_id",
-          onDelete: "SET NULL",
-          onUpdate: "CASCADE",
-        },
-      },
       requested_by: {
         type: Sequelize.ENUM(
           "family/friend",
@@ -90,7 +80,8 @@ module.exports = {
       },
       request_status: {
         type: Sequelize.ENUM(
-          "new",
+          "unassigned",
+          "assigned",
           "accepted",
           "closed",
           "conclude",
@@ -99,16 +90,12 @@ module.exports = {
           "cancelled by admin",
           "cancelled by provider"
         ),
-        defaultValue: "new",
+        defaultValue: "unassigned",
+
         allowNull: false,
       },
       block_reason: {
         type: Sequelize.STRING,
-        allowNull: true,
-      },
-      transfer_request_status: {
-        type: Sequelize.ENUM("pending", "accepted", "rejected"),
-        defaultValue: null,
         allowNull: true,
       },
       agreement_status: {
@@ -119,11 +106,6 @@ module.exports = {
       notes_symptoms: {
         type: Sequelize.STRING,
         allowNull: true,
-      },
-      is_assigned: {
-        type: Sequelize.ENUM("yes", "no"),
-        allowNull: false,
-        defaultValue:"no",
       },
       assign_req_description: {
         type: Sequelize.STRING,
@@ -143,5 +125,9 @@ module.exports = {
         onUpdate: "CASCADE",
       },
     });
+  },
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('request');
+
   },
 };

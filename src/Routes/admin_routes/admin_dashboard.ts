@@ -3,7 +3,6 @@ import { celebrate, Joi } from "celebrate";
 import {
   admin_create_request,
   admin_create_request_verify,
-  view_case_for_request,
   view_notes_for_request,
   save_view_notes_for_request,
   cancel_case_for_request_view_data,
@@ -12,28 +11,16 @@ import {
   assign_request,
   block_case_for_request_view,
   block_case_for_request_post,
-  view_uploads_view_data,
-  view_uploads_upload,
-  view_uploads_actions_delete,
-  view_uploads_actions_download,
-  view_uploads_delete_all,
-  business_name_for_send_orders,
-  view_send_orders_for_request,
-  send_orders_for_request,
   transfer_request,
   clear_case_for_request,
-  send_agreement,
-  update_agreement,
   close_case_for_request_view_details,
   close_case_for_request,
   close_case_for_request_edit,
   close_case_for_request_actions_download,
   request_support,
   transfer_request_region_physicians,
-  view_uploads_download_all,
   admin_send_link,
   manage_requests_by_State,
-  requests_by_request_state,
   requests_by_request_state_refactored,
   requests_by_request_state_counts,
   regions,
@@ -41,14 +28,10 @@ import {
 } from "../../controllers";
 import {
   region_with_thirdparty_API,
-  professions_for_send_orders,
-  transfer_request_regions,
-  region_for_request_states,
 } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
 import {
   manage_requests_by_state_validation,
-  view_case_validation,
   view_notes_for_request_validation,
   save_view_notes_for_request_validation,
   cancel_case_for_request_view_data_validation,
@@ -57,20 +40,9 @@ import {
   assign_request_validation,
   block_case_for_request_view_validation,
   block_case_for_request_post_validation,
-  view_uploads_view_data_validation,
-  view_uploads_upload_validation,
-  view_uploads_actions_delete_validation,
-  view_uploads_actions_download_validation,
-  view_uploads_delete_all_validation,
-  view_uploads_download_all_validation,
-  business_name_for_send_orders_validation,
-  view_send_orders_for_request_validation,
-  send_orders_for_request_validation,
   transfer_request_region_physicians_validation,
   transfer_request_validation,
   clear_case_for_request_validation,
-  send_agreement_validation,
-  update_agreement_validation,
   close_case_for_request_validation,
   close_case_for_request_view_details_validation,
   close_case_for_request_edit_validation,
@@ -137,16 +109,6 @@ router.get(
 /**Admin Request Actions */
 
 /**
- * @description Given below are Express routes that allows viewing request by confirmation number.
- */
-router.get(
-  "/dashboard/requests/:confirmation_no/actions/viewcase",
-  authmiddleware,
-  celebrate(view_case_validation),
-  view_case_for_request
-);
-
-/**
  * @description Given below are Express routes that allows viewing and saving notes for a request identified by the confirmation number.
  */
 router.get(
@@ -211,75 +173,6 @@ router.put(
 );
 
 /**
- * @description These handles various actions related to uploads for a request.
- */
-router.get(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/viewdata",
-  authmiddleware,
-  celebrate(view_uploads_view_data_validation),
-
-  view_uploads_view_data
-);
-router.post(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/upload",
-  authmiddleware,
-  celebrate(view_uploads_upload_validation),
-  upload.single("file"),
-  view_uploads_upload
-);
-router.delete(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/delete/:document_id",
-  authmiddleware,
-  celebrate(view_uploads_actions_delete_validation),
-  view_uploads_actions_delete
-);
-router.get(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/download/:document_id",
-  authmiddleware,
-  celebrate(view_uploads_actions_download_validation),
-  view_uploads_actions_download
-);
-router.delete(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/deleteall",
-  authmiddleware,
-  celebrate(view_uploads_delete_all_validation),
-  view_uploads_delete_all
-);
-router.get(
-  "/dashboard/requests/:confirmation_no/actions/viewuploads/downloadall",
-  authmiddleware,
-  celebrate(view_uploads_download_all_validation),
-  view_uploads_download_all
-);
-
-/**
- * @description These handles viewing and sending orders for a request.
- */
-router.get(
-  "/dashboard/requests/actions/sendorders/professions",
-  authmiddleware,
-  professions_for_send_orders
-);
-router.get(
-  "/dashboard/requests/actions/sendorders/businesses",
-  authmiddleware,
-  celebrate(business_name_for_send_orders_validation),
-  business_name_for_send_orders
-);
-router.get(
-  "/dashboard/requests/actions/viewsendorders",
-  authmiddleware,
-  celebrate(view_send_orders_for_request_validation),
-  view_send_orders_for_request
-);
-router.post(
-  "/dashboard/requests/:state/:confirmation_no/actions/sendorders",
-  authmiddleware,
-  celebrate(send_orders_for_request_validation),
-  send_orders_for_request
-);
-
-/**
  * @description Given below are Express routes that allows viewing and transfer request to a different physician.
  */
 router.get(
@@ -308,22 +201,6 @@ router.delete(
   authmiddleware,
   celebrate(clear_case_for_request_validation),
   clear_case_for_request
-);
-
-/**
- * @description This function handles sending and updating agreements for a request.
- */
-router.post(
-  "/dashboard/requests/:confirmation_no/actions/sendagreement",
-  authmiddleware,
-  celebrate(send_agreement_validation),
-  send_agreement
-);
-router.put(
-  "/dashboard/requests/:confirmation_no/actions/updateagreement",
-  authmiddleware,
-  celebrate(update_agreement_validation),
-  update_agreement
 );
 
 /**

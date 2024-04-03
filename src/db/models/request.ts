@@ -65,12 +65,6 @@ export default class Request extends Model<
   physician_id: number;
 
   @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-  })
-  provider_id: number;
-
-  @Column({
     type: DataType.ENUM(
       "family/friend",
       "concierge",
@@ -116,7 +110,8 @@ export default class Request extends Model<
 
   @Column({
     type: DataType.ENUM(
-      "new",
+      "unassigned",
+      "assigned",
       "accepted",
       "closed",
       "conclude",
@@ -125,7 +120,7 @@ export default class Request extends Model<
       "cancelled by admin",
       "cancelled by provider"
     ),
-    defaultValue: "new",
+    defaultValue: "unassigned",
     allowNull: false,
   })
   request_status: string;
@@ -141,13 +136,6 @@ export default class Request extends Model<
     defaultValue: null,
     allowNull: true,
   })
-  transfer_request_status: string;
-
-  @Column({
-    type: DataType.ENUM("pending", "accepted", "rejected"),
-    defaultValue: null,
-    allowNull: true,
-  })
   agreement_status: string;
 
   @Column({
@@ -155,13 +143,6 @@ export default class Request extends Model<
     allowNull: true,
   })
   notes_symptoms: string;
-
-  @Column({
-    type: DataType.ENUM("yes", "no"),
-    allowNull: false,
-    defaultValue:"no",
-  })
-  is_assigned: string;
 
   @Column({
     type: DataType.STRING,
@@ -174,13 +155,6 @@ export default class Request extends Model<
     allowNull: true,
   })
   final_report: string;
-
-  @BelongsTo(() => User, {
-    as: "Provider",
-    foreignKey: "provider_id",
-    targetKey: "user_id",
-  })
-  Provider: User;
 
   @BelongsTo(() => User, {
     as: "Physician",

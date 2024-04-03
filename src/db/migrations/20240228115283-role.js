@@ -17,7 +17,7 @@ module.exports = {
       },
 
       account_type: {
-        type: Sequelize.ENUM("all","admin","physician","patient"),
+        type: Sequelize.ENUM("all", "admin", "physician", "patient"),
         allowNull: false,
       },
 
@@ -36,11 +36,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    /**
-     * Add reverting commands here.
-     *
-     * Example:
-     * await queryInterface.dropTable('users');
-     */
+    await queryInterface.dropTable("role");
   },
 };

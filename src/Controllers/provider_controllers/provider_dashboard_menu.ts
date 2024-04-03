@@ -23,6 +23,7 @@ dotenv.config({ path: `.env` });
 
 /**                              Provider in Dashboard                                       */
 
+
 export const requests_by_request_state_provider: Controller = async (
   req: Request,
   res: Response,
@@ -178,18 +179,30 @@ export const requests_by_request_state_provider: Controller = async (
     return res.status(500).json({ message: message_constants.ISE });
   }
 };
+
 export const provider_accept_request: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    const { authorization } = req.headers as { authorization: string };
     const { confirmation_no } = req.params;
+
+    const token: string = authorization.split(" ")[1];
+    const verifiedToken: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    );
+    const provider_id = verifiedToken.user_id;
 
     const is_request = await RequestModel.findOne({
       where: {
         confirmation_no,
+        request_state:"new",
+        physician_id:provider_id
       },
+      attributes: ["request_id"],
     });
 
     if (!is_request) {
@@ -221,5 +234,221 @@ export const provider_accept_request: Controller = async (
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const transfer_request_provider: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { description } = req.body;
+    const { authorization } = req.headers as { authorization: string };
+
+    const token: string = authorization.split(" ")[1];
+    const verifiedToken: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    );
+    const provider_id = verifiedToken.user_id;
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        physician_id: provider_id,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+      attributes:["request_id"]
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    // const physician_id = provider.user_id;
+    await RequestModel.update(
+      {
+        physician_id: null,
+        request_state: "new",
+        request_status: "unassigned"
+      },
+      {
+        where: {
+          confirmation_no: confirmation_no,
+        },
+      }
+    );
+    const physician = await User.findOne({
+      where: {
+        user_id: provider_id,
+      },
+    });
+    if (!physician) {
+      return res.status(404).json({
+        message: message_constants.PhNF,
+      });
+    }
+    await Notes.create({
+      request_id: request.request_id,
+      physician_name: physician.firstname + " " + physician.lastname,
+      description,
+      type_of_note: "transfer_notes",
+    });
+    return res.status(200).json({
+      status: true,
+      confirmation_no: confirmation_no,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const view_notes_for_request_provider: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formatted_response: any = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    const transfer_notes_list = await Notes.findAll({
+      where: {
+        request_id: request.request_id,
+        type_of_note: "transfer_notes",
+      },
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
+    });
+    const physician_notes_list = await Notes.findAll({
+      where: {
+        request_id: request.request_id,
+        type_of_note: "physician_notes",
+      },
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
+    });
+    const admin_notes_list = await Notes.findAll({
+      where: {
+        request_id: request.request_id,
+        type_of_note: "admin_notes",
+      },
+      attributes: ["request_id", "note_id", "description", "type_of_note"],
+    });
+    const formatted_request: any = {
+      confirmation_no: confirmation_no,
+      transfer_notes: {
+        notes: transfer_notes_list?.map((note) => ({
+          note_id: note.note_id,
+          type_of_note: note.type_of_note,
+          description: note.description,
+        })),
+      },
+      physician_notes: {
+        notes: physician_notes_list?.map((note) => ({
+          note_id: note.note_id,
+          type_of_note: note.type_of_note,
+          description: note.description,
+        })),
+      },
+      admin_notes: {
+        notes: admin_notes_list?.map((note) => ({
+          note_id: note.note_id,
+          type_of_note: note.type_of_note,
+          description: note.description,
+        })),
+      },
+    };
+
+    formatted_response.data.push(formatted_request);
+    return res.status(200).json({
+      ...formatted_response,
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
+  }
+};
+export const save_view_notes_for_request_provider: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { new_note } = req.body;
+    var status;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no: confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    const notes_status = await Notes.findOne({
+      where: {
+        request_id: request.request_id,
+        type_of_note: "physician_notes",
+      },
+    });
+    if (notes_status) {
+      status = await Notes.update(
+        {
+          description: new_note,
+        },
+        {
+          where: {
+            request_id: request.request_id,
+            type_of_note: "physician_notes",
+          },
+        }
+      );
+    } else {
+      status = await Notes.create({
+        request_id: request.request_id,
+        type_of_note: "physician_notes",
+        description: new_note,
+      });
+    }
+    return res.status(200).json({
+      status: true,
+      confirmation_no: confirmation_no,
+      message: "Successfull !!!",
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
   }
 };

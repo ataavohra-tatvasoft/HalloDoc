@@ -464,6 +464,7 @@ export const save_user_information: Controller = async (
   }
 };
 
+
 //Combined below four API into above one
 export const save_account_information: Controller = async (
   req: Request,
@@ -933,6 +934,7 @@ export const save_provider_profile: Controller = async (
   }
 };
 
+
 export const delete_provider_account: Controller = async (
   req: Request,
   res: Response,
@@ -1063,65 +1065,6 @@ export const provider_profile_upload = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
-// export const provider_onboarding_upload = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { user_id } = req.params;
-//     const id = parseInt(user_id);
-//     const uploaded_files: any = req.files || [];
-
-//     const document_fields = [
-//       {
-//         fieldname: "independent_contractor_agreement",
-//         pathName: "independent_contractor_agreement_path",
-//       },
-//       { fieldname: "background_check", pathName: "background_check_path" },
-//       { fieldname: "HIPAA", pathName: "HIPAA_compliance_path" },
-//       { fieldname: "non_diclosure", pathName: "non_diclosure_agreement_path" },
-//       { fieldname: "licence_document", pathName: "licence_document_path" },
-//     ];
-
-//     const document_updates = document_fields.map(async (doc_field) => {
-//       const document_path = uploaded_files.find(
-//         (file: any) => file.fieldname === doc_field.fieldname
-//       )?.path;
-//       console.log(doc_field.fieldname);
-//       if (document_path) {
-//         const existingDocument = await Documents.findOne({
-//           where: {
-//             user_id,
-//             document_name: doc_field.pathName,
-//           },
-//         });
-
-//         if (!existingDocument) {
-//           const status = await Documents.create({
-//             user_id: id,
-//             document_name: doc_field.pathName,
-//             document_path: document_path,
-//           });
-//           console.log(status);
-//         } else {
-//           const status = await Documents.update(
-//             { document_path: document_path },
-//             { where: { user_id, document_name: doc_field.pathName } }
-//           );
-//           console.log(status);
-//         }
-//       }
-//     });
-
-//     await Promise.all(document_updates);
-
-//     return res.status(200).json({ message: message_constants.UpS });
-//   } catch (error) {
-//     return res.status(500).json({ error: message_constants.ISE });
-//   }
-// };
 
 export const provider_onboarding_upload = async (
   req: Request,
@@ -1307,6 +1250,7 @@ export const provider_onboarding_delete = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
 
 export const create_provider_account: Controller = async (
   req: Request,

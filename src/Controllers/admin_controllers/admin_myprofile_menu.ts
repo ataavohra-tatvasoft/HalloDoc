@@ -206,7 +206,7 @@ export const admin_profile_edit: Controller = async (
       return res.status(404).json({ error: message_constants.ANF });
     }
 
-    const updateProfileStatus = await User.update(
+    const update_profile_status = await User.update(
       {
         firstname,
         lastname,
@@ -226,7 +226,7 @@ export const admin_profile_edit: Controller = async (
       }
     );
 
-    if (!updateProfileStatus) {
+    if (!update_profile_status) {
       return res.status(500).json({ status: message_constants.EWU });
     }
 
@@ -241,7 +241,7 @@ export const admin_profile_edit: Controller = async (
       for (const region of regions) {
         const { name, value } = region;
 
-        const regionData = await Region.findOne({
+        const region_data = await Region.findOne({
           where: {
             region_name: name,
           },
@@ -252,7 +252,7 @@ export const admin_profile_edit: Controller = async (
           const is_exist = await UserRegionMapping.findOne({
             where: {
               user_id: adminprofile.user_id,
-              region_id: regionData?.region_id,
+              region_id: region_data?.region_id,
             },
           });
 
@@ -260,12 +260,12 @@ export const admin_profile_edit: Controller = async (
             const mapping = await UserRegionMapping.update(
               {
                 user_id: adminprofile.user_id,
-                region_id: regionData?.region_id,
+                region_id: region_data?.region_id,
               },
               {
                 where: {
                   user_id: adminprofile.user_id,
-                  region_id: regionData?.region_id,
+                  region_id: region_data?.region_id,
                 },
               }
             );
@@ -278,7 +278,7 @@ export const admin_profile_edit: Controller = async (
           } else {
             const mapping = await UserRegionMapping.create({
               user_id: adminprofile.user_id,
-              region_id: regionData?.region_id,
+              region_id: region_data?.region_id,
             });
 
             if (!mapping) {
@@ -291,7 +291,7 @@ export const admin_profile_edit: Controller = async (
           const is_exist = await UserRegionMapping.findOne({
             where: {
               user_id: adminprofile.user_id,
-              region_id: regionData?.region_id,
+              region_id: region_data?.region_id,
             },
           });
 
@@ -299,7 +299,7 @@ export const admin_profile_edit: Controller = async (
             const delete_mapping = await UserRegionMapping.destroy({
               where: {
                 user_id: adminprofile.user_id,
-                region_id: regionData?.region_id,
+                region_id: region_data?.region_id,
               },
             });
 
@@ -647,7 +647,6 @@ export const admin_profile_admin_info_edit: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
 export const admin_profile_mailing_billling_info_edit: Controller = async (
   req: Request,
   res: Response,
