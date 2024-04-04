@@ -116,7 +116,9 @@ export const regions: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formatted_response: any = {
+    type FormattedRequest = { region_name: string };
+    type FormattedResponse<T> = { status: boolean; data: T[] };
+    const formatted_response: FormattedResponse<FormattedRequest> = {
       status: true,
       data: [],
     };
@@ -127,12 +129,18 @@ export const regions: Controller = async (
     if (!regions) {
       return res.status(404).json({ error: message_constants.EFRD });
     }
-    for (const region of regions) {
-      const formatted_request: any = {
-        region_name: region.region_name,
-      };
-      formatted_response.data.push(formatted_request);
-    }
+
+    formatted_response.data = regions.map((each) => ({
+      region_name: each.region_name,
+    }));
+
+    // for (const region of regions) {
+    //   const formatted_request: FormattedRequest = {
+    //     region_name: region.region_name,
+    //   };
+    //   formatted_response.data.push(formatted_request);
+    // }
+
     return res.status(200).json({
       ...formatted_response,
     });
@@ -771,7 +779,7 @@ export const physicians: Controller = async (
         data: [],
       };
       const physicians = await User.findAll({
-        attributes: ["firstname", "lastname", "type_of_user", "role"],
+        attributes: ["firstname", "lastname", "type_of_user"],
         where: {
           type_of_user: "physician",
         },
@@ -790,6 +798,7 @@ export const physicians: Controller = async (
         ...formatted_response,
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({ error: message_constants.ISE });
     }
   }

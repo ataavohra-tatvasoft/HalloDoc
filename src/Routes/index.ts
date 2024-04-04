@@ -37,7 +37,7 @@ router.use("/admin", admin_dashboard);
 router.use("/provider", provider_dashboard);
 
 /**Common Routes */
-router.use("/common", common_routes);
+router.use(common_routes);
 router.use("/common",common_request_actions);
 
 export default router;
