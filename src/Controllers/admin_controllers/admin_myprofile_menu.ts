@@ -89,13 +89,13 @@ export const admin_profile_view: Controller = async (
       });
     }
     const formattedRequest: any = {
-      user_id: profile.user_id,
-      account_information: {
+      admin_user_id: profile.user_id,
+      admin_account_information: {
         username: "dummy",
         status: profile.status,
         role: is_role.role_name,
       },
-      administrator_information: {
+      admin_administrator_information: {
         firstname: profile.firstname,
         lastname: profile.lastname,
         email: profile.email,
@@ -105,7 +105,7 @@ export const admin_profile_view: Controller = async (
           region_name: region.region_name,
         })),
       },
-      mailing_billing_information: {
+      admin_mailing_billing_information: {
         address_1: profile.address_1,
         address_2: profile.address_2,
         city: profile.city,
