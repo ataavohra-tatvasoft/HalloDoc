@@ -3,7 +3,7 @@ import User from "../../../db/models/user";
 import RequestModel from "../../../db/models/request";
 import Notes from "../../../db/models/notes";
 import Order from "../../../db/models/order";
-import { Controller } from "../../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
@@ -36,7 +36,7 @@ export const provider_list: Controller = async (
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -217,7 +217,7 @@ export const view_edit_physician_account: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

@@ -5,7 +5,7 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
@@ -33,7 +33,7 @@ export const view_case_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -132,7 +132,7 @@ export const view_uploads_view_data: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -534,7 +534,7 @@ export const view_send_orders_for_request: Controller = async (
       profession: string;
       business: string;
     };
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };

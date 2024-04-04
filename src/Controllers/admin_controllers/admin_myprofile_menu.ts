@@ -62,9 +62,11 @@ export const admin_profile_view: Controller = async (
       include: [
         {
           model: Region,
+          attributes: ["region_id", "region_name"],
         },
         {
           model: Role,
+          attributes: ["role_name"],
         },
       ],
     });

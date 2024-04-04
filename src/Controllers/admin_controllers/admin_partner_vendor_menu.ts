@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor";
@@ -24,7 +24,7 @@ export const partner_vendor_list: Controller = async (
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

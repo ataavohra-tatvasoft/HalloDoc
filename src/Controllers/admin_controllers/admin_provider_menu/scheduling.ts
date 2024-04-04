@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller } from "../../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../../interfaces/common_interface";
 import User from "../../../db/models/user";
 import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
@@ -29,7 +29,7 @@ export const provider_shifts_list: Controller = async (
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -211,7 +211,7 @@ export const requested_shifts: Controller = async (
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -432,7 +432,7 @@ export const view_shift: Controller = async (
     const { shift_id } = req.query as {
       shift_id: string;
     };
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

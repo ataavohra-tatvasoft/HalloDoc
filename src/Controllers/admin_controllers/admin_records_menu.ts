@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import { Op } from "sequelize";
 import message_constants from "../../public/message_constants";
@@ -29,7 +29,7 @@ export const patient_history: Controller = async (
         page: string;
         page_size: string;
       };
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -108,7 +108,7 @@ export const patient_records: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -178,7 +178,7 @@ export const patient_records_view_documents: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -249,7 +249,7 @@ export const patient_records_view_case: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -370,7 +370,7 @@ export const search_records: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -580,7 +580,7 @@ export const logs_history: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -671,7 +671,7 @@ export const cancel_and_block_history: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

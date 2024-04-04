@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import RequestModel from "../../db/models/request";
 import User from "../../db/models/user";
 import Notes from "../../db/models/notes";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
@@ -38,7 +38,7 @@ export const access_accountaccess: Controller = async (
     const page_number = parseInt(page) || 1;
     const limit = parseInt(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -80,7 +80,7 @@ export const access_accountaccess_edit: Controller = async (
 ) => {
   try {
     const { role_id } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -319,7 +319,7 @@ export const access_useraccess: Controller = async (
   try {
     const { role } = req.query; // Get search parameters from query string
     const where_clause: { [key: string]: any } = {};
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -371,7 +371,7 @@ export const access_useraccess_edit: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

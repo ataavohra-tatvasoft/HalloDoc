@@ -5,7 +5,7 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
@@ -33,7 +33,7 @@ export const admin_signup: Controller = async (
       Email,
       Password,
       Status,
-      Role,
+      Role_Id,
       FirstName,
       LastName,
       MobileNumber,
@@ -53,7 +53,7 @@ export const admin_signup: Controller = async (
       email: Email,
       password: hashedPassword,
       status: Status,
-      role_id: null,
+      role_id: Role_Id,
       firstname: FirstName,
       lastname: LastName,
       mobile_no: MobileNumber,
@@ -254,7 +254,7 @@ export const requests_by_request_state: Controller = async (
 
     switch (state) {
       case "new": {
-        const formatted_response: any = {
+        const formatted_response:  FormattedResponse<any> = {
           status: true,
           data: [],
         };
@@ -480,7 +480,7 @@ export const requests_by_request_state: Controller = async (
         });
       }
       case "conclude": {
-        const formatted_response: any = {
+        const formatted_response:  FormattedResponse<any> = {
           status: true,
           data: [],
         };
@@ -846,7 +846,7 @@ export const manage_requests_by_State: Controller = async (
     };
 
     const handle_request_state = async (additionalAttributes?: any) => {
-      const formatted_response: any = {
+      const formatted_response:  FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -1027,7 +1027,7 @@ export const requests_by_request_state_counts: Controller = async (
       "toclose",
       "unpaid",
     ];
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -1090,7 +1090,7 @@ export const requests_by_request_state_refactored: Controller = async (
     };
 
     const handle_request_state = async (additionalAttributes?: any) => {
-      const formatted_response: any = {
+      const formatted_response:  FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -1286,7 +1286,7 @@ export const view_notes_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -1430,7 +1430,7 @@ export const cancel_case_for_request_view_data: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -1764,7 +1764,7 @@ export const transfer_request_region_physicians: Controller = async (
     // const {confirmation_no} = req.params;
     const { region } = req.query as { region: string };
     var i = 1;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       // confirmation_no: confirmation_no,
       data: [],
@@ -1793,7 +1793,6 @@ export const transfer_request_region_physicians: Controller = async (
       formatted_response.data.push(formatted_request);
     }
     return res.status(200).json({
-      status: true,
       message: message_constants.Success,
       ...formatted_response,
     });
@@ -1978,7 +1977,7 @@ export const close_case_for_request_view_details: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };

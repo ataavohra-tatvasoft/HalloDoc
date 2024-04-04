@@ -12,6 +12,7 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Access from "../../db/models/access";
 import JSZip from "jszip";
+import { FormattedResponse } from "../../interfaces/common_interface";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -47,7 +48,7 @@ export const region_for_request_states: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -83,12 +84,11 @@ export const transfer_request_regions: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
     const regions = await User.findAll({
-      // attributes: [Sequelize.fn('DISTINCT', Sequelize.col('state'))],
       attributes: ["state"],
     });
 
@@ -116,9 +116,8 @@ export const regions: Controller = async (
   next: NextFunction
 ) => {
   try {
-    type FormattedRequest = { region_name: string };
-    type FormattedResponse<T> = { status: boolean; data: T[] };
-    const formatted_response: FormattedResponse<FormattedRequest> = {
+    // type FormattedRequest = { region_name: string };
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -156,7 +155,7 @@ export const professions_for_send_orders: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const professions = await User.findAll({
+    const professions  = await User.findAll({
       attributes: ["profession"],
       where: {
         type_of_user: "vendor",
@@ -179,7 +178,7 @@ export const professions: Controller = async (
 ) => {
   {
     try {
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -236,7 +235,7 @@ export const export_single: Controller = async (
     };
 
     const handle_request_state = async (additional_attributes?: any) => {
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -511,7 +510,7 @@ export const export_all: Controller = async (
 
     for (const state of states) {
       const handle_request_state = async (additional_attributes?: any) => {
-        const formatted_response: any = {
+        const formatted_response: FormattedResponse<any> = {
           status: true,
           data: [],
         };
@@ -738,7 +737,7 @@ export const actions: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -774,7 +773,7 @@ export const physicians: Controller = async (
 ) => {
   {
     try {
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -815,7 +814,7 @@ export const roles: Controller = async (
       const { account_type } = req.query as {
         account_type: string;
       };
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -853,7 +852,7 @@ export const access: Controller = async (
 ) => {
   {
     try {
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
