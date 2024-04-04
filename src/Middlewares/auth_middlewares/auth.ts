@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
+import { verified_token } from "../../interfaces/common_interface";
 
 export const authmiddleware = async (
   req: Request,
@@ -16,18 +17,18 @@ export const authmiddleware = async (
     }
 
     const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
+    const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    );
+    )  as verified_token;
     const validUser = await User.findOne({
       where: {
-        email: verifiedToken.email,
+        email: verified_token.email,
       },
     });
 
     if (validUser) {
-      (req as any).email = verifiedToken.email;
+      (req as any).email = verified_token.email;
       next();
     } else {
       return res.status(400).json({

@@ -1,19 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import RequestModel from "../../db/models/request";
 import User from "../../db/models/user";
-import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller, FormattedResponse } from "../../interfaces/common_interface";
-import bcrypt from "bcrypt";
+import {
+  Controller,
+  FormattedResponse,
+} from "../../interfaces/common_interface";
 import nodemailer from "nodemailer";
-import twilio from "twilio";
 import * as crypto from "crypto";
 import { Op } from "sequelize";
 import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
-import path, { dirname } from "path";
+import path from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
@@ -504,7 +504,7 @@ export const business_name_for_send_orders: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const profession = req.query as { profession: string };
+    const profession = req.query;
     const where_clause = {
       // profession: profession  // Commented out for dynamic filtering
       ...(profession && { profession: profession }),
@@ -531,8 +531,7 @@ export const view_send_orders_for_request: Controller = async (
 ) => {
   try {
     const { profession, business } = req.query as {
-      profession: string;
-      business: string;
+      [key: string]: string;
     };
     const formatted_response: FormattedResponse<any> = {
       status: true,
@@ -557,6 +556,7 @@ export const view_send_orders_for_request: Controller = async (
       ...formatted_response,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
@@ -568,8 +568,7 @@ export const send_orders_for_request: Controller = async (
   try {
     const { confirmation_no, state } = req.params;
     const { business_contact, email } = req.query as {
-      business_contact: any;
-      email: string;
+      [key: string]: string;
     };
     const { order_details, number_of_refill } = req.body;
     if (state == "active" || "conclude" || "toclose") {

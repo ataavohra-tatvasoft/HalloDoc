@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller, FormattedResponse } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+} from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import { Op } from "sequelize";
 import message_constants from "../../public/message_constants";
@@ -9,7 +12,7 @@ import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Documents from "../../db/models/documents";
 import Logs from "../../db/models/log";
-import { request } from "http";
+
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -20,21 +23,13 @@ export const patient_history: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, email, phone_no, page, page_size } =
-      req.query as {
-        firstname: string;
-        lastname: string;
-        email: string;
-        phone_no: any;
-        page: string;
-        page_size: string;
-      };
-    const formatted_response:  FormattedResponse<any> = {
+    const { firstname, lastname, email, phone_no, page, page_size } = req.query;
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const where_clause_patient = {
@@ -45,8 +40,8 @@ export const patient_history: Controller = async (
       ...(lastname && {
         lastname: { [Op.like]: `%${lastname}%` },
       }),
-      ...(email && { email: email }),
-      ...(phone_no && { mobile_no: phone_no }),
+      ...(email && { email: { [Op.eq]: email } }),
+      ...(phone_no && { mobile_no: { [Op.eq]: phone_no } }),
     };
 
     const { count, rows: users } = await User.findAndCountAll({
@@ -101,14 +96,11 @@ export const patient_records: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, page_size } = req.query as {
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const { page, page_size } = req.query;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -178,7 +170,7 @@ export const patient_records_view_documents: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -249,7 +241,7 @@ export const patient_records_view_case: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -355,99 +347,93 @@ export const search_records: Controller = async (
       phone_no,
       page,
       page_size,
-    } = req.query as {
-      request_status: string;
-      patient_name: string;
-      request_type: string;
-      from_date_of_service: any;
-      to_date_of_service: any;
-      provider_name: string;
-      email: string;
-      phone_no: any;
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    } = req.query;
+
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const { count, rows: requests } = await RequestModel.findAndCountAll({
-      attributes: [
-        "request_id",
-        "confirmation_no",
-        "requested_by",
-        "date_of_service",
-        "closed_date",
-        "request_state",
-        "request_status",
-      ],
-      where: {
-        ...(request_type && {
-          request_state: { [Op.like]: `%${request_type}%` },
-        }),
-        ...(from_date_of_service && {
-          date_of_service: { [Op.like]: `%${from_date_of_service}%` },
-        }),
-        ...(to_date_of_service && {
-          date_of_service: { [Op.like]: `%${from_date_of_service}%` },
-        }),
-        ...(request_status && {
-          request_status: { [Op.like]: `%${request_status}%` },
-        }),
-      },
-      include: [
-        {
-          model: User,
-          as: "Patient",
-          attributes: [
-            "user_id",
-            "firstname",
-            "lastname",
-            "email",
-            "mobile_no",
-            "address_1",
-            "address_2",
-            "zip",
-          ],
-          where: {
-            ...(patient_name && {
-              [Op.or]: [
-                { firstname: { [Op.like]: `%${patient_name}%` } },
-                { lastname: { [Op.like]: `%${patient_name}%` } },
-              ],
-            }),
-            ...(email && {
-              email: { [Op.like]: `%${email}%` },
-            }),
-            ...(phone_no && {
-              mobile_no: { [Op.like]: `%${phone_no}%` },
-            }),
+    const where_clause = {
+      ...(request_type && {
+        request_state: { [Op.like]: `%${request_type}%` },
+      }),
+      ...(from_date_of_service && {
+        date_of_service: { [Op.gte]: from_date_of_service }, // Use Op.gte for greater than or equal
+      }),
+      ...(to_date_of_service && {
+        date_of_service: { [Op.lte]: to_date_of_service }, // Use Op.lte for less than or equal
+      }),
+      ...(request_status && {
+        request_status: { [Op.like]: `%${request_status}%` },
+      }),
+      // ... potentially add other WhereOptions properties
+    };
+
+    const { count: total_count, rows: requests } =
+      await RequestModel.findAndCountAll({
+        attributes: [
+          "request_id",
+          "confirmation_no",
+          "requested_by",
+          "date_of_service",
+          "closed_date",
+          "request_state",
+          "request_status",
+        ],
+        where: where_clause,
+        include: [
+          {
+            model: User,
+            as: "Patient",
+            attributes: [
+              "user_id",
+              "firstname",
+              "lastname",
+              "email",
+              "mobile_no",
+              "address_1",
+              "address_2",
+              "zip",
+            ],
+            where: {
+              ...(patient_name && {
+                [Op.or]: [
+                  { firstname: { [Op.like]: `%${patient_name}%` } },
+                  { lastname: { [Op.like]: `%${patient_name}%` } },
+                ],
+              }),
+              ...(email && {
+                email: { [Op.like]: `%${email}%` },
+              }),
+              ...(phone_no && {
+                mobile_no: { [Op.like]: `%${phone_no}%` },
+              }),
+            },
           },
-        },
-        {
-          model: User,
-          as: "Physician",
-          attributes: ["user_id", "firstname", "lastname"],
-          where: {
-            ...(provider_name && {
-              [Op.or]: [
-                { firstname: { [Op.like]: `%${provider_name}%` } },
-                { lastname: { [Op.like]: `%${provider_name}%` } },
-              ],
-            }),
+          {
+            model: User,
+            as: "Physician",
+            attributes: ["user_id", "firstname", "lastname"],
+            where: {
+              ...(provider_name && {
+                [Op.or]: [
+                  { firstname: { [Op.like]: `%${provider_name}%` } },
+                  { lastname: { [Op.like]: `%${provider_name}%` } },
+                ],
+              }),
+            },
           },
-        },
-        {
-          model: Notes,
-          attributes: ["note_id", "type_of_note", "description"],
-        },
-      ],
-      limit,
-      offset,
-    });
+          {
+            model: Notes,
+            attributes: ["note_id", "type_of_note", "description"],
+          },
+        ],
+        limit,
+        offset,
+      });
     if (!requests) {
       return res.status(404).json({
         message: message_constants.RNF,
@@ -480,7 +466,7 @@ export const search_records: Controller = async (
         request_status: request.request_status,
         physician:
           request.Physician.firstname + " " + request.Physician.lastname,
-        notes: request.Notes?.map((note) => ({
+        notes: request.Notes?.map((note: any) => ({
           note_id: note.note_id,
           type_of_note: note.type_of_note,
           description: note.description,
@@ -492,9 +478,9 @@ export const search_records: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(total_count / limit),
       currentPage: page_number,
-      total_count: count,
+      total_count: total_count,
     });
   } catch (error) {
     console.log(error);
@@ -509,43 +495,41 @@ export const search_record_delete: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    try {
-      const request = await RequestModel.findOne({
-        where: { confirmation_no },
-        attributes: ["confirmation_no", "request_id"],
-      });
-      if (!request) {
-        return res.status(404).json({ error: message_constants.RNF });
-      }
-      await Notes.destroy({
-        where: {
-          request_id: request.request_id,
-        },
-      });
-      await Order.destroy({
-        where: {
-          request_id: request.request_id,
-        },
-      });
-      await RequestModel.destroy({
-        where: {
-          confirmation_no: confirmation_no,
-        },
-      });
-      await Documents.destroy({
-        where: {
-          request_id: request.request_id,
-        },
-      });
-      return res.status(200).json({
-        status: true,
-        confirmation_no: confirmation_no,
-        message: message_constants.Success,
-      });
-    } catch {
-      res.status(404).json({ error: message_constants.IS });
+
+    const request = await RequestModel.findOne({
+      where: { confirmation_no },
+      attributes: ["confirmation_no", "request_id"],
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
     }
+    await Notes.destroy({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    await Order.destroy({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    await RequestModel.destroy({
+      where: {
+        confirmation_no: confirmation_no,
+      },
+    });
+    await Documents.destroy({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    return res.status(200).json({
+      status: true,
+      confirmation_no: confirmation_no,
+      message: message_constants.Success,
+    });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
@@ -567,24 +551,18 @@ export const logs_history: Controller = async (
       page,
       page_size,
     } = req.query as {
-      type_of_log: string;
-      search_by_role: string;
-      receiver_name: string;
-      email_id: string;
-      mobile_no: any;
-      created_date: any;
+      [key: string]: string;
       sent_date: any;
-      page: string;
-      page_size: string;
+      created_date: any;
     };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const { count, rows: logs } = await Logs.findAndCountAll({
+    const { count: total_count, rows: logs } = await Logs.findAndCountAll({
       attributes: [
         "log_id",
         "type_of_log",
@@ -643,9 +621,9 @@ export const logs_history: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(total_count / limit),
       currentPage: page_number,
-      total_count: count,
+      total_count: total_count,
     });
   } catch (error) {
     res.status(500).json({ message: message_constants.ISE });
@@ -660,73 +638,69 @@ export const cancel_and_block_history: Controller = async (
   try {
     const { type_of_history, name, date, email, phone_no, page, page_size } =
       req.query as {
-        type_of_history: string;
-        name: string;
+        [key: string]: string;
         date: any;
-        email: string;
-        phone_no: any;
-        page: string;
-        page_size: string;
       };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const { count, rows: requests } = await RequestModel.findAndCountAll({
-      attributes: [
-        "request_id",
-        "confirmation_no",
-        "patient_id",
-        "physician_id",
-        "createdAt",
-        "updatedAt",
-      ],
-      where: {
-        ...(date && {
-          updatedAt: { [Op.like]: `%${date}%` },
-        }),
-        request_status: { [Op.like]: `%${type_of_history}%` }, //cancelled or blocked only
-      },
-      include: [
-        {
-          model: User,
-          as: "Patient",
-          attributes: [
-            "user_id",
-            "firstname",
-            "lastname",
-            "email",
-            "mobile_no",
-            "status",
-          ],
-          where: {
-            ...(name && {
-              [Op.or]: [
-                { firstname: { [Op.like]: `%${name}%` } },
-                { lastname: { [Op.like]: `%${name}%` } },
-              ],
-            }),
-            ...(email && {
-              email: { [Op.like]: `%${email}%` },
-            }),
-            ...(phone_no && {
-              mobile_no: { [Op.like]: `%${phone_no}%` },
-            }),
+    const { count: total_count, rows: requests } =
+      await RequestModel.findAndCountAll({
+        attributes: [
+          "request_id",
+          "confirmation_no",
+          "patient_id",
+          "physician_id",
+          "createdAt",
+          "updatedAt",
+        ],
+        where: {
+          ...(date && {
+            updatedAt: { [Op.like]: `%${date}%` },
+          }),
+          request_status: { [Op.like]: `%${type_of_history}%` }, //cancelled or blocked only
+        },
+        include: [
+          {
+            model: User,
+            as: "Patient",
+            attributes: [
+              "user_id",
+              "firstname",
+              "lastname",
+              "email",
+              "mobile_no",
+              "status",
+            ],
+            where: {
+              ...(name && {
+                [Op.or]: [
+                  { firstname: { [Op.like]: `%${name}%` } },
+                  { lastname: { [Op.like]: `%${name}%` } },
+                ],
+              }),
+              ...(email && {
+                email: { [Op.like]: `%${email}%` },
+              }),
+              ...(phone_no && {
+                mobile_no: { [Op.like]: `%${phone_no}%` },
+              }),
+            },
           },
-        },
-        {
-          model: Notes,
-          as: "Notes",
-          attributes: ["note_id", "type_of_note", "description"],
-        },
-      ],
+          {
+            model: Notes,
+            as: "Notes",
+            attributes: ["note_id", "type_of_note", "description"],
+          },
+        ],
 
-      limit,
-      offset,
-    });
+        limit,
+        offset,
+      });
     if (!requests) {
       return res.status(404).json({
         message: message_constants.RNF,
@@ -757,9 +731,9 @@ export const cancel_and_block_history: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(total_count / limit),
       currentPage: page_number,
-      total_count: count,
+      total_count: total_count,
     });
   } catch (error) {
     return res.status(500).json({ message: message_constants.ISE });
@@ -787,7 +761,7 @@ export const block_history_unblock: Controller = async (
     const update_status = RequestModel.update(
       {
         request_status: "new",
-        block_reason: null
+        block_reason: null,
       },
       {
         where: {

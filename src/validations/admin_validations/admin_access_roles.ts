@@ -23,7 +23,7 @@ export const access_accountaccess_edit_save_validation = {
     role_name: Joi.string().trim().when('role_id', {
       is: Joi.exist(),
       then: Joi.required(),
-      otherwise: Joi.optional().allow(''), // Allow empty string if role_id is absent (for potential partial updates)
+      otherwise: Joi.optional().allow(''), // Allow empty string if role_id is absent
     }),
     account_type: Joi.string().trim().when('role_id', {
       is: Joi.exist(),

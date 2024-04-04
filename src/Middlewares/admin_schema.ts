@@ -1,6 +1,7 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
 import message_constants from "../public/message_constants";
+import { MyError } from "../interfaces/common_interface";
 // import countryStateCity, { State } from "country-state-city";
 
 export const admin_schema_signup = async (

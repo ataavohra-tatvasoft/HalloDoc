@@ -4,16 +4,14 @@ import User from "../../db/models/user";
 import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
-import Business from "../../db/models/business-vendor";
 import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
-import * as crypto from "crypto";
 import { Op } from "sequelize";
 import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
-import path, { dirname } from "path";
+import path from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
@@ -136,7 +134,7 @@ export const admin_create_request: Controller = async (
     const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
     const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
     const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-    const todaysRequestsCount: any = await RequestModel.count({
+    const todaysRequestsCount: number = await RequestModel.count({
       where: {
         createdAt: {
           [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
@@ -224,591 +222,6 @@ export const admin_create_request_verify: Controller = async (
   }
 };
 
-/**Old API for request */
-export const requests_by_request_state: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { state, firstname, lastname, region, requestor, page, page_size } =
-      req.query as {
-        state: string;
-        firstname: string;
-        lastname: string;
-        region: string;
-        requestor: string;
-        page: string;
-        page_size: string;
-      };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
-    const offset = (page_number - 1) * limit;
-
-    const where_clause_patient = {
-      type_of_user: "patient",
-      ...(firstname && { firstname: { [Op.like]: `%${firstname}%` } }),
-      ...(lastname && { lastname: { [Op.like]: `%${lastname}%` } }),
-      ...(region && { state: region }),
-    };
-
-    switch (state) {
-      case "new": {
-        const formatted_response:  FormattedResponse<any> = {
-          status: true,
-          data: [],
-        };
-        const { count, rows: requests } = await RequestModel.findAndCountAll({
-          where: {
-            request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
-            },
-            request_state: state,
-            ...(requestor ? { requested_by: requestor } : {}),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_by",
-            "requested_date",
-            "patient_id",
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              attributes: [
-                "type_of_user",
-                "user_id",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "address_2",
-              ],
-              where: where_clause_patient,
-            },
-            {
-              model: Requestor,
-              attributes: ["user_id", "first_name", "last_name"],
-            },
-            {
-              model: Notes,
-              attributes: ["note_id", "type_of_note", "description"],
-            },
-          ],
-          limit,
-          offset,
-        });
-
-        var i = offset + 1;
-        for (const request of requests) {
-          const formatted_request: any = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date.toISOString().split("T")[0],
-            patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              DOB: request.Patient.dob.toISOString().split("T")[0],
-              mobile_no: request.Patient.mobile_no,
-              address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
-            },
-            requestor_data: {
-              user_id: request.Requestor?.user_id || null,
-              first_name:
-                request.Requestor?.first_name ||
-                null + " " + request.Requestor?.last_name ||
-                null,
-              last_name: request.Requestor?.last_name || null,
-            },
-            notes: request.Notes?.map((note) => ({
-              note_id: note.note_id,
-              type_of_note: note.type_of_note,
-              description: note.description,
-            })),
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return res.status(200).json({
-          ...formatted_response,
-          totalPages: Math.ceil(count / limit),
-          currentPage: page_number,
-          total_count: count,
-        });
-      }
-      case "pending":
-      case "active": {
-        const formatted_response: any = {
-          status: true,
-          data: [],
-        };
-        const requests = await RequestModel.findAndCountAll({
-          where: {
-            request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
-            },
-            request_state: state,
-            ...(requestor ? { requested_by: requestor } : {}),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_by",
-            "requested_date",
-            "date_of_service",
-            "physician_id",
-            "patient_id",
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "state",
-              ],
-              where: where_clause_patient,
-            },
-            {
-              as: "Physician",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "address_2",
-              ],
-              where: {
-                type_of_user: "physician",
-              },
-            },
-            {
-              model: Requestor,
-              attributes: ["user_id", "first_name", "last_name"],
-            },
-            {
-              model: Notes,
-              attributes: ["note_id", "type_of_note", "description"],
-            },
-          ],
-          limit,
-          offset,
-        });
-
-        var i = offset + 1;
-        for (const request of requests.rows) {
-          const formatted_request: any = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date.toISOString().split("T")[0],
-            date_of_service: request.date_of_service
-              .toISOString()
-              .split("T")[0],
-            patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              DOB: request.Patient.dob.toISOString().split("T")[0],
-              mobile_no: request.Patient.mobile_no,
-              address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
-            },
-            physician_data: {
-              user_id: request.Physician.user_id,
-              name:
-                request.Physician.firstname + " " + request.Physician.lastname,
-              DOB: request.Physician.dob.toISOString().split("T")[0],
-              mobile_no: request.Physician.mobile_no,
-              address:
-                request.Physician.address_1 + " " + request.Physician.address_2,
-            },
-            requestor_data: {
-              user_id: request.Requestor?.user_id || null,
-              first_name:
-                request.Requestor?.first_name ||
-                null + " " + request.Requestor?.last_name ||
-                null,
-              last_name: request.Requestor?.last_name || null,
-            },
-            notes: request.Notes?.map((note) => ({
-              note_id: note.note_id,
-              type_of_note: note.type_of_note,
-              description: note.description,
-            })),
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return res.status(200).json({
-          ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
-          total_count: requests.count,
-        });
-      }
-      case "conclude": {
-        const formatted_response:  FormattedResponse<any> = {
-          status: true,
-          data: [],
-        };
-        const requests = await RequestModel.findAndCountAll({
-          where: {
-            request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
-            },
-            request_state: state,
-            ...(requestor ? { requested_by: requestor } : {}),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_by",
-            "requested_date",
-            "date_of_service",
-            "physician_id",
-            "patient_id",
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "state",
-              ],
-              where: where_clause_patient,
-            },
-            {
-              as: "Physician",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "address_2",
-              ],
-              where: {
-                type_of_user: "physician",
-              },
-            },
-          ],
-          limit,
-          offset,
-        });
-
-        var i = offset + 1;
-        for (const request of requests.rows) {
-          const formatted_request: any = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date.toISOString().split("T")[0],
-            date_of_service: request.date_of_service
-              .toISOString()
-              .split("T")[0],
-            patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              DOB: request.Patient.dob.toISOString().split("T")[0],
-              mobile_no: request.Patient.mobile_no,
-              address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
-            },
-            physician_data: {
-              user_id: request.Physician.user_id,
-              name:
-                request.Physician.firstname + " " + request.Physician.lastname,
-              DOB: request.Physician.dob.toISOString().split("T")[0],
-              mobile_no: request.Physician.mobile_no,
-              address:
-                request.Physician.address_1 + " " + request.Physician.address_2,
-            },
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return res.status(200).json({
-          ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
-          total_count: requests.count,
-        });
-      }
-      case "toclose": {
-        const formatted_response: any = {
-          status: true,
-          data: [],
-        };
-        const requests = await RequestModel.findAndCountAll({
-          where: {
-            request_status: {
-              [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
-            },
-            request_state: state,
-            ...(requestor ? { requested_by: requestor } : {}),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_by",
-            "requested_date",
-            "date_of_service",
-            "physician_id",
-            "patient_id",
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "address_1",
-                "state",
-              ],
-              where: where_clause_patient,
-            },
-            {
-              as: "Physician",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "address_2",
-              ],
-              where: {
-                type_of_user: "physician",
-              },
-            },
-            {
-              model: Notes,
-              attributes: ["note_id", "type_of_note", "description"],
-            },
-          ],
-          limit,
-          offset,
-        });
-
-        var i = offset + 1;
-        for (const request of requests.rows) {
-          const formatted_request: any = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date.toISOString().split("T")[0],
-            date_of_service: request.date_of_service
-              .toISOString()
-              .split("T")[0],
-            patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              DOB: request.Patient.dob.toISOString().split("T")[0],
-              address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
-              region: request.Patient.state,
-            },
-            physician_data: {
-              user_id: request.Physician.user_id,
-              name:
-                request.Physician.firstname + " " + request.Physician.lastname,
-              DOB: request.Physician.dob.toISOString().split("T")[0],
-              mobile_no: request.Physician.mobile_no,
-              address:
-                request.Physician.address_1 + " " + request.Physician.address_2,
-            },
-            notes: request.Notes?.map((note) => ({
-              note_id: note.note_id,
-              type_of_note: note.type_of_note,
-              description: note.description,
-            })),
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return res.status(200).json({
-          ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
-          total_count: requests.count,
-        });
-      }
-      case "unpaid": {
-        const formatted_response: any = {
-          status: true,
-          data: [],
-        };
-        const requests = await RequestModel.findAndCountAll({
-          where: {
-            request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
-            },
-            request_state: state,
-            ...(requestor ? { requested_by: requestor } : {}),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_date",
-            "requested_by",
-            "date_of_service",
-            "physician_id",
-            "patient_id",
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "mobile_no",
-                "address_1",
-                "address_2",
-              ],
-              where: where_clause_patient,
-            },
-            {
-              as: "Physician",
-              model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "dob",
-                "firstname",
-                "lastname",
-              ],
-              where: {
-                type_of_user: "physician",
-              },
-            },
-          ],
-          limit,
-          offset,
-        });
-
-        var i = offset + 1;
-        for (const request of requests.rows) {
-          const formatted_request: any = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            requestor: request.requested_by,
-            confirmationNo: request.confirmation_no,
-            requested_date: request.requested_date.toISOString().split("T")[0],
-            date_of_service: request.date_of_service
-              .toISOString()
-              .split("T")[0],
-            patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              mobile_no: request.Patient.mobile_no,
-              address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
-            },
-            physician_data: {
-              user_id: request.Physician.user_id,
-              name:
-                request.Physician.firstname + " " + request.Physician.lastname,
-              DOB: request.Physician.dob.toISOString().split("T")[0],
-            },
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return res.status(200).json({
-          status: true,
-          ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
-          total_count: requests.count,
-        });
-        // return res.status(200).json({
-        //   formatted_response,
-        // });
-      }
-      default: {
-        return res.status(500).json({ message: message_constants.IS });
-      }
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: message_constants.ISE });
-  }
-};
-
 /**
  * @function manage_requests_by_State
  * @param req - Express request object.
@@ -826,16 +239,11 @@ export const manage_requests_by_State: Controller = async (
   try {
     const { state, firstname, lastname, region, requestor, page, page_size } =
       req.query as {
-        state: string;
-        firstname: string;
-        lastname: string;
-        region: string;
-        requestor: string;
-        page: string;
-        page_size: string;
+        [key: string]: string;
+
       };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const where_clausePatient = {
@@ -845,7 +253,7 @@ export const manage_requests_by_State: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handle_request_state = async (additionalAttributes?: any) => {
+    const handle_request_state = async (additionalAttributes?: Array<string>) => {
       const formatted_response:  FormattedResponse<any> = {
         status: true,
         data: [],
@@ -1067,15 +475,10 @@ export const requests_by_request_state_refactored: Controller = async (
 ) => {
   try {
     const { state, search, region, requestor, page, page_size } = req.query as {
-      state: string;
-      search: string;
-      region: string;
-      requestor: string;
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+      [key: string]: string;
+    };;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const where_clause_patient = {
@@ -1089,7 +492,7 @@ export const requests_by_request_state_refactored: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handle_request_state = async (additionalAttributes?: any) => {
+    const handle_request_state = async (additionalAttributes?:  Array<string>) => {
       const formatted_response:  FormattedResponse<any> = {
         status: true,
         data: [],
@@ -1564,7 +967,10 @@ export const assign_request_region_physician: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const { region } = req.query as { region: string };
+    const { region } = req.query as {
+      [key: string]: string;
+
+    };;
     var i = 1;
     const formatted_response: any = {
       status: true,
@@ -1762,7 +1168,10 @@ export const transfer_request_region_physicians: Controller = async (
 ) => {
   try {
     // const {confirmation_no} = req.params;
-    const { region } = req.query as { region: string };
+    const { region } = req.query as {
+      [key: string]: string;
+
+    };;
     var i = 1;
     const formatted_response:  FormattedResponse<any> = {
       status: true,

@@ -5,7 +5,6 @@ import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
 import Shifts from "../../../db/models/shifts";
 import { DATE, Op } from "sequelize";
-import { start } from "repl";
 import Role from "../../../db/models/role";
 
 /** Configs */
@@ -19,14 +18,9 @@ export const provider_shifts_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, type_of_shift, page, page_size } = req.query as {
-      region: string;
-      type_of_shift: string;
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const { region, type_of_shift, page, page_size } = req.query ;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const formatted_response:  FormattedResponse<any> = {
@@ -121,12 +115,9 @@ export const provider_on_call: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, page_size } = req.query as {
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const { page, page_size } = req.query ;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const formatted_response: any = {
@@ -193,12 +184,7 @@ export const requested_shifts: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, view_current_month_shift, page, page_size } = req.query as {
-      region: string;
-      view_current_month_shift: string;
-      page: string;
-      page_size: string;
-    };
+    const { region, view_current_month_shift, page, page_size } = req.query ;
     function get_current_month(): [number, number] {
       const today = new Date();
       const year = today.getFullYear();
@@ -207,8 +193,8 @@ export const requested_shifts: Controller = async (
     }
 
     const [currentYear, currentMonth] = get_current_month();
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const formatted_response:  FormattedResponse<any> = {
@@ -302,9 +288,8 @@ export const approve_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query as {
-      shift_id: string;
-    };
+    const { shift_id } = req.query ;
+    const numeric_shift_id = Number(shift_id);
 
     const shifts = Shifts.update(
       {
@@ -312,7 +297,7 @@ export const approve_selected: Controller = async (
       },
       {
         where: {
-          shift_id,
+          shift_id: numeric_shift_id,
         },
       }
     );
@@ -337,13 +322,12 @@ export const delete_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query as {
-      shift_id: string;
-    };
+    const { shift_id } = req.query ;
+    const numeric_shift_id = Number(shift_id);
 
     const shifts = Shifts.destroy({
       where: {
-        shift_id,
+        shift_id: numeric_shift_id,
       },
     });
     if (!shifts) {
@@ -373,15 +357,7 @@ export const create_shift: Controller = async (
       end,
       repeat_days,
       repeat_end,
-    } = req.body as {
-      region: string;
-      physician: string;
-      shift_date: any;
-      start: any;
-      end: any;
-      repeat_days: any;
-      repeat_end: any;
-    };
+    } = req.body ;
     console.log(physician);
     const firstname = physician.split(" ")[0];
     const lastname = physician.split(" ")[1];
@@ -429,16 +405,16 @@ export const view_shift: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query as {
-      shift_id: string;
-    };
+    const { shift_id } = req.query ;
+    const numeric_shift_id = Number(shift_id);
+
     const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
     const shift = await Shifts.findOne({
       where: {
-        shift_id,
+        shift_id: numeric_shift_id,
       },
       attributes: ["region", "physician", "shift_date", "start", "end"],
     });
@@ -448,14 +424,14 @@ export const view_shift: Controller = async (
         message: message_constants.NF,
       });
     }
-    const formatted_request_1: any = {
+    const formatted_request: any = {
       region: shift.region,
       physician: shift.physician,
       shift_date: shift.shift_date.toISOString().split("T")[0],
       start: shift.start,
       end: shift.end,
     };
-    formatted_response.data.push(formatted_request_1);
+    formatted_response.data.push(formatted_request);
 
     return res.status(200).json({
       ...formatted_response,

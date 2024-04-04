@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../db/models/user";
 import Region from "../../db/models/region";
-import { Controller } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+  verified_token,
+} from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -29,16 +33,16 @@ export const admin_profile_view: Controller = async (
   try {
     const { authorization } = req.headers as { authorization: string };
     const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
+    const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    );
-    const formattedResponse: any = {
+    ) as verified_token;
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    console.log(verifiedToken);
-    const admin_id = verifiedToken.user_id;
+    console.log(verified_token);
+    const admin_id = verified_token.user_id;
     const profile = await User.findOne({
       where: {
         user_id: admin_id,
@@ -114,10 +118,10 @@ export const admin_profile_view: Controller = async (
         billing_mobile_no: profile.billing_mobile_no,
       },
     };
-    formattedResponse.data.push(formattedRequest);
+    formatted_response.data.push(formattedRequest);
 
     return res.status(200).json({
-      ...formattedResponse,
+      ...formatted_response,
     });
   } catch (error) {
     console.log(error);
@@ -148,6 +152,10 @@ export const admin_profile_reset_password: Controller = async (
         user_id,
       },
     });
+
+    if (!user_data) {
+      return res.status(200).json({ status: message_constants.UNF });
+    }
     if (user_data) {
       const updatePassword = await User.update(
         { password: hashedPassword },
@@ -157,12 +165,16 @@ export const admin_profile_reset_password: Controller = async (
           },
         }
       );
+
+      if (!updatePassword) {
+        return res.status(200).json({ status: message_constants.EWU });
+      }
       if (updatePassword) {
-        res.status(200).json({ status: message_constants.Success });
+        return res.status(200).json({ status: message_constants.Success });
       }
     }
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -198,13 +210,13 @@ export const admin_profile_edit: Controller = async (
       billing_mobile_no,
     } = req.body;
 
-    const adminprofile = await User.findOne({
+    const admin_profile = await User.findOne({
       where: {
         user_id,
       },
     });
 
-    if (!adminprofile) {
+    if (!admin_profile) {
       return res.status(404).json({ error: message_constants.ANF });
     }
 
@@ -253,7 +265,7 @@ export const admin_profile_edit: Controller = async (
         if (value) {
           const is_exist = await UserRegionMapping.findOne({
             where: {
-              user_id: adminprofile.user_id,
+              user_id: admin_profile.user_id,
               region_id: region_data?.region_id,
             },
           });
@@ -261,12 +273,12 @@ export const admin_profile_edit: Controller = async (
           if (is_exist) {
             const mapping = await UserRegionMapping.update(
               {
-                user_id: adminprofile.user_id,
+                user_id: admin_profile.user_id,
                 region_id: region_data?.region_id,
               },
               {
                 where: {
-                  user_id: adminprofile.user_id,
+                  user_id: admin_profile.user_id,
                   region_id: region_data?.region_id,
                 },
               }
@@ -279,7 +291,7 @@ export const admin_profile_edit: Controller = async (
             }
           } else {
             const mapping = await UserRegionMapping.create({
-              user_id: adminprofile.user_id,
+              user_id: admin_profile.user_id,
               region_id: region_data?.region_id,
             });
 
@@ -292,7 +304,7 @@ export const admin_profile_edit: Controller = async (
         } else {
           const is_exist = await UserRegionMapping.findOne({
             where: {
-              user_id: adminprofile.user_id,
+              user_id: admin_profile.user_id,
               region_id: region_data?.region_id,
             },
           });
@@ -300,7 +312,7 @@ export const admin_profile_edit: Controller = async (
           if (is_exist) {
             const delete_mapping = await UserRegionMapping.destroy({
               where: {
-                user_id: adminprofile.user_id,
+                user_id: admin_profile.user_id,
                 region_id: region_data?.region_id,
               },
             });
@@ -322,378 +334,4 @@ export const admin_profile_edit: Controller = async (
   }
 };
 
-export const admin_profile_admin_info_edit: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const {
-      user_id,
-      firstname,
-      lastname,
-      email,
-      mobile_no,
-      district_of_columbia,
-      new_york,
-      virginia,
-      maryland,
-    } = req.body;
-    // const { admin_id } = req.params;
-    const adminprofile = await User.findOne({
-      where: {
-        user_id,
-      },
-    });
-    if (!adminprofile) {
-      return res.status(404).json({ error: message_constants.ANF });
-    }
-    const updatestatus = await User.update(
-      {
-        firstname,
-        lastname,
-        email,
-        mobile_no,
-      },
-      {
-        where: {
-          user_id,
-        },
-      }
-    );
-    if (!updatestatus) {
-      return res.status(500).json({ status: message_constants.EWU });
-    }
-    if (district_of_columbia == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "District of Columbia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: adminprofile.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "District of Columbia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (new_york == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "New York",
-        },
-        attributes: ["region_id"],
-      });
 
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: adminprofile.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "New York",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (virginia == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Virginia",
-        },
-        attributes: ["region_id"],
-      });
-
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: adminprofile.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Virginia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (maryland == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Maryland",
-        },
-        attributes: ["region_id"],
-      });
-
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: adminprofile.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Maryland",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: adminprofile.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: adminprofile.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    return res.status(200).json({ status: message_constants.US });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
-  }
-};
-export const admin_profile_mailing_billling_info_edit: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  {
-    try {
-      const {
-        user_id,
-        address_1,
-        address_2,
-        city,
-        state,
-        zip,
-        billing_mobile_no,
-      } = req.body;
-      // const { admin_id } = req.params;
-      const adminprofile = await User.findOne({
-        where: {
-          user_id,
-        },
-      });
-      if (!adminprofile) {
-        return res.status(404).json({ error: message_constants.ANF });
-      }
-      const updatestatus = await User.update(
-        {
-          address_1,
-          address_2,
-          city,
-          state,
-          zip,
-          billing_mobile_no,
-        },
-        {
-          where: {
-            user_id,
-          },
-        }
-      );
-      if (updatestatus) {
-        return res.status(200).json({ status: message_constants.US });
-      }
-    } catch (error) {
-      return res.status(500).json({ error: message_constants.ISE });
-    }
-  }
-};

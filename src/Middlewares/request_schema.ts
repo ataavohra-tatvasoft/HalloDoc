@@ -1,6 +1,8 @@
 import Joi, { Schema } from "joi";
 import { Request, Response, NextFunction } from "express";
 import message_constants from "../public/message_constants";
+import { error } from "console";
+import { MyError } from "../interfaces/common_interface";
 
 export const request_schema = async (
   req: Request,
@@ -93,7 +95,7 @@ export const request_schema = async (
          { abortEarly: false });
 
     next();
-  } catch (error: any) {
+  } catch (error: any ) {
     return res.status(500).json({
       status: false,
       errormessage: error.message,

@@ -31,12 +31,9 @@ export const access_accountaccess: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, page_size } = req.query as {
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const { page, page_size } = req.query ;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
     const formatted_response:  FormattedResponse<any> = {
       status: true,

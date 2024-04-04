@@ -3,6 +3,8 @@ import { Controller, FormattedResponse } from "../../interfaces/common_interface
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor";
+import { WhereOptions } from "sequelize";
+import { BusinessAttributes } from "../../interfaces/business-vendor";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -13,22 +15,22 @@ export const partner_vendor_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { firstname, lastname, profession, page, page_size } = req.query as {
-      firstname: string;
-      lastname: string;
-      profession: string;
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const { vendor, profession, page, page_size } = req.query as {  [key: string] : string} ;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const formatted_response:  FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const { count, rows: businesses } = await Business.findAndCountAll({
+    const where_clause : WhereOptions<BusinessAttributes> = {
+        ...(vendor && { business_name : vendor }),
+        ...(profession && { profession }),
+      };
+  
+
+    const { count: total_count, rows: businesses } = await Business.findAndCountAll({
       attributes: [
         "business_id",
         "profession",
@@ -38,11 +40,8 @@ export const partner_vendor_list: Controller = async (
         "mobile_no",
         "business_contact",
       ],
-      where: {
-        ...(firstname && { firstname: firstname }),
-        ...(lastname && { lastname: lastname }),
-        ...(profession && { profession: profession }),
-      },
+      where: where_clause,
+
     });
     if (!businesses) {
       return res.status(404).json({
@@ -67,9 +66,9 @@ export const partner_vendor_list: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(total_count / limit),
       currentPage: page_number,
-      total_count: count,
+      total_count: total_count,
     });
   } catch (error) {
     res.status(500).json({ message: message_constants.ISE });
@@ -93,19 +92,8 @@ export const add_business: Controller = async (
       city,
       state,
       zip,
-    } = req.body as {
-      business_name: string;
-      profession: string;
-      fax_number: number;
-      mobile_no: number;
-      email: string;
-      business_contact: number;
-      street: string;
-      city: string;
-      state: string;
-      zip: number;
-    };
-
+    } = req.body;
+    
     const status = await Business.create({
       business_name,
       profession,
@@ -160,18 +148,7 @@ export const update_business: Controller = async (
       city,
       state,
       zip,
-    } = req.body as {
-      business_name: string;
-      profession: string;
-      fax_number: number;
-      mobile_no: number;
-      email: string;
-      business_contact: number;
-      street: string;
-      city: string;
-      state: string;
-      zip: number;
-    };
+    } = req.body 
 
     const status = await Business.update(
       {
@@ -235,6 +212,6 @@ export const delete_vendor: Controller = async (
       message: message_constants.Success,
     });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };

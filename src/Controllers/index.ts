@@ -18,3 +18,5 @@ export * from "./provider_controllers/provider_dashboard_menu";
 export * from "./common_controllers/common_controllers";
 export * from "./common_controllers/common_request_actions"
 
+/**Removed Controllers */
+export * from "./removed_controllers/removed_controller";

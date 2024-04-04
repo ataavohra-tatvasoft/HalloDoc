@@ -63,9 +63,9 @@ export const region_for_request_states: Controller = async (
     if (!regions) {
       return res.status(404).json({ error: message_constants.EFRD });
     }
-    const uniqueRegions = [...new Set(regions.map((region) => region.state))];
+    const unique_regions = [...new Set(regions.map((region) => region.state))];
 
-    for (const region of uniqueRegions) {
+    for (const region of unique_regions) {
       const formatted_request: any = {
         region_name: region,
       };
@@ -95,9 +95,9 @@ export const transfer_request_regions: Controller = async (
     if (!regions) {
       return res.status(404).json({ error: message_constants.EFRD });
     }
-    const uniqueRegions = [...new Set(regions.map((region) => region.state))];
+    const unique_regions = [...new Set(regions.map((region) => region.state))];
 
-    for (const region of uniqueRegions) {
+    for (const region of unique_regions) {
       const formatted_request: any = {
         region_name: region,
       };
@@ -212,15 +212,11 @@ export const export_single: Controller = async (
 ) => {
   try {
     const { state, search, region, requestor, page, page_size } = req.query as {
-      state: string;
-      search: string;
-      region: string;
-      requestor: string;
-      page: string;
-      page_size: string;
+      [key: string]: string;
+
     };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const where_clause_patient = {
@@ -475,14 +471,11 @@ export const export_all: Controller = async (
 ) => {
   try {
     const { search, region, requestor, page, page_size } = req.query as {
-      search: string;
-      region: string;
-      requestor: string;
-      page: string;
-      page_size: string;
-    };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+      [key: string]: string;
+
+    }; ;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
     const zip = new JSZip();
 
@@ -811,9 +804,10 @@ export const roles: Controller = async (
 ) => {
   {
     try {
-      const { account_type } = req.query as {
-        account_type: string;
-      };
+      const { account_type } = req.query  as {
+        [key: string]: string;
+  
+      };;
       const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],

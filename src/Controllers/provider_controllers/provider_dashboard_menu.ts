@@ -5,7 +5,7 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, verified_token } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
@@ -17,12 +17,12 @@ import path, { dirname } from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
+import { string } from "joi";
 
 /** Configs */
 dotenv.config({ path: `.env` });
 
 /**                              Provider in Dashboard                                       */
-
 
 export const requests_by_request_state_provider: Controller = async (
   req: Request,
@@ -33,21 +33,17 @@ export const requests_by_request_state_provider: Controller = async (
     const { authorization } = req.headers as { authorization: string };
 
     const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
+    const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    );
-    const provider_id = verifiedToken.user_id;
+    ) as verified_token;
+    const provider_id = verified_token.user_id;
 
     const { state, search, requestor, page, page_size } = req.query as {
-      state: string;
-      search: string;
-      requestor: string;
-      page: string;
-      page_size: string;
+      [key: string]: string;
     };
-    const page_number = parseInt(page) || 1;
-    const limit = parseInt(page_size) || 10;
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
     const where_clause_patient = {
@@ -190,17 +186,17 @@ export const provider_accept_request: Controller = async (
     const { confirmation_no } = req.params;
 
     const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
+    const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    );
-    const provider_id = verifiedToken.user_id;
+    ) as verified_token;
+    const provider_id = verified_token.user_id;
 
     const is_request = await RequestModel.findOne({
       where: {
         confirmation_no,
-        request_state:"new",
-        physician_id:provider_id
+        request_state: "new",
+        physician_id: provider_id,
       },
       attributes: ["request_id"],
     });
@@ -248,11 +244,11 @@ export const transfer_request_provider: Controller = async (
     const { authorization } = req.headers as { authorization: string };
 
     const token: string = authorization.split(" ")[1];
-    const verifiedToken: any = jwt.verify(
+    const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    );
-    const provider_id = verifiedToken.user_id;
+    ) as verified_token;
+    const provider_id = verified_token.user_id;
 
     const request = await RequestModel.findOne({
       where: {
@@ -267,7 +263,7 @@ export const transfer_request_provider: Controller = async (
           ],
         },
       },
-      attributes:["request_id"]
+      attributes: ["request_id"],
     });
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
@@ -277,7 +273,7 @@ export const transfer_request_provider: Controller = async (
       {
         physician_id: null,
         request_state: "new",
-        request_status: "unassigned"
+        request_status: "unassigned",
       },
       {
         where: {
@@ -390,7 +386,8 @@ export const view_notes_for_request_provider: Controller = async (
       ...formatted_response,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 export const save_view_notes_for_request_provider: Controller = async (
@@ -449,6 +446,7 @@ export const save_view_notes_for_request_provider: Controller = async (
       message: "Successfull !!!",
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };

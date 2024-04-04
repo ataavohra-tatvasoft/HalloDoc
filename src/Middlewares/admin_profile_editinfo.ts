@@ -33,7 +33,7 @@ export const admin_profile_info_edit_middleware = async (
     );
 
     next();
-  } catch (error: any) {
+  } catch (error:any) {
     return res.status(500).json({
       status: false,
       errormessage: error.message,
