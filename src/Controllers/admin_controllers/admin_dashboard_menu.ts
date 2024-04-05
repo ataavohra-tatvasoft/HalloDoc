@@ -4,7 +4,10 @@ import User from "../../db/models/user";
 import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
-import { Controller, FormattedResponse } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+} from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
@@ -240,7 +243,6 @@ export const manage_requests_by_State: Controller = async (
     const { state, firstname, lastname, region, requestor, page, page_size } =
       req.query as {
         [key: string]: string;
-
       };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
@@ -253,8 +255,10 @@ export const manage_requests_by_State: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handle_request_state = async (additionalAttributes?: Array<string>) => {
-      const formatted_response:  FormattedResponse<any> = {
+    const handle_request_state = async (
+      additionalAttributes?: Array<string>
+    ) => {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -435,7 +439,7 @@ export const requests_by_request_state_counts: Controller = async (
       "toclose",
       "unpaid",
     ];
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -476,7 +480,7 @@ export const requests_by_request_state_refactored: Controller = async (
   try {
     const { state, search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
-    };;
+    };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
@@ -492,8 +496,10 @@ export const requests_by_request_state_refactored: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handle_request_state = async (additionalAttributes?:  Array<string>) => {
-      const formatted_response:  FormattedResponse<any> = {
+    const handle_request_state = async (
+      additionalAttributes?: Array<string>
+    ) => {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -689,7 +695,7 @@ export const view_notes_for_request: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -833,7 +839,7 @@ export const cancel_case_for_request_view_data: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -969,8 +975,7 @@ export const assign_request_region_physician: Controller = async (
     const { confirmation_no } = req.params;
     const { region } = req.query as {
       [key: string]: string;
-
-    };;
+    };
     var i = 1;
     const formatted_response: any = {
       status: true,
@@ -1170,10 +1175,9 @@ export const transfer_request_region_physicians: Controller = async (
     // const {confirmation_no} = req.params;
     const { region } = req.query as {
       [key: string]: string;
-
-    };;
+    };
     var i = 1;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       // confirmation_no: confirmation_no,
       data: [],
@@ -1247,9 +1251,9 @@ export const transfer_request: Controller = async (
     // const physician_id = provider.user_id;
     await RequestModel.update(
       {
-      physician_id: provider.user_id,
-      request_state: "new",
-      request_status: "assigned"
+        physician_id: provider.user_id,
+        request_state: "new",
+        request_status: "assigned",
       },
       {
         where: {
@@ -1386,7 +1390,7 @@ export const close_case_for_request_view_details: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -1629,21 +1633,6 @@ export const admin_send_link: Controller = async (
 ) => {
   try {
     const { firstname, lastname, mobile_no, email } = req.body;
-    const user = await User.findOne({
-      where: {
-        firstname,
-        lastname,
-        mobile_no,
-        email,
-        type_of_user: "patient",
-      },
-    });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ status: false, message: message_constants.UNF });
-    }
-
     const create_request_link = "https://localhost:3000/createRequest";
 
     if (email) {
@@ -1683,10 +1672,12 @@ export const admin_send_link: Controller = async (
       }
       const email_log = await Logs.create({
         type_of_log: "Email",
-        recipient: user.firstname + " " + user.lastname,
+        // recipient: user.firstname + " " + user.lastname,
+        recipient: firstname + " " + lastname,
         action: "For Sending Request Link",
         role_name: "Admin",
-        email: user.email,
+        // email: user.email,
+        email: email,
         sent: "Yes",
       });
 
@@ -1698,40 +1689,43 @@ export const admin_send_link: Controller = async (
     }
 
     if (mobile_no) {
-      const account_sid = "AC755f57f9b0f3440c6d2a207bd5678bdd";
-      const auth_token = "a795f37433f7542bea73622828e66841";
+      const account_sid = process.env.TWILIO_ACCOUNT_SID;
+      const auth_token = process.env.TWILIO_AUTH_TOKEN;
       const client = twilio(account_sid, auth_token);
+
 
       client.messages
         .create({
           body: `Link for creating request for patient. Link :- ${create_request_link}`,
-          from: "+15187597839",
+          from: process.env.TWILIO_MOBILE_NO,
           to: "+91" + mobile_no,
         })
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));
-    }
+   
+        const SMS_log = await Logs.create({
+          type_of_log: "SMS",
+          // recipient: user.firstname + " " + user.lastname,
+          recipient: firstname + " " + lastname,
+          action: "For Sending Request Link",
+          role_name: "Admin",
+          // mobile_no: user.mobile_no,
+          mobile_no: mobile_no,
+          sent: "Yes",
+        });
+        if (!SMS_log) {
+          return res.status(500).json({
+            message: message_constants.EWCL,
+          });
+        }
+      }
 
-    const SMS_log = await Logs.create({
-      type_of_log: "SMS",
-      recipient: user.firstname + " " + user.lastname,
-      action: "For Sending Request Link",
-      role_name: "Admin",
-      mobile_no: user.mobile_no,
-      sent: "Yes",
-    });
-
-    if (!SMS_log) {
-      return res.status(500).json({
-        message: message_constants.EWCL,
-      });
-    }
     return res.status(200).json({
       status: true,
       message: message_constants.CRLS,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
