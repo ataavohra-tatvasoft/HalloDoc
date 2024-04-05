@@ -127,7 +127,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('request');
-
+    await queryInterface.dropTable("request");
   },
 };

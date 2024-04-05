@@ -1,47 +1,53 @@
-import joi from "joi";
+import { Joi } from "celebrate";
 
 export const partner_vendor_list_validation = {
-  query: joi.object({
-    firstname: joi.string().allow("", null).optional(),
-    lastname: joi.string().allow("", null).optional(),
-    profession: joi.string().allow("", null).optional(),
-    page: joi.number().integer().min(1).optional(),
-    page_size: joi.number().integer().min(1).optional(),
+  query: Joi.object({
+    firstname: Joi.string().allow("", null).optional(),
+    lastname: Joi.string().allow("", null).optional(),
+    profession: Joi.string().allow("", null).optional(),
+    page: Joi.number().integer().min(1).optional(),
+    page_size: Joi.number().integer().min(1).optional(),
   }),
 };
 
 export const add_business_validation = {
-  body: joi.object({
-    business_name: joi.string().required(),
-    profession: joi.string().required(),
-    fax_number: joi.number().allow(null).optional(),
-    mobile_no: joi.number().required(),
-    email: joi.string().email().required(),
-    business_contact: joi.number().required(),
-    street: joi.string().required(),
-    city: joi.string().required(),
-    state: joi.string().required(),
-    zip: joi.number().required(),
+  body: Joi.object({
+    business_name: Joi.string().required(),
+    profession: Joi.string().required(),
+    fax_number: Joi.number().allow(null).optional(),
+    mobile_no: Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .required(),
+    email: Joi.string().email().required(),
+    business_contact: Joi.number().required(),
+    street: Joi.string().required(),
+    city: Joi.string().required(),
+    state: Joi.string().required(),
+    zip: Joi.number().required(),
   }),
 };
 
 export const update_business_validation = {
-  body: joi.object({
-    business_name: joi.string().required(),
-    profession: joi.string().required(),
-    fax_number: joi.number().allow(null).optional(),
-    mobile_no: joi.number().required(),
-    email: joi.string().email().required(),
-    business_contact: joi.number().required(),
-    street: joi.string().required(),
-    city: joi.string().required(),
-    state: joi.string().required(),
-    zip: joi.number().required(),
+  body: Joi.object({
+    business_name: Joi.string().required(),
+    profession: Joi.string().required(),
+    fax_number: Joi.number().allow(null).optional(),
+    mobile_no: Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
+    email: Joi.string().email().required(),
+    business_contact: Joi.number().required(),
+    street: Joi.string().required(),
+    city: Joi.string().required(),
+    state: Joi.string().required(),
+    zip: Joi.number().required(),
   }),
 };
 
 export const delete_vendor_validation = {
-  params: joi.object({
-    business_id: joi.number().required(),
+  params: Joi.object({
+    business_id: Joi.number().required(),
   }),
 };

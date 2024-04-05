@@ -19,10 +19,10 @@ export interface UserAttributes {
   country_code?: string | null;
   zip: number | null;
   role_id?: number | null;
+  status?: string | null;
 
   // Admin-specific fields (optional)
   billing_mobile_no?: number | null;
-  status?: string | null;
 
   // Patient-specific fields (optional)
   dob?: Date | null;
@@ -75,8 +75,8 @@ export interface UserCreationAttributes
     | "country_code"
     | "zip"
     | "role_id"
-    | "billing_mobile_no"
     | "status"
+    | "billing_mobile_no"
     | "dob"
     | "medical_licence"
     | "NPI_no"

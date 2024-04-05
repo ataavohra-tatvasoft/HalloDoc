@@ -50,7 +50,8 @@ import {
   request_support_validation,
   admin_send_link_validation,
   admin_create_request_validation,
-  admin_create_request_verify_validation
+  admin_create_request_verify_validation,
+  requests_by_request_state_refactored_validation
 } from "../../validations";
 import { upload } from "../../utils";
 const router: Router = express.Router();
@@ -103,6 +104,7 @@ router.get(
 router.get(
   "/dashboard/requests",
   authmiddleware,
+  celebrate(requests_by_request_state_refactored_validation),
   requests_by_request_state_refactored
 );
 

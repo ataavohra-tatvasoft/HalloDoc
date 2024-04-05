@@ -198,7 +198,7 @@ export const contact_provider: Controller = async (
       await client.messages.create({
         body: `Message from admin: ${message}`,
         from: "+15187597839",
-        to: "+91" + mobile_no,
+        to: "+" + mobile_no,
       });
 
       return res.status(200).json({
@@ -351,7 +351,7 @@ export const physician_account_reset_password: Controller = async (
     });
     if (user_data) {
       const updatePassword = await User.update(
-        { password: hashedPassword },
+        { password: hashedPassword, status: "active" },
         {
           where: {
             user_id,
@@ -865,6 +865,7 @@ export const create_provider_account_refactored: Controller = async (
     }
     const user = await User.create({
       type_of_user: "physician",
+      status: "active",
       username,
       password: hashed_password,
       role_id: is_role.role_id,

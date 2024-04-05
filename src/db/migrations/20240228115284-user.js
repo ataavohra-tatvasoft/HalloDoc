@@ -85,16 +85,17 @@ module.exports = {
           onUpdate: "CASCADE",
         },
       },
+      status: {
+        type: Sequelize.ENUM("active","pending","in-active"),
+        allowNull: false,
+        defaultValue:"pending",
+      },
 
       // Admin-specific fields
       billing_mobile_no: {
         type: Sequelize.BIGINT,
         allowNull: true,
         unique: true,
-      },
-      status: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
 
       // Patient-specific fields

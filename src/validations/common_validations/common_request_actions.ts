@@ -74,10 +74,10 @@ export const send_agreement_validation = {
     confirmation_no: Joi.string().required(),
   }),
   body: Joi.object({
-    mobile_no: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .required(),
+    mobile_no:Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
     email: Joi.string().email().required(),
   }),
 };

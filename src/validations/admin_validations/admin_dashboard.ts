@@ -6,8 +6,8 @@ export const admin_create_request_validation = {
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     phone_number: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
+      .trim()
+      .pattern(/^\d{11,13}$/)
       .required(),
     email: Joi.string().email().required(),
     DOB: Joi.date().iso().required(),
@@ -49,7 +49,19 @@ export const manage_requests_by_state_validation = {
     page_size: Joi.number().integer().min(1),
   }),
 };
-
+export const requests_by_request_state_refactored_validation = {
+  query: Joi.object({
+    state: Joi.string()
+      .trim()
+      .valid("new", "pending", "active", "conclude", "toclose", "unpaid")
+      .required(),
+    search: Joi.string().trim().optional().allow(""), // Allow empty string for search
+    region: Joi.string().trim().optional().allow(""), // Allow empty string for region
+    requestor: Joi.string().trim().optional().allow(""), // Allow empty string for requestor
+    page: Joi.number().integer().positive().optional(),
+    page_size: Joi.number().integer().positive().optional(),
+  }),
+};
 /**Admin Request Actions */
 
 //View and Save Notes
@@ -162,9 +174,9 @@ export const close_case_for_request_edit_validation = {
     lastname: Joi.string().required(),
     dob: Joi.date().required(), // Ensures valid date format
     mobile_no: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .required(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     email: Joi.string().email().required(),
   }),
 };
@@ -187,7 +199,10 @@ export const admin_send_link_validation = {
   body: Joi.object({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    mobile_no: Joi.string().optional().allow(""),
+    mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     email: Joi.string().email().optional().allow(""),
   }),
 };

@@ -85,9 +85,9 @@ export const access_useraccess_edit_save_validation = {
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     mobile_no: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .required(),
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
     address_1: Joi.string().trim().required(),
     address_2: Joi.string().trim().optional().allow(""),
     city: Joi.string().trim().required(),

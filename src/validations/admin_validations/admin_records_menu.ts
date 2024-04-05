@@ -6,7 +6,10 @@ export const patient_history_validation = {
     firstname: Joi.string().allow("").optional(),
     lastname: Joi.string().allow("").optional(),
     email: Joi.string().email().allow("").optional(),
-    phone_no: Joi.any().allow("").optional(), // Adjust based on your phone number validation requirements
+    phone_no: Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(), // Adjust based on your phone number validation requirements
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
@@ -70,7 +73,10 @@ export const search_records_validation = {
     to_date_of_service: Joi.any().allow(""),
     provider_name: Joi.string().allow(""),
     email: Joi.string().email().allow(""),
-    phone_no: Joi.any().allow(""),
+    phone_no: Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),
@@ -100,7 +106,10 @@ export const logs_history_validation = {
     search_by_role: Joi.string().allow(""),
     receiver_name: Joi.string().allow(""),
     email_id: Joi.string().email().allow(""),
-    mobile_no: Joi.any().allow(""),
+    mobile_no: Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
     created_date: Joi.any().allow(""),
     sent_date: Joi.any().allow(""),
     page: Joi.string()
@@ -122,7 +131,10 @@ export const cancel_and_block_history_validation = {
     name: Joi.string().allow(""),
     date: Joi.any().allow(""),
     email: Joi.string().email().allow(""),
-    phone_no: Joi.any().allow(""),
+    phone_no:Joi.string()
+    .trim()
+    .pattern(/^\d{11,13}$/)
+    .optional(),
     page: Joi.string()
       .required()
       .pattern(/^\d+$/, "page must be a positive integer"),

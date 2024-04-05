@@ -19,12 +19,6 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
   })
   request_id: number;
 
-  @BelongsTo(() => Request, {
-    foreignKey: "request_id",
-    targetKey: "request_id",
-  })
-  request: Request; // Optional association for Request
-
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,

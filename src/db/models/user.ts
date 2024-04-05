@@ -121,18 +121,19 @@ export default class User extends Model<
   })
   role_id: number;
 
+  @Column({
+    type: DataType.ENUM("active","pending","in-active"),
+    allowNull: false,
+    defaultValue:"pending",
+  })
+  status: string;
+
   // Admin-specific fields
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
   })
   billing_mobile_no: bigint;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  status: string;
 
   // Patient-specific fields
   @Column({

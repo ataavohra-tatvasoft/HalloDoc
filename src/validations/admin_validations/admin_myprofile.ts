@@ -17,7 +17,7 @@ export const admin_profile_edit_validation = {
     confirm_email: Joi.ref("email"),
     mobile_no: Joi.string()
       .trim()
-      .pattern(/^\d{10}$/)
+      .pattern(/^\d{11,13}$/)
       .optional(),
 
     // Optional address fields
@@ -29,8 +29,7 @@ export const admin_profile_edit_validation = {
 
     billing_mobile_no: Joi.string()
       .trim()
-      .pattern(/^\d{10}$/)
-      .allow(null, "")
+      .pattern(/^\d{11,13}$/)
       .optional(),
 
     district_of_columbia: Joi.boolean().allow(null).optional(),
@@ -40,38 +39,3 @@ export const admin_profile_edit_validation = {
   }),
 };
 
-export const admin_profile_admin_info_edit_validation = {
-  body: Joi.object({
-    firstname: Joi.string().trim().required(),
-    lastname: Joi.string().trim().required(),
-    email: Joi.string().email().required(),
-    confirm_email: Joi.ref("email"),
-    mobile_no: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .required(),
-    district_of_columbia: Joi.boolean().optional(),
-    new_york: Joi.boolean().optional(),
-    virginia: Joi.boolean().optional(),
-    maryland: Joi.boolean().optional(),
-    user_id: Joi.number().required(),
-  }).required(),
-};
-
-export const admin_profile_mailing_billling_info_edit_validation = {
-  body: Joi.object({
-    user_id: Joi.number().required(),
-    address_1: Joi.string().trim().required(),
-    address_2: Joi.string().trim().allow(""), // Optional field
-    city: Joi.string().trim().required(),
-    state: Joi.string().length(2).uppercase().required(),
-    zip: Joi.string()
-      .length(5)
-      .pattern(/^[0-9]+$/)
-      .required(),
-    billing_mobile_no: Joi.string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .allow(""), // Optional field
-  }).required(),
-};

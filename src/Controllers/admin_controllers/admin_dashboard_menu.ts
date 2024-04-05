@@ -112,82 +112,170 @@ export const admin_create_request: Controller = async (
       },
     } = req;
 
-    const patient_data = await User.create({
-      type_of_user: "patient",
-      firstname,
-      lastname,
-      mobile_no: phone_number,
-      email,
-      dob: new Date(DOB),
-      street,
-      city,
-      state,
-      zip,
-      address_1: room,
-    });
-
-    if (!patient_data) {
-      return res.status(400).json({
-        status: false,
-        message: message_constants.EWCA,
-      });
-    }
-
-    const today = new Date();
-    const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-    const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-    const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-    const todaysRequestsCount: number = await RequestModel.count({
+    const is_patient = await User.findOne({
       where: {
-        createdAt: {
-          [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
-          [Op.lt]: `${today.toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-        },
+        type_of_user: "patient",
+        email,
       },
     });
-    const confirmation_no = `${patient_data.state.slice(
-      0,
-      2
-    )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
-      0,
-      2
-    )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
 
-    const request_data = await RequestModel.create({
-      request_state: "new",
-      patient_id: patient_data.user_id,
-      requested_by: "admin",
-      requested_date: new Date(),
-      confirmation_no: confirmation_no,
-    });
+    if (is_patient) {
+       const update_status = await User.update(
+        {
+          firstname,
+          lastname,
+          mobile_no: phone_number,
+          dob: new Date(DOB),
+          street,
+          city,
+          state,
+          zip,
+          address_1: room,
+        },
+        {
+          where: {
+            type_of_user: "patient",
+            email,
+          },
+        }
+      );
+      if (!update_status) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
 
-    if (!request_data) {
-      return res.status(400).json({
-        status: false,
-        message: message_constants.EWCR,
+      const today = new Date();
+      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
+      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
+      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+      const todaysRequestsCount: number = await RequestModel.count({
+        where: {
+          createdAt: {
+            [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
+            [Op.lt]: `${today.toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
+          },
+        },
       });
+      const confirmation_no = `${is_patient.state.slice(
+        0,
+        2
+      )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
+        0,
+        2
+      )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
+  
+      const request_data = await RequestModel.create({
+        request_state: "new",
+        patient_id: is_patient.user_id,
+        requested_by: "admin",
+        requested_date: new Date(),
+        confirmation_no: confirmation_no,
+      });
+  
+      if (!request_data) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCR,
+        });
+      }
+      const admin_note = await Notes.create({
+        request_id: request_data.request_id,
+        //  requested_by: "Admin",
+        description: admin_notes,
+        type_of_note: "admin_notes",
+      });
+  
+      if (!admin_note) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCN,
+        });
+      }
+  
+      if (request_data && admin_note) {
+        return res.status(200).json({
+          status: true,
+          message: message_constants.RC,
+        });
+      }
+    } else {
+      const patient_data = await User.create({
+        type_of_user: "patient",
+        firstname,
+        lastname,
+        mobile_no: phone_number,
+        email,
+        dob: new Date(DOB),
+        street,
+        city,
+        state,
+        zip,
+        address_1: room,
+      });
+
+      if (!patient_data) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCA,
+        });
+      }
+      const today = new Date();
+      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
+      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
+      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+      const todaysRequestsCount: number = await RequestModel.count({
+        where: {
+          createdAt: {
+            [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
+            [Op.lt]: `${today.toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
+          },
+        },
+      });
+      const confirmation_no = `${patient_data.state.slice(
+        0,
+        2
+      )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
+        0,
+        2
+      )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
+  
+      const request_data = await RequestModel.create({
+        request_state: "new",
+        patient_id: patient_data.user_id,
+        requested_by: "admin",
+        requested_date: new Date(),
+        confirmation_no: confirmation_no,
+      });
+  
+      if (!request_data) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCR,
+        });
+      }
+      const admin_note = await Notes.create({
+        request_id: request_data.request_id,
+        //  requested_by: "Admin",
+        description: admin_notes,
+        type_of_note: "admin_notes",
+      });
+  
+      if (!admin_note) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCN,
+        });
+      }
+  
+      if (request_data && admin_note) {
+        return res.status(200).json({
+          status: true,
+          message: message_constants.RC,
+        });
+      }
     }
 
-    const admin_note = await Notes.create({
-      request_id: request_data.request_id,
-      //  requested_by: "Admin",
-      description: admin_notes,
-      type_of_note: "admin_notes",
-    });
-
-    if (!admin_note) {
-      return res.status(400).json({
-        status: false,
-        message: message_constants.EWCN,
-      });
-    }
-
-    if (patient_data && request_data && admin_note) {
-      return res.status(200).json({
-        status: true,
-        message: message_constants.RC,
-      });
-    }
   } catch (error: any) {
     return res.status(500).json({
       status: false,
@@ -1034,6 +1122,7 @@ export const assign_request: Controller = async (
     const physician_id = provider.user_id;
     await RequestModel.update(
       {
+        request_state: "pending",
         request_status: "accepted",
         physician_id: physician_id,
         assign_req_description,
@@ -1693,32 +1782,31 @@ export const admin_send_link: Controller = async (
       const auth_token = process.env.TWILIO_AUTH_TOKEN;
       const client = twilio(account_sid, auth_token);
 
-
       client.messages
         .create({
           body: `Link for creating request for patient. Link :- ${create_request_link}`,
           from: process.env.TWILIO_MOBILE_NO,
-          to: "+91" + mobile_no,
+          to: "+" + mobile_no,
         })
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));
-   
-        const SMS_log = await Logs.create({
-          type_of_log: "SMS",
-          // recipient: user.firstname + " " + user.lastname,
-          recipient: firstname + " " + lastname,
-          action: "For Sending Request Link",
-          role_name: "Admin",
-          // mobile_no: user.mobile_no,
-          mobile_no: mobile_no,
-          sent: "Yes",
+
+      const SMS_log = await Logs.create({
+        type_of_log: "SMS",
+        // recipient: user.firstname + " " + user.lastname,
+        recipient: firstname + " " + lastname,
+        action: "For Sending Request Link",
+        role_name: "Admin",
+        // mobile_no: user.mobile_no,
+        mobile_no: mobile_no,
+        sent: "Yes",
+      });
+      if (!SMS_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
         });
-        if (!SMS_log) {
-          return res.status(500).json({
-            message: message_constants.EWCL,
-          });
-        }
       }
+    }
 
     return res.status(200).json({
       status: true,

@@ -158,7 +158,7 @@ export const admin_profile_reset_password: Controller = async (
     }
     if (user_data) {
       const updatePassword = await User.update(
-        { password: hashedPassword },
+        { password: hashedPassword, status: "active" },
         {
           where: {
             user_id,
@@ -333,5 +333,3 @@ export const admin_profile_edit: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
-
