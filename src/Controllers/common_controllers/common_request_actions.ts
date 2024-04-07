@@ -17,6 +17,8 @@ import path from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
+import JSZip from "jszip";
+import archiver from "archiver";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -428,69 +430,86 @@ export const view_uploads_download_all: Controller = async (
         confirmation_no,
         request_status: {
           [Op.notIn]: [
-            "cancelled by admin",
-            "cancelled by provider",
-            "blocked",
-            "clear",
+            'cancelled by admin',
+            'cancelled by provider',
+            'blocked',
+            'clear',
           ],
         },
       },
       include: [
         {
-          as: "Documents",
+          as: 'Documents',
           model: Documents,
-          attributes: ["document_id", "document_path"],
+          attributes: ['document_id', 'document_path'],
         },
       ],
     });
 
     // Handle missing request
     if (!request) {
-      return res.status(404).json({ error: "Request not found" });
+      return res.status(404).json({ error: 'Request not found' });
     }
 
     const documents = request.Documents;
 
     // Handle no documents found
     if (documents.length === 0) {
-      return res.status(200).json({ message: "No documents found" });
+      return res.status(200).json({ message: 'No documents found' });
     }
 
-    // Function to handle individual file download (reusable)
-    const downloadFile = async (filePath: string, filename: string) => {
-      res.setHeader("Content-Type", "application/octet-stream");
-      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    const zipFileName = `${confirmation_no}_documents.zip`;
+    const zipFilePath = path.join(__dirname, '..', 'downloads', zipFileName);
 
-      try {
-        await res.download(filePath); // Download the file
-        console.log(`Successfully downloaded: ${filename}`); // Optional logging
-      } catch (error) {
-        console.error(`Error downloading ${filename}:`, error);
-        // Handle individual download errors appropriately (e.g., log or send error response)
-      }
-    };
+    // Create a zip file
+    const output = fs.createWriteStream(zipFilePath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
 
-    // Initiate downloads for all valid documents using a loop
+    output.on('close', () => {
+      console.log(archive.pointer() + ' total bytes');
+      console.log('archiver has been finalized and the output file descriptor has closed.');
+    });
+
+    archive.on('error', (err: any) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+
+    // Add files to the zip archive
     for (const file of documents) {
       const filePath = file.document_path;
       const filename = path.basename(filePath);
 
-      // Check for file existence before download attempt
+      // Check for file existence before adding to the archive
       if (fs.existsSync(filePath)) {
-        await downloadFile(filePath, filename);
+        archive.append(fs.createReadStream(filePath), { name: filename });
+        console.log(`Added ${filename} to the zip archive.`);
       } else {
-        console.error(`File not found: ${filePath}`); // Handle missing files here (e.g., log or send response)
+        console.error(`File not found: ${filePath}`);
       }
     }
 
-    // Send final success response (no need for Promise.all)
-    return res.status(200).json({
-      confirmation_no,
-      message: `Successfully initiated download(s) for ${documents.length} document(s)`,
+    // Finalize the zip archive
+    await archive.finalize();
+
+    // Set response headers for file download
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename=${zipFileName}`);
+
+    // Stream the zip file to the response
+    const fileStream = fs.createReadStream(zipFilePath);
+    fileStream.pipe(res);
+
+    // Cleanup: Remove the zip file after streaming
+    fileStream.on('close', () => {
+      fs.unlinkSync(zipFilePath);
+      console.log(`Removed ${zipFileName} after streaming.`);
     });
+
   } catch (error) {
     console.error("Error downloading documents:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 // Send Mail and Download All remaining in View Uploads

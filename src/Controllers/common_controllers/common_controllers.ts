@@ -222,7 +222,7 @@ export const export_single: Controller = async (
     const offset = (page_number - 1) * limit;
 
     const where_clause_patient = {
-      type_of_user: "patient",
+      type_of_user: 'patient',
       ...(search && {
         [Op.or]: [
           { firstname: { [Op.like]: `%${search}%` } },
@@ -240,79 +240,79 @@ export const export_single: Controller = async (
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
-          ...(state == "toclose"
+          ...(state == 'toclose'
             ? {
                 request_status: {
-                  [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
+                  [Op.notIn]: ['cancelled by provider', 'blocked', 'clear'],
                 },
               }
             : {
                 request_status: {
                   [Op.notIn]: [
-                    "cancelled by admin",
-                    "cancelled by provider",
-                    "blocked",
-                    "clear",
+                    'cancelled by admin',
+                    'cancelled by provider',
+                    'blocked',
+                    'clear',
                   ],
                 },
               }),
           ...(requestor ? { requested_by: requestor } : {}),
         },
         attributes: [
-          "request_id",
-          "request_state",
-          "confirmation_no",
-          "requested_by",
-          "requested_date",
-          "date_of_service",
-          "physician_id",
-          "patient_id",
+          'request_id',
+          'request_state',
+          'confirmation_no',
+          'requested_by',
+          'requested_date',
+          'date_of_service',
+          'physician_id',
+          'patient_id',
           ...(additional_attributes || []),
         ],
         include: [
           {
-            as: "Patient",
+            as: 'Patient',
             model: User,
             attributes: [
-              "user_id",
-              "type_of_user",
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "address_1",
-              "state",
+              'user_id',
+              'type_of_user',
+              'firstname',
+              'lastname',
+              'dob',
+              'mobile_no',
+              'address_1',
+              'state',
             ],
             where: where_clause_patient,
           },
-          ...(state !== "new"
+          ...(state !== 'new'
             ? [
                 {
-                  as: "Physician",
+                  as: 'Physician',
                   model: User,
                   attributes: [
-                    "user_id",
-                    "type_of_user",
-                    "firstname",
-                    "lastname",
-                    "dob",
-                    "mobile_no",
-                    "address_1",
-                    "address_2",
+                    'user_id',
+                    'type_of_user',
+                    'firstname',
+                    'lastname',
+                    'dob',
+                    'mobile_no',
+                    'address_1',
+                    'address_2',
                   ],
                   where: {
-                    type_of_user: "physician",
+                    type_of_user: 'physician',
                   },
                 },
               ]
             : []),
           {
             model: Requestor,
-            attributes: ["user_id", "first_name", "last_name"],
+            attributes: ['user_id', 'first_name', 'last_name'],
           },
           {
             model: Notes,
-            attributes: ["note_id", "type_of_note", "description"],
+            attributes: ['note_id', 'type_of_note', 'description'],
           },
         ],
         limit,
@@ -327,42 +327,42 @@ export const export_single: Controller = async (
           request_state: request.request_state,
           confirmationNo: request.confirmation_no,
           requestor: request.requested_by,
-          requested_date: request.requested_date?.toISOString().split("T")[0],
-          ...(state !== "new"
+          requested_date: request.requested_date?.toISOString().split('T')[0],
+          ...(state !== 'new'
             ? {
                 date_of_service: request.date_of_service
                   ?.toISOString()
-                  .split("T")[0],
+                  .split('T')[0],
               }
             : {}),
           patient_data: {
             user_id: request.Patient.user_id,
-            name: request.Patient.firstname + " " + request.Patient.lastname,
-            DOB: request.Patient.dob?.toISOString().split("T")[0],
+            name: request.Patient.firstname + ' ' + request.Patient.lastname,
+            DOB: request.Patient.dob?.toISOString().split('T')[0],
             mobile_no: request.Patient.mobile_no,
             address:
               request.Patient.address_1 +
-              " " +
+              ' ' +
               request.Patient.address_2 +
-              " " +
+              ' ' +
               request.Patient.state,
-            ...(state === "toclose" ? { region: request.Patient.state } : {}),
+            ...(state === 'toclose' ? { region: request.Patient.state } : {}),
           },
-          ...(state !== "new"
+          ...(state !== 'new'
             ? {
                 physician_data: {
                   user_id: request.Physician.user_id,
                   name:
                     request.Physician.firstname +
-                    " " +
+                    ' ' +
                     request.Physician.lastname,
-                  DOB: request.Physician.dob?.toISOString().split("T")[0],
+                  DOB: request.Physician.dob?.toISOString().split('T')[0],
                   mobile_no: request.Physician.mobile_no,
                   address:
                     request.Physician.address_1 +
-                    " " +
+                    ' ' +
                     request.Physician.address_2 +
-                    " " +
+                    ' ' +
                     request.Patient.state,
                 },
               }
@@ -371,7 +371,7 @@ export const export_single: Controller = async (
             user_id: request.Requestor?.user_id || null,
             first_name:
               request.Requestor?.first_name ||
-              null + " " + request.Requestor?.last_name ||
+              null + ' ' + request.Requestor?.last_name ||
               null,
             last_name: request.Requestor?.last_name || null,
           },
@@ -391,23 +391,13 @@ export const export_single: Controller = async (
     let formatted_response = null;
 
     switch (state) {
-      case "new":
+      case 'new':
+      case 'pending':
+      case 'active':
+      case 'conclude':
+      case 'toclose':
+      case 'unpaid':
         formatted_response = await handle_request_state();
-        break;
-      case "pending":
-      case "active":
-      case "conclude":
-        formatted_response = await handle_request_state();
-        break;
-      case "toclose":
-        formatted_response = await handle_request_state();
-        break;
-      case "unpaid":
-        formatted_response = await handle_request_state([
-          "date_of_service",
-          "physician_id",
-          "patient_id",
-        ]);
         break;
       default:
         return res.status(500).json({ message: message_constants.IS });
@@ -415,17 +405,17 @@ export const export_single: Controller = async (
 
     // Create a new Excel workbook and worksheet
     const work_book = new ExcelJS.Workbook();
-    const worksheet = work_book.addWorksheet("Requests");
+    const worksheet = work_book.addWorksheet('Requests');
 
     // Define headers for the Excel sheet
     const headers = [
-      "SR No",
-      "Request ID",
-      "Request State",
-      "Confirmation No",
-      "Requestor",
-      "Requested Date",
-      "Date of Service",
+      'SR No',
+      'Request ID',
+      'Request State',
+      'Confirmation No',
+      'Requestor',
+      'Requested Date',
+      'Date of Service',
       // Add more headers as needed
     ];
 
@@ -449,17 +439,22 @@ export const export_single: Controller = async (
 
     // Generate a unique filename for the Excel file
     const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
-    const filePath = path.join(__dirname, '..', 'downloads', filename); // Assuming downloads folder exists in the root directory
+    const filePath = path.join(__dirname, '..', '..', 'downloads', filename); // Update the directory path
+
+    // Ensure the downloads directory exists
+    if (!fs.existsSync(path.dirname(filePath))) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
 
     // Write the workbook to the file system
     await work_book.xlsx.writeFile(filePath);
 
     // Set the response headers for file download
     res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
     // Stream the file to the response
     const fileStream = fs.createReadStream(filePath);

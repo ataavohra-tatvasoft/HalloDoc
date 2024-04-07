@@ -96,8 +96,21 @@ export const admin_create_request: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const get_user_data = async (req: Request) => {
-      const {
+    const generateConfirmationNumber = (
+      state: string,
+      firstname: string,
+      lastname: string,
+      todaysRequestsCount: number,
+    ): string => {
+      const today = new Date();
+      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
+      const month = String(today.getMonth() + 1).padStart(2, '0'); // 0-padded month
+      const day = String(today.getDate()).padStart(2, '0'); // 0-padded day
+      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(0, 2)}${String(todaysRequestsCount + 1).padStart(4, '0')}`;
+    };
+
+    const {
+      body: {
         firstname,
         lastname,
         phone_number,
@@ -108,104 +121,118 @@ export const admin_create_request: Controller = async (
         state,
         zip,
         room,
-      } = req.body;
+        admin_notes,
+      },
+    } = req;
 
-      const user = await User.findOne({
-        where: {
-          type_of_user: "patient",
-          email,
+    const is_patient = await User.findOne({
+      where: {
+        type_of_user: 'patient',
+        email,
+      },
+    });
+
+    let patient_data;
+    if (is_patient) {
+      const update_status = await User.update(
+        {
+          firstname,
+          lastname,
+          mobile_no: phone_number,
+          dob: new Date(DOB),
+          street,
+          city,
+          state,
+          zip,
+          address_1: room,
         },
-      });
-
-      if (user) {
-        return {
-          ...req.body,
-          user,
-        };
-      } else {
-        return {
-          ...req.body,
-          type_of_user: "patient",
-        };
-      }
-    };
-
-    const generate_confirmation_no = (user_data: any) => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      const last_name_initials = user_data.lastname.slice(0, 2);
-      const first_name_initials = user_data.firstname.slice(0, 2);
-
-      return `${user_data.state.slice(
-        0,
-        2
-      )}${year}${month}${day}${last_name_initials}${first_name_initials}`;
-    };
-
-    const create_request = async (user_data: any, confirmation_no: string) => {
-      const todays_requests_count: number = await RequestModel.count({
-        where: {
-          createdAt: {
-            [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)), // Since midnight today
-            [Op.lt]: new Date(new Date().setHours(23, 59, 59, 999)), // Until the end of today
+        {
+          where: {
+            type_of_user: 'patient',
+            email,
           },
+        }
+      );
+      if (!update_status) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+      patient_data = is_patient;
+    } else {
+      patient_data = await User.create({
+        type_of_user: 'patient',
+        firstname,
+        lastname,
+        mobile_no: phone_number,
+        email,
+        dob: new Date(DOB),
+        street,
+        city,
+        state,
+        zip,
+        address_1: room,
+      });
+
+      if (!patient_data) {
+        return res.status(400).json({
+          status: false,
+          message: message_constants.EWCA,
+        });
+      }
+    }
+
+    const todaysRequestsCount: number = await RequestModel.count({
+      where: {
+        createdAt: {
+          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z`, // Until the end of today
         },
-      });
+      },
+    });
 
-      const request_data = await RequestModel.create({
-        request_state: "new",
-        patient_id: user_data.user ? user_data.user.user_id : user_data.user_id,
-        requested_by: "admin",
-        requested_date: new Date(),
-        confirmation_no: `${confirmation_no}${String(
-          todays_requests_count + 1
-        ).padStart(4, "0")}`,
-      });
-
-      if (!request_data) {
-        throw new Error(message_constants.EWCR);
-      }
-
-      return request_data;
-    };
-
-    const create_admin_note = async (
-      request_data: any,
-      admin_notes: string
-    ) => {
-      const admin_note = await Notes.create({
-        request_id: request_data.request_id,
-        description: admin_notes,
-        type_of_note: "admin_notes",
-      });
-
-      if (!admin_note) {
-        throw new Error(message_constants.EWCN);
-      }
-
-      return admin_note;
-    };
-
-    const user_data = await get_user_data(req);
-    const confirmation_no = generate_confirmation_no(user_data);
-    const request_data = await create_request(user_data, confirmation_no);
-    const admin_note = await create_admin_note(
-      request_data,
-      req.body.admin_notes
+    const confirmation_no = generateConfirmationNumber(
+      patient_data.state,
+      firstname,
+      lastname,
+      todaysRequestsCount,
     );
 
-    if (request_data && admin_note) {
-      return res.status(200).json({
-        status: true,
-        message: message_constants.RC,
+    const request_data = await RequestModel.create({
+      request_state: 'new',
+      patient_id: patient_data.user_id,
+      requested_by: 'admin',
+      requested_date: new Date(),
+      confirmation_no,
+    });
+
+    if (!request_data) {
+      return res.status(400).json({
+        status: false,
+        message: message_constants.EWCR,
       });
     }
+    const admin_note = await Notes.create({
+      request_id: request_data.request_id,
+      description: admin_notes,
+      type_of_note: 'admin_notes',
+    });
+
+    if (!admin_note) {
+      return res.status(400).json({
+        status: false,
+        message: message_constants.EWCN,
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: message_constants.RC,
+    });
   } catch (error: any) {
     return res.status(500).json({
       status: false,
-      error: error.message,
+      error: error.errormessage,
       message: message_constants.ISE,
     });
   }
