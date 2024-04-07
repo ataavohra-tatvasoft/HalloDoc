@@ -96,8 +96,8 @@ export const admin_create_request: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const {
-      body: {
+    const get_user_data = async (req: Request) => {
+      const {
         firstname,
         lastname,
         phone_number,
@@ -108,182 +108,109 @@ export const admin_create_request: Controller = async (
         state,
         zip,
         room,
-        admin_notes,
-      },
-    } = req;
+      } = req.body;
 
-    const is_patient = await User.findOne({
-      where: {
-        type_of_user: "patient",
-        email,
-      },
-    });
-
-    if (is_patient) {
-       const update_status = await User.update(
-        {
-          firstname,
-          lastname,
-          mobile_no: phone_number,
-          dob: new Date(DOB),
-          street,
-          city,
-          state,
-          zip,
-          address_1: room,
+      const user = await User.findOne({
+        where: {
+          type_of_user: "patient",
+          email,
         },
-        {
-          where: {
-            type_of_user: "patient",
-            email,
-          },
-        }
-      );
-      if (!update_status) {
-        return res.status(500).json({
-          message: message_constants.EWU,
-        });
-      }
+      });
 
+      if (user) {
+        return {
+          ...req.body,
+          user,
+        };
+      } else {
+        return {
+          ...req.body,
+          type_of_user: "patient",
+        };
+      }
+    };
+
+    const generate_confirmation_no = (user_data: any) => {
       const today = new Date();
       const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
       const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
       const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      const todaysRequestsCount: number = await RequestModel.count({
+      const last_name_initials = user_data.lastname.slice(0, 2);
+      const first_name_initials = user_data.firstname.slice(0, 2);
+
+      return `${user_data.state.slice(
+        0,
+        2
+      )}${year}${month}${day}${last_name_initials}${first_name_initials}`;
+    };
+
+    const create_request = async (user_data: any, confirmation_no: string) => {
+      const todays_requests_count: number = await RequestModel.count({
         where: {
           createdAt: {
-            [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
-            [Op.lt]: `${today.toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
+            [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)), // Since midnight today
+            [Op.lt]: new Date(new Date().setHours(23, 59, 59, 999)), // Until the end of today
           },
         },
-      });
-      const confirmation_no = `${is_patient.state.slice(
-        0,
-        2
-      )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
-        0,
-        2
-      )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
-  
-      const request_data = await RequestModel.create({
-        request_state: "new",
-        patient_id: is_patient.user_id,
-        requested_by: "admin",
-        requested_date: new Date(),
-        confirmation_no: confirmation_no,
-      });
-  
-      if (!request_data) {
-        return res.status(400).json({
-          status: false,
-          message: message_constants.EWCR,
-        });
-      }
-      const admin_note = await Notes.create({
-        request_id: request_data.request_id,
-        //  requested_by: "Admin",
-        description: admin_notes,
-        type_of_note: "admin_notes",
-      });
-  
-      if (!admin_note) {
-        return res.status(400).json({
-          status: false,
-          message: message_constants.EWCN,
-        });
-      }
-  
-      if (request_data && admin_note) {
-        return res.status(200).json({
-          status: true,
-          message: message_constants.RC,
-        });
-      }
-    } else {
-      const patient_data = await User.create({
-        type_of_user: "patient",
-        firstname,
-        lastname,
-        mobile_no: phone_number,
-        email,
-        dob: new Date(DOB),
-        street,
-        city,
-        state,
-        zip,
-        address_1: room,
       });
 
-      if (!patient_data) {
-        return res.status(400).json({
-          status: false,
-          message: message_constants.EWCA,
-        });
-      }
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      const todaysRequestsCount: number = await RequestModel.count({
-        where: {
-          createdAt: {
-            [Op.gte]: `${today.toISOString().split("T")[0]}`, // Since midnight today
-            [Op.lt]: `${today.toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-          },
-        },
-      });
-      const confirmation_no = `${patient_data.state.slice(
-        0,
-        2
-      )}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(
-        0,
-        2
-      )}${String(todaysRequestsCount + 1).padStart(4, "0")}`;
-  
       const request_data = await RequestModel.create({
         request_state: "new",
-        patient_id: patient_data.user_id,
+        patient_id: user_data.user ? user_data.user.user_id : user_data.user_id,
         requested_by: "admin",
         requested_date: new Date(),
-        confirmation_no: confirmation_no,
+        confirmation_no: `${confirmation_no}${String(
+          todays_requests_count + 1
+        ).padStart(4, "0")}`,
       });
-  
+
       if (!request_data) {
-        return res.status(400).json({
-          status: false,
-          message: message_constants.EWCR,
-        });
+        throw new Error(message_constants.EWCR);
       }
+
+      return request_data;
+    };
+
+    const create_admin_note = async (
+      request_data: any,
+      admin_notes: string
+    ) => {
       const admin_note = await Notes.create({
         request_id: request_data.request_id,
-        //  requested_by: "Admin",
         description: admin_notes,
         type_of_note: "admin_notes",
       });
-  
+
       if (!admin_note) {
-        return res.status(400).json({
-          status: false,
-          message: message_constants.EWCN,
-        });
+        throw new Error(message_constants.EWCN);
       }
-  
-      if (request_data && admin_note) {
-        return res.status(200).json({
-          status: true,
-          message: message_constants.RC,
-        });
-      }
+
+      return admin_note;
+    };
+
+    const user_data = await get_user_data(req);
+    const confirmation_no = generate_confirmation_no(user_data);
+    const request_data = await create_request(user_data, confirmation_no);
+    const admin_note = await create_admin_note(
+      request_data,
+      req.body.admin_notes
+    );
+
+    if (request_data && admin_note) {
+      return res.status(200).json({
+        status: true,
+        message: message_constants.RC,
+      });
     }
-
   } catch (error: any) {
     return res.status(500).json({
       status: false,
-      error: error.errormessage,
+      error: error.message,
       message: message_constants.ISE,
     });
   }
 };
+
 export const admin_create_request_verify: Controller = async (
   req: Request,
   res: Response,
@@ -430,7 +357,7 @@ export const manage_requests_by_State: Controller = async (
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
-          confirmationNo: request.confirmation_no,
+          confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
           requested_date: request.requested_date.toISOString().split("T")[0],
           ...(state !== "new"
@@ -679,7 +606,7 @@ export const requests_by_request_state_refactored: Controller = async (
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
-          confirmationNo: request.confirmation_no,
+          confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
           requested_date: request.requested_date?.toISOString().split("T")[0],
           ...(state !== "new"
@@ -1324,13 +1251,17 @@ export const transfer_request: Controller = async (
       where: {
         confirmation_no,
         request_status: {
-          [Op.notIn]: [
-            "cancelled by admin",
-            "cancelled by provider",
-            "blocked",
-            "clear",
+          [Op.and]: [
+            {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
+            { [Op.eq]: "accepted" },
           ],
-          [Op.and]: ["accepted"],
         },
       },
     });
@@ -1722,7 +1653,7 @@ export const admin_send_link: Controller = async (
 ) => {
   try {
     const { firstname, lastname, mobile_no, email } = req.body;
-    const create_request_link = "https://localhost:3000/createRequest";
+    const create_request_link = "https://localhost:3000/create_request";
 
     if (email) {
       const transporter = nodemailer.createTransport({

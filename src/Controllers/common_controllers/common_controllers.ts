@@ -13,6 +13,8 @@ import Notes from "../../db/models/notes";
 import Access from "../../db/models/access";
 import JSZip from "jszip";
 import { FormattedResponse } from "../../interfaces/common_interface";
+import path from "path";
+import fs from "fs";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -205,6 +207,7 @@ export const professions: Controller = async (
 };
 
 /**Exports API */
+
 export const export_single: Controller = async (
   req: Request,
   res: Response,
@@ -213,7 +216,6 @@ export const export_single: Controller = async (
   try {
     const { state, search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
-
     };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
@@ -411,7 +413,7 @@ export const export_single: Controller = async (
         return res.status(500).json({ message: message_constants.IS });
     }
 
-    // Create a new Excel work_book and worksheet
+    // Create a new Excel workbook and worksheet
     const work_book = new ExcelJS.Workbook();
     const worksheet = work_book.addWorksheet("Requests");
 
@@ -447,6 +449,10 @@ export const export_single: Controller = async (
 
     // Generate a unique filename for the Excel file
     const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
+    const filePath = path.join(__dirname, '..', 'downloads', filename); // Assuming downloads folder exists in the root directory
+
+    // Write the workbook to the file system
+    await work_book.xlsx.writeFile(filePath);
 
     // Set the response headers for file download
     res.setHeader(
@@ -455,10 +461,15 @@ export const export_single: Controller = async (
     );
     res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Write the work_book to the response
-    await work_book.xlsx.write(res);
+    // Stream the file to the response
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
 
-    return res.end();
+    // Cleanup: Remove the file after streaming
+    fileStream.on('close', () => {
+      fs.unlinkSync(filePath);
+    });
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
@@ -472,8 +483,7 @@ export const export_all: Controller = async (
   try {
     const { search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
-
-    }; ;
+    };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
@@ -499,10 +509,8 @@ export const export_all: Controller = async (
       "unpaid",
     ];
 
-    const work_book = new ExcelJS.Workbook();
-
     for (const state of states) {
-      const handle_request_state = async (additional_attributes?: any) => {
+      const handle_request_state = async () => {
         const formatted_response: FormattedResponse<any> = {
           status: true,
           data: [],
@@ -535,9 +543,6 @@ export const export_all: Controller = async (
             "requested_by",
             "requested_date",
             "date_of_service",
-            "physician_id",
-            "patient_id",
-            ...(additional_attributes || []),
           ],
           include: [
             {
@@ -555,27 +560,6 @@ export const export_all: Controller = async (
               ],
               where: where_clause_patient,
             },
-            ...(state !== "new"
-              ? [
-                  {
-                    as: "Physician",
-                    model: User,
-                    attributes: [
-                      "user_id",
-                      "type_of_user",
-                      "firstname",
-                      "lastname",
-                      "dob",
-                      "mobile_no",
-                      "address_1",
-                      "address_2",
-                    ],
-                    where: {
-                      type_of_user: "physician",
-                    },
-                  },
-                ]
-              : []),
             {
               model: Requestor,
               attributes: ["user_id", "first_name", "last_name"],
@@ -596,13 +580,7 @@ export const export_all: Controller = async (
             confirmationNo: request.confirmation_no,
             requestor: request.requested_by,
             requested_date: request.requested_date?.toISOString().split("T")[0],
-            ...(state !== "new"
-              ? {
-                  date_of_service: request.date_of_service
-                    ?.toISOString()
-                    .split("T")[0],
-                }
-              : {}),
+            date_of_service: request.date_of_service?.toISOString().split("T")[0],
             patient_data: {
               user_id: request.Patient.user_id,
               name: request.Patient.firstname + " " + request.Patient.lastname,
@@ -611,30 +589,9 @@ export const export_all: Controller = async (
               address:
                 request.Patient.address_1 +
                 " " +
-                request.Patient.address_2 +
-                " " +
                 request.Patient.state,
-              ...(state === "toclose" ? { region: request.Patient.state } : {}),
+              region: request.Patient.state,
             },
-            ...(state !== "new"
-              ? {
-                  physician_data: {
-                    user_id: request.Physician.user_id,
-                    name:
-                      request.Physician.firstname +
-                      " " +
-                      request.Physician.lastname,
-                    DOB: request.Physician.dob?.toISOString().split("T")[0],
-                    mobile_no: request.Physician.mobile_no,
-                    address:
-                      request.Physician.address_1 +
-                      " " +
-                      request.Physician.address_2 +
-                      " " +
-                      request.Patient.state,
-                  },
-                }
-              : {}),
             requestor_data: {
               user_id: request.Requestor?.user_id || null,
               first_name:
@@ -657,6 +614,7 @@ export const export_all: Controller = async (
       const formatted_response = await handle_request_state();
 
       // Create a new worksheet for each state
+      const work_book = new ExcelJS.Workbook();
       const worksheet = work_book.addWorksheet(state);
 
       // Define headers for the Excel sheet
@@ -683,42 +641,40 @@ export const export_all: Controller = async (
         worksheet.addRow(rowData);
       }
 
-      // Create a buffer containing the Excel workbook data
+      // Generate a unique filename for the Excel file
       const excelBuffer = await work_book.xlsx.writeBuffer();
 
       // Add the workbook data to the ZIP file with a descriptive filename
       zip.file(`${state}.xlsx`, excelBuffer);
     }
 
-    // Generate a unique filename for the Excel file
-    const filename = `requests_${new Date().toISOString()}.xlsx`;
+    // Generate a unique filename for the ZIP file
+    const filename = `requests_${new Date().toISOString()}.zip`;
+    const filePath = path.join(__dirname, '..', 'downloads', filename); // Assuming downloads folder exists in the root directory
 
-    // Set the response headers for file download
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    // Write the ZIP file to the file system
+    await zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+      .pipe(fs.createWriteStream(filePath))
+      .on('finish', () => {
+        // Set the response headers for file download
+        res.setHeader(
+          "Content-Type",
+          "application/zip"
+        );
+        res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Write the ZIP file to the response
-    const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
-    if (zip_archive) {
-      // console.log(res);
-      return res.end(zip_archive);
-    } else {
-      return res.status(500).json({ message: message_constants.ISE });
-    }
+        // Stream the ZIP file to the client's browser
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
 
-    // // Alternate Way
-    // await zip
-    //   .generateAsync({ type: "nodebuffer" })
-    //   .then((content) => res.end(content))
-    //   .catch((error) => console.error(error));
-
-    // return res.end();
+        // Cleanup: Remove the ZIP file after streaming
+        fileStream.on('close', () => {
+          fs.unlinkSync(filePath);
+        });
+      });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

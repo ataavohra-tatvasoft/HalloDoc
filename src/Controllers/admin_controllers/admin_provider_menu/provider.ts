@@ -613,149 +613,82 @@ export const provider_onboarding_upload = async (
         type_of_user: "physician",
       },
     });
+
     if (!user) {
       return res.status(404).json({
         message: message_constants.UNF,
       });
     }
-    const uploaded_files: any = req.files || [];
 
-    const independent_contractor_agreement_path = uploaded_files.find(
+    const uploadedFiles: any = req.files || [];
+
+    const independentContractorAgreementPath = uploadedFiles.find(
       (file: any) => file.fieldname === "independent_contractor_agreement"
     )?.path;
-    const background_check_path = uploaded_files.find(
+
+    const backgroundCheckPath = uploadedFiles.find(
       (file: any) => file.fieldname === "background_check"
     )?.path;
-    const HIPAA_path = uploaded_files.find(
+
+    const HIPAAPath = uploadedFiles.find(
       (file: any) => file.fieldname === "HIPAA"
     )?.path;
-    const non_diclosure_path = uploaded_files.find(
+
+    const nonDiclosurePath = uploadedFiles.find(
       (file: any) => file.fieldname === "non_diclosure"
     )?.path;
-    const licence_document_path = uploaded_files.find(
+
+    const licenceDocumentPath = uploadedFiles.find(
       (file: any) => file.fieldname === "licence_document"
     )?.path;
 
-    if (independent_contractor_agreement_path) {
-      const document_status = await Documents.findOne({
+    const updateDocument = async (documentName: string, documentPath: string) => {
+      const documentStatus = await Documents.findOne({
         where: {
-          user_id: user_id,
-          document_name: "independent_contractor_agreement",
+          user_id,
+          document_name: documentName,
         },
       });
-      if (!document_status) {
+
+      if (!documentStatus) {
         await Documents.create({
           user_id,
-          document_name: "independent_contractor_agreement",
-          document_path: independent_contractor_agreement_path,
+          document_name: documentName,
+          document_path: documentPath,
         });
       } else {
-        Documents.update(
-          { document_path: independent_contractor_agreement_path },
+        await Documents.update(
+          { document_path: documentPath },
           {
             where: {
               user_id,
+              document_name: documentName,
             },
           }
         );
       }
+    };
+
+    if (independentContractorAgreementPath) {
+      await updateDocument("independent_contractor_agreement", independentContractorAgreementPath);
     }
-    if (background_check_path) {
-      const document_status = await Documents.findOne({
-        where: {
-          user_id: user_id,
-          document_name: "background_check",
-        },
-      });
-      if (!document_status) {
-        await Documents.create({
-          user_id,
-          document_name: "background_check",
-          document_path: background_check_path,
-        });
-      } else {
-        Documents.update(
-          { document_path: background_check_path },
-          {
-            where: {
-              user_id,
-            },
-          }
-        );
-      }
+
+    if (backgroundCheckPath) {
+      await updateDocument("background_check", backgroundCheckPath);
     }
-    if (HIPAA_path) {
-      const document_status = await Documents.findOne({
-        where: {
-          user_id: user_id,
-          document_name: "HIPAA",
-        },
-      });
-      if (!document_status) {
-        await Documents.create({
-          user_id,
-          document_name: "HIPAA",
-          document_path: HIPAA_path,
-        });
-      } else {
-        Documents.update(
-          { document_path: HIPAA_path },
-          {
-            where: {
-              user_id,
-            },
-          }
-        );
-      }
+
+    if (HIPAAPath) {
+      await updateDocument("HIPAA", HIPAAPath);
     }
-    if (non_diclosure_path) {
-      const document_status = await Documents.findOne({
-        where: {
-          user_id: user_id,
-          document_name: "non_diclosure",
-        },
-      });
-      if (!document_status) {
-        await Documents.create({
-          user_id,
-          document_name: "non_diclosure",
-          document_path: non_diclosure_path,
-        });
-      } else {
-        Documents.update(
-          { document_path: non_diclosure_path },
-          {
-            where: {
-              user_id,
-            },
-          }
-        );
-      }
+
+    if (nonDiclosurePath) {
+      await updateDocument("non_diclosure", nonDiclosurePath);
     }
-    if (licence_document_path) {
-      const document_status = await Documents.findOne({
-        where: {
-          user_id: user_id,
-          document_name: "licence_document",
-        },
-      });
-      if (!document_status) {
-        await Documents.create({
-          user_id,
-          document_name: "licence_document",
-          document_path: licence_document_path,
-        });
-      } else {
-        Documents.update(
-          { document_path: licence_document_path },
-          {
-            where: {
-              user_id,
-            },
-          }
-        );
-      }
+
+    if (licenceDocumentPath) {
+      await updateDocument("licence_document", licenceDocumentPath);
     }
+
     return res.status(200).json({
       message: message_constants.Success,
     });
@@ -763,6 +696,7 @@ export const provider_onboarding_upload = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
 
 export const provider_onboarding_delete = async (
   req: Request,

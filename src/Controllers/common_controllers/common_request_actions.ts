@@ -331,26 +331,26 @@ export const view_uploads_actions_download: Controller = async (
 
     // Check for missing request or document and send appropriate error responses
     if (!request) {
-      return res.status(404).json({ error: message_constants.RNF });
+      return res.status(404).json({ error: "Request not found" });
     }
 
     if (!document) {
-      return res.status(404).json({ error: message_constants.DNF });
+      return res.status(404).json({ error: "Document not found" });
     }
 
     let file_path = document.document_path;
 
-    // Handle relative paths by joining with `__dirname` and "uploads"
+    // Handle relative paths by joining with "uploads"
     if (!path.isAbsolute(file_path)) {
-      file_path = path.join(__dirname, "uploads", file_path);
+      file_path = path.join("uploads", file_path);
     }
 
     // Check for file existence and send error if not found
     if (!fs.existsSync(file_path)) {
-      return res.status(404).json({ error: message_constants.FNF });
+      return res.status(404).json({ error: "File not found" });
     }
 
-    // **Set headers before sending download response**
+    // Set headers for file download
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
@@ -360,13 +360,13 @@ export const view_uploads_actions_download: Controller = async (
     // Initiate file download with `res.download`
     res.download(file_path, (error) => {
       if (error) {
-        return res.status(500).json({ error: message_constants.ISE });
+        return res.status(500).json({ error: "Internal Server Error" });
       } else {
         console.log("Downloaded!!!");
       }
     });
   } catch (error) {
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 export const view_uploads_delete_all: Controller = async (
@@ -446,23 +446,23 @@ export const view_uploads_download_all: Controller = async (
 
     // Handle missing request
     if (!request) {
-      return res.status(404).json({ error: message_constants.RNF });
+      return res.status(404).json({ error: "Request not found" });
     }
 
     const documents = request.Documents;
 
     // Handle no documents found
     if (documents.length === 0) {
-      return res.status(200).json({ message: message_constants.NDF });
+      return res.status(200).json({ message: "No documents found" });
     }
 
     // Function to handle individual file download (reusable)
-    const download_file = async (file_path: string, filename: string) => {
+    const downloadFile = async (filePath: string, filename: string) => {
       res.setHeader("Content-Type", "application/octet-stream");
       res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
       try {
-        await res.download(file_path); // Download the file
+        await res.download(filePath); // Download the file
         console.log(`Successfully downloaded: ${filename}`); // Optional logging
       } catch (error) {
         console.error(`Error downloading ${filename}:`, error);
@@ -472,14 +472,14 @@ export const view_uploads_download_all: Controller = async (
 
     // Initiate downloads for all valid documents using a loop
     for (const file of documents) {
-      const file_path = file.document_path;
-      const filename = path.basename(file_path);
+      const filePath = file.document_path;
+      const filename = path.basename(filePath);
 
       // Check for file existence before download attempt
-      if (fs.existsSync(file_path)) {
-        await download_file(file_path, filename);
+      if (fs.existsSync(filePath)) {
+        await downloadFile(filePath, filename);
       } else {
-        console.error(`File not found: ${file_path}`); // Handle missing files here (e.g., log or send response)
+        console.error(`File not found: ${filePath}`); // Handle missing files here (e.g., log or send response)
       }
     }
 
@@ -490,7 +490,7 @@ export const view_uploads_download_all: Controller = async (
     });
   } catch (error) {
     console.error("Error downloading documents:", error);
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 // Send Mail and Download All remaining in View Uploads
