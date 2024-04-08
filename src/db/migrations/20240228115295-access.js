@@ -16,12 +16,17 @@ module.exports = {
         allowNull: false,
       },
 
+      account_type: {
+        type: Sequelize.ENUM("admin", "physician", "patient"),
+        allowNull: false,
+      },
+
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         default: Sequelize.NOW,
       },
-      
+
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -31,7 +36,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('access');
-
+    await queryInterface.dropTable("access");
   },
 };

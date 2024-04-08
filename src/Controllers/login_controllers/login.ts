@@ -75,6 +75,7 @@ export const login: Controller = async (
       lastname: user.lastname,
       email: user.email,
       type_of_user: user.type_of_user,
+      role_id: user.role_id
     };
     const jwtToken = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
 

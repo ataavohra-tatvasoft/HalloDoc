@@ -3,8 +3,11 @@ import jwt from "jsonwebtoken";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import { verified_token } from "../../interfaces/common_interface";
+import Role from "../../db/models/role";
+import { where } from "sequelize";
+import Access from "../../db/models/access";
 
-export const authmiddleware = async (
+export const role_access_middleware = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -21,21 +24,28 @@ export const authmiddleware = async (
       token,
       process.env.JWT_SECRET_KEY as string
     ) as verified_token;
-    const validUser = await User.findOne({
-      where: {
-        email: verified_token.email,
-      },
-    });
 
-    if (validUser) {
-      (req as any).email = verified_token.email;
-      next();
-    } else {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid user",
-        error: message_constants.NF,
+    const role_id = verified_token.role_id;
+
+    const role = await Role.findOne({
+      where: {
+        role_id,
+      },
+      include: [
+        {
+          model: Access,
+        },
+      ],
+    });
+    if (!role) {
+      return res.status(404).json({
+        message: message_constants.RoNF,
       });
+    }
+    for (const access of role.Access) {
+      //  if(access = ){
+      //      next();
+      //  }
     }
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
@@ -51,5 +61,4 @@ export const authmiddleware = async (
   }
 };
 
-export default authmiddleware;
-
+export default role_access_middleware;

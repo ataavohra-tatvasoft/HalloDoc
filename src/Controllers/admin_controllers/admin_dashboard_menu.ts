@@ -83,7 +83,7 @@ export const admin_signup: Controller = async (
   } catch (error: any) {
     return res.status(500).json({
       status: false,
-      errormessage: message_constants.ISE + error.message,
+      errormessage: message_constants.ISE + " " + error.message,
       message: message_constants.ISE,
     });
   }
@@ -96,17 +96,23 @@ export const admin_create_request: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const generateConfirmationNumber = (
+    const generate_confirmation_number = (
       state: string,
       firstname: string,
       lastname: string,
-      todaysRequestsCount: number,
+      todays_requests_count: number
     ): string => {
       const today = new Date();
       const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, '0'); // 0-padded month
-      const day = String(today.getDate()).padStart(2, '0'); // 0-padded day
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(0, 2)}${firstname.slice(0, 2)}${String(todaysRequestsCount + 1).padStart(4, '0')}`;
+      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
+      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
+        0,
+        2
+      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
+        4,
+        "0"
+      )}`;
     };
 
     const {
@@ -127,7 +133,7 @@ export const admin_create_request: Controller = async (
 
     const is_patient = await User.findOne({
       where: {
-        type_of_user: 'patient',
+        type_of_user: "patient",
         email,
       },
     });
@@ -148,7 +154,7 @@ export const admin_create_request: Controller = async (
         },
         {
           where: {
-            type_of_user: 'patient',
+            type_of_user: "patient",
             email,
           },
         }
@@ -161,7 +167,7 @@ export const admin_create_request: Controller = async (
       patient_data = is_patient;
     } else {
       patient_data = await User.create({
-        type_of_user: 'patient',
+        type_of_user: "patient",
         firstname,
         lastname,
         mobile_no: phone_number,
@@ -182,26 +188,26 @@ export const admin_create_request: Controller = async (
       }
     }
 
-    const todaysRequestsCount: number = await RequestModel.count({
+    const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
-          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
-          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z`, // Until the end of today
+          [Op.gte]: `${new Date().toISOString().split("T")[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
         },
       },
     });
 
-    const confirmation_no = generateConfirmationNumber(
+    const confirmation_no = generate_confirmation_number(
       patient_data.state,
       firstname,
       lastname,
-      todaysRequestsCount,
+      todays_requests_count
     );
 
     const request_data = await RequestModel.create({
-      request_state: 'new',
+      request_state: "new",
       patient_id: patient_data.user_id,
-      requested_by: 'admin',
+      requested_by: "admin",
       requested_date: new Date(),
       confirmation_no,
     });
@@ -215,7 +221,7 @@ export const admin_create_request: Controller = async (
     const admin_note = await Notes.create({
       request_id: request_data.request_id,
       description: admin_notes,
-      type_of_note: 'admin_notes',
+      type_of_note: "admin_notes",
     });
 
     if (!admin_note) {
@@ -246,14 +252,14 @@ export const admin_create_request_verify: Controller = async (
   try {
     const { state } = req.body;
 
-    const validStates = [
+    const valid_states = [
       "district_of_columbia",
       "new_york",
       "virginia",
       "maryland",
     ];
 
-    if (!validStates.includes(state)) {
+    if (!valid_states.includes(state)) {
       return res.status(404).json({ message: message_constants.ADBSA });
     }
 
@@ -548,23 +554,18 @@ export const requests_by_request_state_refactored: Controller = async (
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
-          ...(state == "toclose"
-            ? {
-                request_status: {
-                  [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
-                },
-              }
-            : {
-                request_status: {
-                  [Op.notIn]: [
+          request_status: {
+            [Op.notIn]:
+              state === "toclose"
+                ? ["cancelled by provider", "blocked", "clear"]
+                : [
                     "cancelled by admin",
                     "cancelled by provider",
                     "blocked",
                     "clear",
                   ],
-                },
-              }),
-          ...(requestor ? { requested_by: requestor } : {}),
+          },
+          ...(requestor && { requested_by: requestor }),
         },
         attributes: [
           "request_id",
@@ -659,19 +660,19 @@ export const requests_by_request_state_refactored: Controller = async (
           ...(state !== "new"
             ? {
                 physician_data: {
-                  user_id: request.Physician.user_id,
+                  user_id: request?.Physician.user_id,
                   name:
-                    request.Physician.firstname +
+                    request?.Physician.firstname +
                     " " +
-                    request.Physician.lastname,
-                  DOB: request.Physician.dob?.toISOString().split("T")[0],
-                  mobile_no: request.Physician.mobile_no,
+                    request?.Physician.lastname,
+                  DOB: request?.Physician.dob?.toISOString().split("T")[0],
+                  mobile_no: request?.Physician.mobile_no,
                   address:
-                    request.Physician.address_1 +
+                    request?.Physician.address_1 +
                     " " +
-                    request.Physician.address_2 +
+                    request?.Physician.address_2 +
                     " " +
-                    request.Patient.state,
+                    request?.Patient.state,
                 },
               }
             : {}),
@@ -1076,8 +1077,8 @@ export const assign_request: Controller = async (
     const physician_id = provider.user_id;
     await RequestModel.update(
       {
-        request_state: "pending",
-        request_status: "accepted",
+        request_state: "new",
+        request_status: "assigned",
         physician_id: physician_id,
         assign_req_description,
       },

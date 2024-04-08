@@ -31,6 +31,13 @@ export default class Access extends Model<
   })
   access_name: string;
 
+  @Column({
+    type: DataType.ENUM("admin", "physician", "patient"),
+    allowNull: false,
+  })
+  account_type: string;
+
+
   @BelongsToMany(() => Role, {
     through: () => RoleAccessMapping,
     foreignKey: "access_id",

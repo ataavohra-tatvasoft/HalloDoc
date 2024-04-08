@@ -439,7 +439,7 @@ export const search_records: Controller = async (
         message: message_constants.RNF,
       });
     }
-    var i: any = offset + 1;
+    var i: number = offset + 1;
     for (const request of requests) {
       const formatted_request: any = {
         sr_no: i,

@@ -69,7 +69,7 @@ export const requests_by_request_state_provider: Controller = async (
       });
     }
 
-    const handle_request_state = async (additionalAttributes?: any) => {
+    const handle_request_state = async (additionalAttributes?: Array<string>) => {
       const formatted_response: any = {
         status: true,
         data: [],
@@ -450,3 +450,4 @@ export const save_view_notes_for_request_provider: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+

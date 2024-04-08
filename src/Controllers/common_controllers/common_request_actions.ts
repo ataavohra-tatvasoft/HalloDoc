@@ -17,8 +17,8 @@ import path from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
-import JSZip from "jszip";
 import archiver from "archiver";
+import JSZip from "jszip";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -331,7 +331,6 @@ export const view_uploads_actions_download: Controller = async (
       attributes: ["document_id", "document_path"],
     });
 
-    // Check for missing request or document and send appropriate error responses
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
@@ -423,8 +422,6 @@ export const view_uploads_download_all: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-
-    // Fetch request with associated documents
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
@@ -446,23 +443,21 @@ export const view_uploads_download_all: Controller = async (
       ],
     });
 
-    // Handle missing request
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
 
     const documents = request.Documents;
 
-    // Handle no documents found
     if (documents.length === 0) {
       return res.status(200).json({ message: 'No documents found' });
     }
 
-    const zipFileName = `${confirmation_no}_documents.zip`;
-    const zipFilePath = path.join(__dirname, '..', 'downloads', zipFileName);
+    const zip_file_name = `${confirmation_no}_documents.zip`;
+    const zip_file_path = path.join(__dirname, '..',"..", 'public','uploads', zip_file_name);
 
     // Create a zip file
-    const output = fs.createWriteStream(zipFilePath);
+    const output = fs.createWriteStream(zip_file_path);
     const archive = archiver('zip', { zlib: { level: 9 } });
 
     output.on('close', () => {
@@ -495,16 +490,16 @@ export const view_uploads_download_all: Controller = async (
 
     // Set response headers for file download
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename=${zipFileName}`);
+    res.setHeader('Content-Disposition', `attachment; filename=${zip_file_name}`);
 
     // Stream the zip file to the response
-    const fileStream = fs.createReadStream(zipFilePath);
+    const fileStream = fs.createReadStream(zip_file_path);
     fileStream.pipe(res);
 
     // Cleanup: Remove the zip file after streaming
     fileStream.on('close', () => {
-      fs.unlinkSync(zipFilePath);
-      console.log(`Removed ${zipFileName} after streaming.`);
+      fs.unlinkSync(zip_file_path);
+      console.log(`Removed ${zip_file_name} after streaming.`);
     });
 
   } catch (error) {
@@ -512,7 +507,7 @@ export const view_uploads_download_all: Controller = async (
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-// Send Mail and Download All remaining in View Uploads
+// Send Mail remaining in View Uploads
 
 /**
  * @description These functions handles viewing and sending orders for a request.

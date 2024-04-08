@@ -20,6 +20,9 @@ import Role from "../../../db/models/role";
 import { number } from "joi";
 import { WhereOptions } from "sequelize";
 import { UserAttributes } from "../../../interfaces/user";
+// import multer from 'multer';
+
+// type uploaded_files = multer.MulterFile[] | undefined;
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -620,37 +623,37 @@ export const provider_onboarding_upload = async (
       });
     }
 
-    const uploadedFiles: any = req.files || [];
+    const uploaded_files: any = req.files || [];
 
-    const independentContractorAgreementPath = uploadedFiles.find(
+    const independent_contractor_agreement_path = uploaded_files.find(
       (file: any) => file.fieldname === "independent_contractor_agreement"
     )?.path;
 
-    const backgroundCheckPath = uploadedFiles.find(
+    const background_check_path = uploaded_files.find(
       (file: any) => file.fieldname === "background_check"
     )?.path;
 
-    const HIPAAPath = uploadedFiles.find(
+    const HIPAA_path = uploaded_files.find(
       (file: any) => file.fieldname === "HIPAA"
     )?.path;
 
-    const nonDiclosurePath = uploadedFiles.find(
+    const non_disclosure_path = uploaded_files.find(
       (file: any) => file.fieldname === "non_diclosure"
     )?.path;
 
-    const licenceDocumentPath = uploadedFiles.find(
+    const licence_document_path = uploaded_files.find(
       (file: any) => file.fieldname === "licence_document"
     )?.path;
 
-    const updateDocument = async (documentName: string, documentPath: string) => {
-      const documentStatus = await Documents.findOne({
+    const update_document = async (documentName: string, documentPath: string) => {
+      const document_status = await Documents.findOne({
         where: {
           user_id,
           document_name: documentName,
         },
       });
 
-      if (!documentStatus) {
+      if (!document_status) {
         await Documents.create({
           user_id,
           document_name: documentName,
@@ -669,24 +672,24 @@ export const provider_onboarding_upload = async (
       }
     };
 
-    if (independentContractorAgreementPath) {
-      await updateDocument("independent_contractor_agreement", independentContractorAgreementPath);
+    if (independent_contractor_agreement_path) {
+      await update_document("independent_contractor_agreement", independent_contractor_agreement_path);
     }
 
-    if (backgroundCheckPath) {
-      await updateDocument("background_check", backgroundCheckPath);
+    if (background_check_path) {
+      await update_document("background_check", background_check_path);
     }
 
-    if (HIPAAPath) {
-      await updateDocument("HIPAA", HIPAAPath);
+    if (HIPAA_path) {
+      await update_document("HIPAA", HIPAA_path);
     }
 
-    if (nonDiclosurePath) {
-      await updateDocument("non_diclosure", nonDiclosurePath);
+    if (non_disclosure_path) {
+      await update_document("non_diclosure", non_disclosure_path);
     }
 
-    if (licenceDocumentPath) {
-      await updateDocument("licence_document", licenceDocumentPath);
+    if (licence_document_path) {
+      await update_document("licence_document", licence_document_path);
     }
 
     return res.status(200).json({
@@ -696,7 +699,6 @@ export const provider_onboarding_upload = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-
 
 export const provider_onboarding_delete = async (
   req: Request,
@@ -785,7 +787,7 @@ export const create_provider_account_refactored: Controller = async (
       "background_check"
     );
     const HIPAA_path = get_file_path(uploaded_files, "HIPAA");
-    const non_diclosure_path = get_file_path(uploaded_files, "non_diclosure");
+    const non_disclosure_path = get_file_path(uploaded_files, "non_diclosure");
 
     const is_role = await Role.findOne({
       where: {
@@ -863,7 +865,7 @@ export const create_provider_account_refactored: Controller = async (
       background_check_path
     );
     await update_document(user.user_id, "HIPAA", HIPAA_path);
-    await update_document(user.user_id, "non_diclosure", non_diclosure_path);
+    await update_document(user.user_id, "non_diclosure", non_disclosure_path);
 
     return res.status(200).json({ message: message_constants.Success });
   } catch (error) {

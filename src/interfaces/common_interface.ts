@@ -14,6 +14,7 @@ export type verified_token = {
   lastname: string;
   email: string;
   type_of_user: string;
+  role_id: number;
   iat: number
 };
 
