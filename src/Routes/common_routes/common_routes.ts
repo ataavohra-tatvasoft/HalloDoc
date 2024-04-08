@@ -42,7 +42,7 @@ router.get(
 );
 router.get("/commonroute/physicians", authmiddleware, physicians);
 router.get(
-  "/commonroute/:account_type/roles",
+  "/commonroute/roles",
   celebrate(roles_validation),
   authmiddleware,
   roles

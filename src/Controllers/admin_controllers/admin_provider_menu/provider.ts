@@ -792,6 +792,7 @@ export const create_provider_account_refactored: Controller = async (
     const is_role = await Role.findOne({
       where: {
         role_name: role,
+        account_type:"physician"
       },
     });
     if (!is_role) {

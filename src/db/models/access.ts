@@ -32,7 +32,7 @@ export default class Access extends Model<
   access_name: string;
 
   @Column({
-    type: DataType.ENUM("admin", "physician", "patient"),
+    type: DataType.ENUM("all","admin", "physician", "patient"),
     allowNull: false,
   })
   account_type: string;

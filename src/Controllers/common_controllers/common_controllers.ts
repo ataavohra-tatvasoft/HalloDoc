@@ -767,7 +767,10 @@ export const roles: Controller = async (
       const roles = await Role.findAll({
         attributes: ["role_id", "role_name"],
         where: {
-          ...(account_type ? { account_type } : {}),
+          ...(account_type
+            ? { account_type: account_type }
+            : { account_type: "all" }),
+          // ...(account_type && { account_type: account_type }),
         },
       });
 
@@ -806,26 +809,25 @@ export const access: Controller = async (
         data: [],
       };
 
-        const accesses = await Access.findAll({
-          attributes: ["access_id", "access_name"],
-          where: {
-            ...(account_type ? { account_type } : {}),
-          },
-        });
-        if (!accesses) {
-          return res.status(404).json({ error: message_constants.NF });
-        }
-        for (const access of accesses) {
-          const formatted_request: any = {
-            access_id: access.access_id,
-            access_name: access.access_name,
-          };
-          formatted_response.data.push(formatted_request);
-        }
-        return res.status(200).json({
-          ...formatted_response,
-        });
-
+      const accesses = await Access.findAll({
+        attributes: ["access_id", "access_name"],
+        where: {
+          ...(account_type ? { account_type } : { account_type: "all" }),
+        },
+      });
+      if (!accesses) {
+        return res.status(404).json({ error: message_constants.NF });
+      }
+      for (const access of accesses) {
+        const formatted_request: any = {
+          access_id: access.access_id,
+          access_name: access.access_name,
+        };
+        formatted_response.data.push(formatted_request);
+      }
+      return res.status(200).json({
+        ...formatted_response,
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: message_constants.ISE });

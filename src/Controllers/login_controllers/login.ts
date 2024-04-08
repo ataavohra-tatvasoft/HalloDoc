@@ -25,13 +25,14 @@ export const login: Controller = async (
       body: { email, password },
     } = req;
     const user = await User.findOne({
-      attributes:[
+      attributes: [
         "user_id",
         "password",
         "firstname",
         "lastname",
         "email",
-        "type_of_user"
+        "type_of_user",
+        "role_id",
       ],
       where: {
         email,
@@ -52,15 +53,15 @@ export const login: Controller = async (
             email,
             password: hashpassword,
           },
-          attributes:[
+          attributes: [
             "user_id",
             "firstname",
             "lastname",
             "email",
-            "type_of_user"
-          ]
-        }
-        );
+            "type_of_user",
+            "role_id",
+          ],
+        });
       }
       if (!user_data) {
         return res.status(401).json({
@@ -69,20 +70,24 @@ export const login: Controller = async (
         });
       }
     }
+
     const data = {
       user_id: user.user_id,
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
       type_of_user: user.type_of_user,
-      role_id: user.role_id
+      role_id: user.role_id,
     };
-    const jwtToken = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
+
+    console.log(data.role_id);
+
+    const jwt_token = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
 
     return res.status(200).json({
       status: true,
       message: message_constants.OK,
-      jwtToken,
+      jwt_token,
     });
   } catch (error: any) {
     res.status(500).json({

@@ -21,6 +21,10 @@ export const authmiddleware = async (
       token,
       process.env.JWT_SECRET_KEY as string
     ) as verified_token;
+
+    // console.log(token, " ", verified_token);
+    console.log(verified_token);
+    
     const validUser = await User.findOne({
       where: {
         email: verified_token.email,
@@ -52,4 +56,3 @@ export const authmiddleware = async (
 };
 
 export default authmiddleware;
-

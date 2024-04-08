@@ -23,7 +23,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Nehrunagar",
-          role_id: 1,
+          role_id: 8,
         },
         {
           user_id: 3,
@@ -41,7 +41,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Ambavadi",
-          role_id: 2,
+          role_id: 8,
         },
         {
           user_id: 4,
@@ -59,7 +59,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Bodakdev",
-          role_id: 3,
+          role_id: 8,
         },
         {
           user_id: 5,
@@ -77,7 +77,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Ambavadi",
-          role_id: 4,
+          role_id: 8,
         },
         {
           user_id: 6,
@@ -95,7 +95,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Bodakdev",
-          role_id: 1,
+          role_id: 8,
         },
         {
           user_id: 7,
@@ -113,7 +113,7 @@ module.exports = {
           dob: dob,
           business_name: "Meditab",
           street: "Prahladnagar",
-          role_id: 2,
+          role_id: 8,
         },
         {
           user_id: 8,
@@ -130,7 +130,7 @@ module.exports = {
           // billing_mobile_no: 7890123456,
           dob: dob,
           street: "Prahladnagar",
-          role_id: 3,
+          role_id: 2,
           on_call_status: "yes",
         },
         {
@@ -148,7 +148,7 @@ module.exports = {
           // billing_mobile_no: 8901234567,
           dob: dob,
           street: "Ambavadi",
-          role_id: 4,
+          role_id: 2,
           on_call_status: "yes",
         },
         {
@@ -166,7 +166,7 @@ module.exports = {
           // billing_mobile_no: 9012345678,
           dob: dob,
           street: "Nehrunagar",
-          role_id: 1,
+          role_id: 2,
           on_call_status: "yes",
         },
         {
@@ -203,7 +203,7 @@ module.exports = {
           // billing_mobile_no: 9012345678,
           dob: dob,
           street: "Nehrunagar",
-          role_id: 3,
+          role_id: 2,
           business_name: "business_2",
           on_call_status: "yes",
         },
@@ -222,7 +222,7 @@ module.exports = {
           // billing_mobile_no: 9012345678,
           dob: dob,
           street: "Nehrunagar",
-          role_id: 4,
+          role_id: 2,
           business_name: "business_3",
           on_call_status: "yes",
         },
@@ -241,7 +241,7 @@ module.exports = {
           // billing_mobile_no: 9012345678,
           dob: dob,
           street: "Nehrunagar",
-          role_id: 1,
+          role_id: 2,
           business_name: "business_4",
           on_call_status: "yes",
         },

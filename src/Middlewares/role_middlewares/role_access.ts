@@ -25,11 +25,12 @@ export const role_access_middleware = async (
       process.env.JWT_SECRET_KEY as string
     ) as verified_token;
 
-    const role_id = verified_token.role_id;
+    console.log(verified_token.role_id);
+    console.log(verified_token.firstname);
 
     const role = await Role.findOne({
       where: {
-        role_id,
+        role_id: verified_token.role_id,
       },
       include: [
         {
@@ -43,9 +44,13 @@ export const role_access_middleware = async (
       });
     }
     for (const access of role.Access) {
-      //  if(access = ){
-      //      next();
-      //  }
+      if (access.access_name == "dashboard") {
+        next();
+      } else {
+        return res.status(500).json({
+          message: message_constants.AD,
+        });
+      }
     }
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {

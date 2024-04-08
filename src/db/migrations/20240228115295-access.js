@@ -17,7 +17,7 @@ module.exports = {
       },
 
       account_type: {
-        type: Sequelize.ENUM("admin", "physician", "patient"),
+        type: Sequelize.ENUM("all","admin", "physician", "patient"),
         allowNull: false,
       },
 

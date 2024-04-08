@@ -24,11 +24,8 @@ import {
   requests_by_request_state_refactored,
   requests_by_request_state_counts,
   regions,
-
 } from "../../controllers";
-import {
-  region_with_thirdparty_API,
-} from "../../controllers";
+import { region_with_thirdparty_API } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
 import {
   manage_requests_by_state_validation,
@@ -51,11 +48,11 @@ import {
   admin_send_link_validation,
   admin_create_request_validation,
   admin_create_request_verify_validation,
-  requests_by_request_state_refactored_validation
+  requests_by_request_state_refactored_validation,
 } from "../../validations";
+import role_access_middleware from "../../middlewares/role_middlewares/role_access";
 import { upload } from "../../utils";
 const router: Router = express.Router();
-
 
 /**                              Admin in Dashboard                                       */
 
@@ -80,15 +77,10 @@ router.get(
   region_with_thirdparty_API
 );
 
-
 /**
  * @description This route handles various actions related to requests based on their state.
  */
-router.get(
-  "/dashboard/requestsregion",
-  authmiddleware,
-  regions
-);
+router.get("/dashboard/requestsregion", authmiddleware, regions);
 router.get(
   "/dashboard/requestsandcounts",
   authmiddleware,
@@ -104,6 +96,7 @@ router.get(
 router.get(
   "/dashboard/requests",
   authmiddleware,
+  role_access_middleware,
   celebrate(requests_by_request_state_refactored_validation),
   requests_by_request_state_refactored
 );
