@@ -5,8 +5,8 @@ export const requests_by_request_state_provider_validation = {
     state: Joi.string().valid("new", "pending", "conclude", "active"),
     search: Joi.string().optional().allow(""),
     requestor: Joi.string().optional().allow(""),
-    page: Joi.number().integer().min(1).default(1),
-    page_size: Joi.number().integer().min(1).default(10),
+    page: Joi.number().integer().min(1).default(1).optional(),
+    page_size: Joi.number().integer().min(1).default(10).optional(),
   }),
 };
 

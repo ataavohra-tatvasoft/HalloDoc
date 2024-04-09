@@ -83,6 +83,8 @@ module.exports = {
           "unassigned",
           "assigned",
           "accepted",
+          "md_on_route",
+          "md_on_site",
           "closed",
           "conclude",
           "blocked",

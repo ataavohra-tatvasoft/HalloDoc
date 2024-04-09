@@ -5,7 +5,11 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller, FormattedResponse, VerifiedToken } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+  VerifiedToken,
+} from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
@@ -69,7 +73,9 @@ export const requests_by_request_state_provider: Controller = async (
       });
     }
 
-    const handle_request_state = async (additionalAttributes?: Array<string>) => {
+    const handle_request_state = async (
+      additionalAttributes?: Array<string>
+    ) => {
       const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
@@ -452,3 +458,20 @@ export const save_view_notes_for_request_provider: Controller = async (
   }
 };
 
+export const active_state_encounter: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { type_of_care } = req.query as {
+      [key: string]: string;
+    };
+
+    if (type_of_care == "consult") {
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};

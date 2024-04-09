@@ -922,7 +922,7 @@ export const admin_profile_admin_info_edit: Controller = async (
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
-};
+};` `
 export const admin_profile_mailing_billling_info_edit: Controller = async (
   req: Request,
   res: Response,

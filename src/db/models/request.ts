@@ -113,6 +113,8 @@ export default class Request extends Model<
       "unassigned",
       "assigned",
       "accepted",
+      "md_on_route",
+      "md_on_site",
       "closed",
       "conclude",
       "blocked",

@@ -8,13 +8,16 @@ export const patient_history_validation = {
     email: Joi.string().email().allow("").optional(),
     phone_no: Joi.string()
     .trim()
+    .allow("")
     .pattern(/^\d{11,13}$/)
     .optional(), // Adjust based on your phone number validation requirements
     page: Joi.string()
-      .required()
+    .optional()
+    .allow("")
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
+    .allow("")
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
@@ -26,10 +29,10 @@ export const patient_records_validation = {
   // Query parameters
   query: Joi.object({
     page: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
@@ -66,24 +69,25 @@ export const patient_records_view_case_validation = {
 export const search_records_validation = {
   // Query parameters
   query: Joi.object({
-    request_status: Joi.string().allow(""),
-    patient_name: Joi.string().allow(""),
-    request_type: Joi.string().allow(""),
-    from_date_of_service: Joi.any().allow(""),
-    to_date_of_service: Joi.any().allow(""),
-    provider_name: Joi.string().allow(""),
-    email: Joi.string().email().allow(""),
+    request_status: Joi.string().allow("").optional(),
+    patient_name: Joi.string().allow("").optional(),
+    request_type: Joi.string().allow("").optional(),
+    from_date_of_service: Joi.any().allow("").optional(),
+    to_date_of_service: Joi.any().allow("").optional(),
+    provider_name: Joi.string().allow("").optional(),
+    email: Joi.string().email().allow("").optional(),
     phone_no: Joi.string()
     .trim()
+    .allow("")
     .pattern(/^\d{11,13}$/)
     .optional(),
     page: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
-  }).required(),
+  }).optional(),
 
   // Empty body (optional)
   body: Joi.object().allow({}), // Allow an empty object for the body
@@ -102,21 +106,21 @@ export const search_record_delete_validation = {
 export const logs_history_validation = {
   // Query parameters
   query: Joi.object({
-    type_of_log: Joi.string().allow(""),
-    search_by_role: Joi.string().allow(""),
-    receiver_name: Joi.string().allow(""),
-    email_id: Joi.string().email().allow(""),
+    type_of_log: Joi.string().allow("").optional(),
+    search_by_role: Joi.string().allow("").optional(),
+    receiver_name: Joi.string().allow("").optional(),
+    email_id: Joi.string().email().allow("").optional(),
     mobile_no: Joi.string()
     .trim()
     .pattern(/^\d{11,13}$/)
     .optional(),
-    created_date: Joi.any().allow(""),
-    sent_date: Joi.any().allow(""),
+    created_date: Joi.any().allow("").optional(),
+    sent_date: Joi.any().allow("").optional(),
     page: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).required(),
 
@@ -127,21 +131,21 @@ export const logs_history_validation = {
 export const cancel_and_block_history_validation = {
   // Query parameters
   query: Joi.object({
-    type_of_history: Joi.string().required().valid("cancelled", "blocked"),
-    name: Joi.string().allow(""),
-    date: Joi.any().allow(""),
-    email: Joi.string().email().allow(""),
+    type_of_history: Joi.string().optional().valid("cancelled", "blocked"),
+    name: Joi.string().allow("").optional(),
+    date: Joi.any().allow("").optional(),
+    email: Joi.string().email().allow("").optional(),
     phone_no:Joi.string()
     .trim()
     .pattern(/^\d{11,13}$/)
     .optional(),
     page: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
-  }).required(),
+  }).optional(),
 
   // Empty body (optional)
   body: Joi.object().allow({}), // Allow an empty object for the body

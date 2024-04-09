@@ -4,10 +4,10 @@ export const provider_list_validation = {
   query: Joi.object({
     region: Joi.string().allow(""),
     page: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-      .required()
+    .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }),
 };

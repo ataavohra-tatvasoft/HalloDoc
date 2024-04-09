@@ -6,7 +6,7 @@ import {
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor";
-import { NUMBER, WhereOptions } from "sequelize";
+import { WhereOptions } from "sequelize";
 import { BusinessAttributes } from "../../interfaces/business-vendor";
 
 /** Configs */
