@@ -38,16 +38,16 @@ export default class Business extends Model<
   profession: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BIGINT,
     allowNull: true,
   })
-  fax_number: number;
+  fax_number: bigint;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BIGINT,
     allowNull: true,
   })
-  mobile_no: number;
+  mobile_no: bigint;
 
   @Column({
     type: DataType.STRING,
@@ -57,10 +57,10 @@ export default class Business extends Model<
   email: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BIGINT,
     allowNull: true,
   })
-  business_contact: number;
+  business_contact: bigint;
 
   @Column({
     type: DataType.STRING,

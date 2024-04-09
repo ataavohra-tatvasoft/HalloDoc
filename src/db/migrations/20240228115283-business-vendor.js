@@ -27,11 +27,11 @@ module.exports = {
         allowNull: true,
       },
       fax_number: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       mobile_no: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       email: {
@@ -40,7 +40,7 @@ module.exports = {
         unique: true,
       },
       business_contact: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       street: {

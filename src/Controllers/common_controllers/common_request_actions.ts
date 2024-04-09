@@ -18,7 +18,6 @@ import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
 import archiver from "archiver";
-import JSZip from "jszip";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -83,7 +82,7 @@ export const view_case_for_request: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
@@ -175,7 +174,7 @@ export const view_uploads_view_data: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
@@ -278,15 +277,29 @@ export const view_uploads_actions_delete: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
+
+    const document = await Documents.findOne({
+      where: {
+        request_id: request.request_id,
+        document_id,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: message_constants.DNF });
+    }
+
     const delete_status = await Documents.destroy({
       where: {
         request_id: request.request_id,
         document_id,
       },
     });
+
     if (!delete_status) {
       return res.status(404).json({ error: message_constants.EWD });
     }
+
     return res.status(200).json({
       status: true,
       confirmation_no,
@@ -560,7 +573,7 @@ export const view_send_orders_for_request: Controller = async (
     if (!business_data) {
       return res.status(404).json({ error: message_constants.BNF });
     }
-    const formatted_request: any = {
+    const formatted_request = {
       business_contact: business_data?.business_contact,
       email: business_data?.email,
       fax_number: business_data?.fax_number,
@@ -656,6 +669,7 @@ export const send_agreement: Controller = async (
         errormessage: message_constants.UA,
       });
     }
+    console.log(user);
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
@@ -680,8 +694,7 @@ export const send_agreement: Controller = async (
     });
     if (!request) {
       return res.status(400).json({
-        message: message_constants.IS,
-        errormessage: message_constants.UA,
+        message: message_constants.RNF,
       });
     }
     // const resetToken = uuid();

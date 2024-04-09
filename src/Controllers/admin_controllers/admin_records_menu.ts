@@ -13,7 +13,6 @@ import Order from "../../db/models/order";
 import Documents from "../../db/models/documents";
 import Logs from "../../db/models/log";
 
-
 /** Configs */
 dotenv.config({ path: `.env` });
 
@@ -67,7 +66,7 @@ export const patient_history: Controller = async (
     }
     var i = offset + 1;
     for (const user of users) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         firstname: user.firstname,
         lastname: user.lastname,
@@ -135,7 +134,7 @@ export const patient_records: Controller = async (
     }
     var i = offset + 1;
     for (const request of requests) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         client_member:
           request.Patient?.firstname + " " + request.Patient?.lastname,
@@ -211,7 +210,7 @@ export const patient_records_view_documents: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
@@ -289,7 +288,7 @@ export const patient_records_view_case: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
@@ -441,7 +440,7 @@ export const search_records: Controller = async (
     }
     var i: number = offset + 1;
     for (const request of requests) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         request_id: request.request_id,
         confirmation_no: request.confirmation_no,
@@ -605,12 +604,13 @@ export const logs_history: Controller = async (
     }
     var i = offset + 1;
     for (const log of logs) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         recipient: log.recipient,
         action: log.action,
         role_name: log.role_name,
         email_id: log.email,
+        mobile_no: log.mobile_no,
         created_date: log.createdAt.toISOString().split("T")[0],
         sent_date: log.createdAt.toISOString().split("T")[0],
         sent: log.sent,
@@ -748,17 +748,25 @@ export const block_history_unblock: Controller = async (
   try {
     const { confirmation_no } = req.params;
 
-    const request = RequestModel.findOne({
+    const request = await RequestModel.findOne({
       where: {
         confirmation_no,
       },
+      // attributes: ["request_status"],
     });
     if (!request) {
       return res.status(404).json({
         message: message_constants.RNF,
       });
     }
-    const update_status = RequestModel.update(
+
+    if (request.request_status !== "blocked") {
+      return res.status(500).json({
+        message: "Request is not blocked",
+      });
+    }
+
+    const update_status = await RequestModel.update(
       {
         request_status: "new",
         block_reason: null,

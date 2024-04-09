@@ -9,7 +9,7 @@ export interface UserAttributes {
   // Common fields for all user types
   firstname: string | null;
   lastname: string | null;
-  mobile_no: string | null;
+  mobile_no: bigint | null;
   reset_token?: string | null;
   reset_token_expiry?: number | null;
   address_1: string | null;
@@ -22,7 +22,7 @@ export interface UserAttributes {
   status?: string | null;
 
   // Admin-specific fields (optional)
-  billing_mobile_no?: number | null;
+  billing_mobile_no?: bigint | null;
 
   // Patient-specific fields (optional)
   dob?: Date | null;
@@ -30,7 +30,7 @@ export interface UserAttributes {
   // Provider-specific fields (optional)
   medical_licence?: string | null;
   NPI_no?: number | null;
-  alternative_mobile_no?: string | null;
+  alternative_mobile_no?: bigint | null;
   stop_notification_status?: string | null;
   synchronization_email: string | null;
   admin_notes: string | null;

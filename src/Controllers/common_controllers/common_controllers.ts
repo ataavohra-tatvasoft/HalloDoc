@@ -69,7 +69,7 @@ export const region_for_request_states: Controller = async (
     const unique_regions = [...new Set(regions.map((region) => region.state))];
 
     for (const region of unique_regions) {
-      const formatted_request: any = {
+      const formatted_request = {
         region_name: region,
       };
       formatted_response.data.push(formatted_request);
@@ -101,7 +101,7 @@ export const transfer_request_regions: Controller = async (
     const unique_regions = [...new Set(regions.map((region) => region.state))];
 
     for (const region of unique_regions) {
-      const formatted_request: any = {
+      const formatted_request = {
         region_name: region,
       };
       formatted_response.data.push(formatted_request);
@@ -193,7 +193,7 @@ export const professions: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const profession of professions) {
-        const formatted_request: any = {
+        const formatted_request = {
           profession_name: profession.profession_name,
         };
         formatted_response.data.push(formatted_request);
@@ -233,9 +233,7 @@ export const export_single: Controller = async (
       ...(region && { state: region }),
     };
 
-    const handle_request_state = async (
-      additional_attributes?: Array<string>
-    ) => {
+    const handle_request_state = async (additional_attributes?: any) => {
       const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
@@ -324,7 +322,7 @@ export const export_single: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formatted_request: any = {
+        const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -395,20 +393,39 @@ export const export_single: Controller = async (
 
     switch (state) {
       case "new":
+        formatted_response = await handle_request_state();
+        break;
       case "pending":
       case "active":
       case "conclude":
-      case "toclose":
-      case "unpaid":
         formatted_response = await handle_request_state();
+        break;
+      case "toclose":
+        formatted_response = await handle_request_state();
+        break;
+      case "unpaid":
+        formatted_response = await handle_request_state([
+          "date_of_service",
+          "physician_id",
+          "patient_id",
+        ]);
         break;
       default:
         return res.status(500).json({ message: message_constants.IS });
     }
 
-    // Create a new Excel workbook and worksheet
+    // Create a new Excel work_book and worksheet
     const work_book = new ExcelJS.Workbook();
     const worksheet = work_book.addWorksheet("Requests");
+
+    const column_widths = [15, 25, 20, 25, 20, 25, 25]; // Adjust widths as needed
+    worksheet.getColumn(1).width = column_widths[0];
+    worksheet.getColumn(2).width = column_widths[1];
+    worksheet.getColumn(3).width = column_widths[2];
+    worksheet.getColumn(4).width = column_widths[3];
+    worksheet.getColumn(5).width = column_widths[4];
+    worksheet.getColumn(6).width = column_widths[5];
+    worksheet.getColumn(7).width = column_widths[6];
 
     // Define headers for the Excel sheet
     const headers = [
@@ -425,9 +442,19 @@ export const export_single: Controller = async (
     // Add headers to the worksheet
     worksheet.addRow(headers);
 
+    // // Define a spaced style with increased bottom padding
+    // const spacedStyle = {
+    //   font: { size: 11 },
+    //   alignment: { vertical: "center" },
+    //   border: { bottom: { style: "thin" } },
+    // };
+
+    // // Add the style to the workbook
+    // work_book.addStyles(spacedStyle);
+
     // Add data to the worksheet
     for (const request of formatted_response.data) {
-      const row_data = [
+      const rowData = [
         request.sr_no,
         request.request_id,
         request.request_state,
@@ -437,41 +464,29 @@ export const export_single: Controller = async (
         request.date_of_service,
         // Add more data fields as needed
       ];
-      worksheet.addRow(row_data);
+      worksheet.addRow(rowData);
     }
 
-    // Generate a unique file_name for the Excel file
-    const file_name = `requests_${state}_${new Date().toISOString()}.xlsx`;
-    const file_path = path.join(__dirname, "..", "..", "downloads", file_name); // Update the directory path
-
-    // Ensure the downloads directory exists
-    if (!fs.existsSync(path.dirname(file_path))) {
-      fs.mkdirSync(path.dirname(file_path), { recursive: true });
-    }
-
-    // Write the workbook to the file system
-    await work_book.xlsx.writeFile(file_path);
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
 
     // Set the response headers for file download
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader("Content-Disposition", `attachment; file_name=${file_name}`);
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-    // Stream the file to the response
-    const file_stream = fs.createReadStream(file_path);
-    file_stream.pipe(res);
+    // Write the work_book to the response
+    await work_book.xlsx.write(res);
 
-    // Cleanup: Remove the file after streaming
-    file_stream.on("close", () => {
-      fs.unlinkSync(file_path);
-    });
+    return res.end();
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
   }
 };
+
 export const export_all: Controller = async (
   req: Request,
   res: Response,
@@ -480,7 +495,8 @@ export const export_all: Controller = async (
   try {
     const { search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
-    };
+
+    }; ;
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
@@ -506,8 +522,10 @@ export const export_all: Controller = async (
       "unpaid",
     ];
 
+    const work_book = new ExcelJS.Workbook();
+
     for (const state of states) {
-      const handle_request_state = async () => {
+      const handle_request_state = async (additional_attributes?: any) => {
         const formatted_response: FormattedResponse<any> = {
           status: true,
           data: [],
@@ -540,6 +558,9 @@ export const export_all: Controller = async (
             "requested_by",
             "requested_date",
             "date_of_service",
+            "physician_id",
+            "patient_id",
+            ...(additional_attributes || []),
           ],
           include: [
             {
@@ -557,6 +578,27 @@ export const export_all: Controller = async (
               ],
               where: where_clause_patient,
             },
+            ...(state !== "new"
+              ? [
+                  {
+                    as: "Physician",
+                    model: User,
+                    attributes: [
+                      "user_id",
+                      "type_of_user",
+                      "firstname",
+                      "lastname",
+                      "dob",
+                      "mobile_no",
+                      "address_1",
+                      "address_2",
+                    ],
+                    where: {
+                      type_of_user: "physician",
+                    },
+                  },
+                ]
+              : []),
             {
               model: Requestor,
               attributes: ["user_id", "first_name", "last_name"],
@@ -577,17 +619,45 @@ export const export_all: Controller = async (
             confirmationNo: request.confirmation_no,
             requestor: request.requested_by,
             requested_date: request.requested_date?.toISOString().split("T")[0],
-            date_of_service: request.date_of_service
-              ?.toISOString()
-              .split("T")[0],
+            ...(state !== "new"
+              ? {
+                  date_of_service: request.date_of_service
+                    ?.toISOString()
+                    .split("T")[0],
+                }
+              : {}),
             patient_data: {
               user_id: request.Patient.user_id,
               name: request.Patient.firstname + " " + request.Patient.lastname,
               DOB: request.Patient.dob?.toISOString().split("T")[0],
               mobile_no: request.Patient.mobile_no,
-              address: request.Patient.address_1 + " " + request.Patient.state,
-              region: request.Patient.state,
+              address:
+                request.Patient.address_1 +
+                " " +
+                request.Patient.address_2 +
+                " " +
+                request.Patient.state,
+              ...(state === "toclose" ? { region: request.Patient.state } : {}),
             },
+            ...(state !== "new"
+              ? {
+                  physician_data: {
+                    user_id: request.Physician.user_id,
+                    name:
+                      request.Physician.firstname +
+                      " " +
+                      request.Physician.lastname,
+                    DOB: request.Physician.dob?.toISOString().split("T")[0],
+                    mobile_no: request.Physician.mobile_no,
+                    address:
+                      request.Physician.address_1 +
+                      " " +
+                      request.Physician.address_2 +
+                      " " +
+                      request.Patient.state,
+                  },
+                }
+              : {}),
             requestor_data: {
               user_id: request.Requestor?.user_id || null,
               first_name:
@@ -610,8 +680,16 @@ export const export_all: Controller = async (
       const formatted_response = await handle_request_state();
 
       // Create a new worksheet for each state
-      const work_book = new ExcelJS.Workbook();
       const worksheet = work_book.addWorksheet(state);
+
+      const column_widths = [15, 25, 20, 25, 20, 25, 25]; // Adjust widths as needed
+      worksheet.getColumn(1).width = column_widths[0];
+      worksheet.getColumn(2).width = column_widths[1];
+      worksheet.getColumn(3).width = column_widths[2];
+      worksheet.getColumn(4).width = column_widths[3];
+      worksheet.getColumn(5).width = column_widths[4];
+      worksheet.getColumn(6).width = column_widths[5];
+      worksheet.getColumn(7).width = column_widths[6];
 
       // Define headers for the Excel sheet
       const headers = [
@@ -626,7 +704,7 @@ export const export_all: Controller = async (
       worksheet.addRow(headers);
 
       for (const request of formatted_response.data) {
-        const row_data = [
+        const rowData = [
           request.request_id,
           request.request_state,
           request.confirmationNo,
@@ -634,44 +712,45 @@ export const export_all: Controller = async (
           request.requested_date,
           request.date_of_service,
         ];
-        worksheet.addRow(row_data);
+        worksheet.addRow(rowData);
       }
 
-      // Generate a unique file_name for the Excel file
-      const excel_buffer = await work_book.xlsx.writeBuffer();
+      // Create a buffer containing the Excel workbook data
+      const excelBuffer = await work_book.xlsx.writeBuffer();
 
-      // Add the workbook data to the ZIP file with a descriptive file_name
-      zip.file(`${state}.xlsx`, excel_buffer);
+      // Add the workbook data to the ZIP file with a descriptive filename
+      zip.file(`${state}.xlsx`, excelBuffer);
     }
 
-    // Generate a unique file_name for the ZIP file
-    const file_name = `requests_${new Date().toISOString()}.zip`;
-    const file_path = path.join(__dirname, "..", "downloads", file_name); // Assuming downloads folder exists in the root directory
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${new Date().toISOString()}.zip`;
 
-    // Write the ZIP file to the file system
-    await zip
-      .generateNodeStream({ type: "nodebuffer", streamFiles: true })
-      .pipe(fs.createWriteStream(file_path))
-      .on("finish", () => {
-        // Set the response headers for file download
-        res.setHeader("Content-Type", "application/zip");
-        res.setHeader(
-          "Content-Disposition",
-          `attachment; file_name=${file_name}`
-        );
+    // Set the response headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-        // Stream the ZIP file to the client's browser
-        const file_stream = fs.createReadStream(file_path);
-        file_stream.pipe(res);
+    // Write the ZIP file to the response
+    const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
+    if (zip_archive) {
+      // console.log(res);
+      return res.end(zip_archive);
+    } else {
+      return res.status(500).json({ message: message_constants.ISE });
+    }
 
-        // Cleanup: Remove the ZIP file after streaming
-        file_stream.on("close", () => {
-          fs.unlinkSync(file_path);
-        });
-      });
+    // // Alternate Way
+    // await zip
+    //   .generateAsync({ type: "nodebuffer" })
+    //   .then((content) => res.end(content))
+    //   .catch((error) => console.error(error));
+
+    // return res.end();
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -696,7 +775,7 @@ export const actions: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
@@ -734,7 +813,7 @@ export const physicians: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const physician of physicians) {
-        const formatted_request: any = {
+        const formatted_request = {
           physician_name: physician.firstname + " " + physician.lastname,
         };
         formatted_response.data.push(formatted_request);
@@ -778,7 +857,7 @@ export const roles: Controller = async (
         return res.status(404).json({ error: message_constants.EFPD });
       }
       for (const role of roles) {
-        const formatted_request: any = {
+        const formatted_request = {
           role_id: role.role_id,
           role_name: role.role_name,
         };
@@ -819,7 +898,7 @@ export const access: Controller = async (
         return res.status(404).json({ error: message_constants.NF });
       }
       for (const access of accesses) {
-        const formatted_request: any = {
+        const formatted_request = {
           access_id: access.access_id,
           access_name: access.access_name,
         };

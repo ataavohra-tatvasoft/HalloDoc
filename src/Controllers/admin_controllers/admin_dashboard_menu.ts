@@ -29,62 +29,63 @@ export const admin_signup: Controller = async (
   res: Response,
   next: NextFunction
 ) => {
-  const {
-    body: {
-      Email,
-      Password,
-      Status,
-      Role_Id,
-      FirstName,
-      LastName,
-      MobileNumber,
-      Zip,
-      Billing_MobileNumber,
-      Address_1,
-      Address_2,
-      City,
-      State,
-      Country_Code,
-    },
-  } = req;
-  const hashedPassword: string = await bcrypt.hash(Password, 10);
   try {
-    const adminData = await User.create({
-      type_of_user: "admin",
-      email: Email,
-      password: hashedPassword,
-      status: Status,
-      role_id: Role_Id,
-      firstname: FirstName,
-      lastname: LastName,
-      mobile_no: MobileNumber,
-      zip: Zip,
-      billing_mobile_no: Billing_MobileNumber,
-      address_1: Address_1,
-      address_2: Address_2,
-      city: City,
-      state: State,
-      country_code: Country_Code,
-    });
+    const {
+      body: {
+        Email,
+        Password,
+        Status,
+        Role_Id,
+        FirstName,
+        LastName,
+        MobileNumber,
+        Zip,
+        Billing_MobileNumber,
+        Address_1,
+        Address_2,
+        City,
+        State,
+        Country_Code,
+      },
+    } = req;
+    const hashed_password: string = await bcrypt.hash(Password, 10);
 
-    if (!adminData) {
-      return res.status(400).json({
-        status: false,
-        message: message_constants.FS,
+    try {
+      const admin_data = await User.create({
+        type_of_user: "admin",
+        email: Email,
+        password: hashed_password,
+        status: Status,
+        role_id: Role_Id,
+        firstname: FirstName,
+        lastname: LastName,
+        mobile_no: MobileNumber,
+        zip: Zip,
+        billing_mobile_no: Billing_MobileNumber,
+        address_1: Address_1,
+        address_2: Address_2,
+        city: City,
+        state: State,
+        country_code: Country_Code,
       });
-    }
-
-    if (adminData) {
-      return res.status(200).json({
-        status: true,
-        message: message_constants.SS,
+      if (admin_data) {
+        return res.status(200).json({
+          status: true,
+          message: message_constants.SS,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        status: false,
+        errormessage: "Already Signed-Up",
       });
     }
   } catch (error: any) {
+    console.log(error);
     return res.status(500).json({
       status: false,
-      errormessage: message_constants.ISE + " " + error.message,
-      message: message_constants.ISE,
+      message: message_constants.ISE + " " + error.message,
     });
   }
 };
@@ -386,7 +387,7 @@ export const manage_requests_by_State: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formatted_request: any = {
+        const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -506,7 +507,7 @@ export const requests_by_request_state_counts: Controller = async (
         },
       });
       console.log(count);
-      const formatted_request: any = {
+      const formatted_request = {
         request_state: state,
         counts: count,
       };
@@ -630,7 +631,7 @@ export const requests_by_request_state_refactored: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formatted_request: any = {
+        const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -779,7 +780,7 @@ export const view_notes_for_request: Controller = async (
       },
       attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
-    const formatted_request: any = {
+    const formatted_request = {
       confirmation_no: confirmation_no,
       transfer_notes: {
         notes: transfer_notes_list?.map((note) => ({
@@ -915,7 +916,7 @@ export const cancel_case_for_request_view_data: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       confirmation_no: request.confirmation_no,
       patient_data: {
         first_name: request.Patient.firstname,
@@ -1020,9 +1021,8 @@ export const assign_request_region_physician: Controller = async (
       [key: string]: string;
     };
     var i = 1;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
-      message: "Successfull !!!",
       confirmation_no: confirmation_no,
       data: [],
     };
@@ -1040,7 +1040,7 @@ export const assign_request_region_physician: Controller = async (
       });
     }
     for (const physician of physicians) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         confirmation_no: confirmation_no,
         firstname: physician.firstname,
@@ -1109,7 +1109,7 @@ export const block_case_for_request_view: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       confirmation_no: confirmation_no,
       data: [],
@@ -1142,7 +1142,7 @@ export const block_case_for_request_view: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       confirmation_no: confirmation_no,
       patient_data: {
         user_id: request.Patient.user_id,
@@ -1240,7 +1240,7 @@ export const transfer_request_region_physicians: Controller = async (
       });
     }
     for (const physician of physicians) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         // firstname: physician.firstname,
         // lastname: physician.lastname,
@@ -1288,7 +1288,7 @@ export const transfer_request: Controller = async (
                 "clear",
               ],
             },
-            { [Op.eq]: "accepted" },
+            // { [Op.eq]: "accepted" },
           ],
         },
       },
@@ -1483,7 +1483,7 @@ export const close_case_for_request_view_details: Controller = async (
     if (!request) {
       return res.status(404).json({ error: message_constants.RNF });
     }
-    const formatted_request: any = {
+    const formatted_request = {
       request_id: request.request_id,
       confirmation_no: request.confirmation_no,
       patient_data: {

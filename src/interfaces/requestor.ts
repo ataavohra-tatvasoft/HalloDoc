@@ -5,7 +5,7 @@ export interface RequestorAttributes {
   user_id: number;
   first_name: string;
   last_name: string;
-  mobile_number: number;
+  mobile_number: bigint;
   email: string;
   house_name: string;
   street: string;

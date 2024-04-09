@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller, FormattedResponse } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+} from "../../interfaces/common_interface";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor";
-import { WhereOptions } from "sequelize";
+import { NUMBER, WhereOptions } from "sequelize";
 import { BusinessAttributes } from "../../interfaces/business-vendor";
 
 /** Configs */
@@ -15,34 +18,35 @@ export const partner_vendor_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { vendor, profession, page, page_size } = req.query as {  [key: string] : string} ;
+    const { vendor, profession, page, page_size } = req.query as {
+      [key: string]: string;
+    };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
-    const where_clause : WhereOptions<BusinessAttributes> = {
-        ...(vendor && { business_name : vendor }),
-        ...(profession && { profession }),
-      };
-  
+    const where_clause: WhereOptions<BusinessAttributes> = {
+      ...(vendor && { business_name: vendor }),
+      ...(profession && { profession }),
+    };
 
-    const { count: total_count, rows: businesses } = await Business.findAndCountAll({
-      attributes: [
-        "business_id",
-        "profession",
-        "business_name",
-        "email",
-        "fax_number",
-        "mobile_no",
-        "business_contact",
-      ],
-      where: where_clause,
-
-    });
+    const { count: total_count, rows: businesses } =
+      await Business.findAndCountAll({
+        attributes: [
+          "business_id",
+          "profession",
+          "business_name",
+          "email",
+          "fax_number",
+          "mobile_no",
+          "business_contact",
+        ],
+        where: where_clause,
+      });
     if (!businesses) {
       return res.status(404).json({
         message: message_constants.BNF,
@@ -50,7 +54,7 @@ export const partner_vendor_list: Controller = async (
     }
     var i = offset + 1;
     for (const business of businesses) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         business_id: business.business_id,
         profession: business.profession,
@@ -93,30 +97,28 @@ export const add_business: Controller = async (
       state,
       zip,
     } = req.body;
-    
-    const status = await Business.create({
+
+    await Business.create({
       business_name,
       profession,
       fax_number,
-      mobile_no,
+      mobile_no: BigInt(mobile_no),
       email,
-      business_contact,
+      business_contact: BigInt(business_contact),
       street,
       city,
       state,
-      zip,
+      zip: Number(zip),
     });
-    if (!status) {
-      return res.status(400).json({
-        message: message_constants.EWCB,
-      });
-    }
+
     return res.status(200).json({
       message: message_constants.Success,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    res.status(500).json({ message: message_constants.ISE });
+    res
+      .status(500)
+      .json({ message: message_constants.EWCB + " " + error.message });
   }
 };
 
@@ -148,20 +150,20 @@ export const update_business: Controller = async (
       city,
       state,
       zip,
-    } = req.body 
+    } = req.body;
 
     const status = await Business.update(
       {
         business_name,
         profession,
         fax_number,
-        mobile_no,
+        mobile_no: BigInt(mobile_no),
         email,
-        business_contact,
+        business_contact: BigInt(business_contact),
         street,
         city,
         state,
-        zip,
+        zip: Number(zip),
       },
       {
         where: { business_id },

@@ -86,9 +86,9 @@ module.exports = {
         },
       },
       status: {
-        type: Sequelize.ENUM("active","pending","in-active"),
+        type: Sequelize.ENUM("active", "pending", "in-active"),
         allowNull: false,
-        defaultValue:"pending",
+        defaultValue: "pending",
       },
 
       // Admin-specific fields
@@ -194,7 +194,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('user');
-
+    await queryInterface.dropTable("user");
   },
 };

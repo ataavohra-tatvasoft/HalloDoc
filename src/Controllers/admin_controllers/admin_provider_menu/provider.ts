@@ -6,6 +6,7 @@ import Order from "../../../db/models/order";
 import {
   Controller,
   FormattedResponse,
+  File,
 } from "../../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -17,12 +18,9 @@ import Region from "../../../db/models/region";
 import UserRegionMapping from "../../../db/models/user-region_mapping";
 import { update_region_mapping } from "../../../utils/helper_functions";
 import Role from "../../../db/models/role";
-import { number } from "joi";
 import { WhereOptions } from "sequelize";
 import { UserAttributes } from "../../../interfaces/user";
-// import multer from 'multer';
-
-// type uploaded_files = multer.MulterFile[] | undefined;
+import Logs from "../../../db/models/log";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -72,7 +70,7 @@ export const provider_list: Controller = async (
           role_id: provider.role_id,
         },
       });
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         user_id: provider.user_id,
         stop_notification: provider.stop_notification_status,
@@ -128,7 +126,7 @@ export const stop_notification: Controller = async (
       message: message_constants.US,
     });
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE });
   }
 };
 
@@ -139,7 +137,9 @@ export const contact_provider: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const { email, mobile_no } = req.query;
+    const { email, mobile_no } = req.query as {
+      [key: string]: string;
+    };
     const { message } = req.body;
     const user = await User.findOne({
       where: {
@@ -152,6 +152,85 @@ export const contact_provider: Controller = async (
       return res.status(400).json({
         message: message_constants.IEM,
         errormessage: message_constants.UA,
+      });
+    }
+    if (email && mobile_no) {
+      const mailContent = `
+      <html>
+      <p>Given below is a message from admin:</p>
+      <br>
+      <br>
+      <p>Message: ${message} </p>
+      <br>
+      <br>
+      <br>
+      <br>
+      </html>
+    `;
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT),
+        secure: false,
+        debug: true,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+      const info = await transporter.sendMail({
+        from: "vohraatta@gmail.com",
+        to: user.email,
+        subject: "Message",
+        html: mailContent,
+      });
+      if (!info) {
+        res.status(500).json({
+          message: message_constants.EWSM,
+        });
+      }
+
+      const email_log = await Logs.create({
+        type_of_log: "Email",
+        action: "For contacting provider",
+        role_name: "Admin",
+        email: email,
+        sent: "Yes",
+      });
+
+      if (!email_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
+        });
+      }
+
+      const account_sid = process.env.TWILIO_ACCOUNT_SID;
+      const auth_token = process.env.TWILIO_AUTH_TOKEN;
+      const client = twilio(account_sid, auth_token);
+
+      await client.messages.create({
+        body: `Message from admin: ${message}`,
+        from: process.env.TWILIO_MOBILE_NO,
+        to: "+" + mobile_no,
+      });
+
+      const SMS_log = await Logs.create({
+        type_of_log: "SMS",
+        action: "For contacting provider",
+        role_name: "Admin",
+        // mobile_no: user.mobile_no,
+        mobile_no: BigInt(mobile_no),
+        sent: "Yes",
+      });
+      if (!SMS_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
+        });
+      }
+
+      return res.status(200).json({
+        status: true,
+        message: message_constants.ES + " " + message_constants.MS,
       });
     }
     if (email) {
@@ -189,29 +268,58 @@ export const contact_provider: Controller = async (
           message: message_constants.EWSM,
         });
       }
+
+      const email_log = await Logs.create({
+        type_of_log: "Email",
+        action: "For contacting provider",
+        role_name: "Admin",
+        email: email,
+        sent: "Yes",
+      });
+
+      if (!email_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
+        });
+      }
+
       return res.status(200).json({
         message: message_constants.ES,
       });
     }
     if (mobile_no) {
-      const accountSid = "AC755f57f9b0f3440c6d2a207bd5678bdd";
-      const authToken = "a795f37433f7542bea73622828e66841";
-      const client = twilio(accountSid, authToken);
+      const account_sid = process.env.TWILIO_ACCOUNT_SID;
+      const auth_token = process.env.TWILIO_AUTH_TOKEN;
+      const client = twilio(account_sid, auth_token);
 
       await client.messages.create({
         body: `Message from admin: ${message}`,
-        from: "+15187597839",
+        from: process.env.TWILIO_MOBILE_NO,
         to: "+" + mobile_no,
       });
 
+      const SMS_log = await Logs.create({
+        type_of_log: "SMS",
+        action: "For contacting provider",
+        role_name: "Admin",
+        // mobile_no: user.mobile_no,
+        mobile_no: BigInt(mobile_no),
+        sent: "Yes",
+      });
+      if (!SMS_log) {
+        return res.status(500).json({
+          message: message_constants.EWCL,
+        });
+      }
       return res.status(200).json({
         status: true,
         message: message_constants.MS,
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      errormessage: message_constants.ISE,
+      error: message_constants.ISE,
     });
   }
 };
@@ -282,7 +390,7 @@ export const view_edit_physician_account: Controller = async (
         role_id: profile.role_id,
       },
     });
-    const formatted_request: any = {
+    const formatted_request = {
       user_id: profile.user_id,
       account_information: {
         username: profile.username,
@@ -609,10 +717,6 @@ export const provider_onboarding_upload = async (
   next: NextFunction
 ) => {
   try {
-    interface File {
-      fieldname: string;
-      path: string;
-    }
     const { user_id } = req.body as { user_id: number };
     const user = await User.findOne({
       where: {
@@ -627,49 +731,67 @@ export const provider_onboarding_upload = async (
       });
     }
 
-    const uploaded_files: File[] | { [fieldname: string]: File[] } = req.files || [];
+    const uploaded_files: File[] | { [fieldname: string]: File[] } =
+      req.files || [];
 
-    const independent_contractor_agreement_path = uploaded_files instanceof Array ?
-      uploaded_files.find((file: File) => file.fieldname === "independent_contractor_agreement")?.path :
-      uploaded_files["independent_contractor_agreement"]?.[0].path;
+    const independent_contractor_agreement_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find(
+            (file: File) =>
+              file.fieldname === "independent_contractor_agreement"
+          )?.path
+        : uploaded_files["independent_contractor_agreement"]?.[0].path;
 
-    const background_check_path = uploaded_files instanceof Array ?
-      uploaded_files.find((file: File) => file.fieldname === "background_check")?.path :
-      uploaded_files["background_check"]?.[0].path;
+    const background_check_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find(
+            (file: File) => file.fieldname === "background_check"
+          )?.path
+        : uploaded_files["background_check"]?.[0].path;
 
-    const HIPAA_path = uploaded_files instanceof Array ?
-      uploaded_files.find((file: File) => file.fieldname === "HIPAA")?.path :
-      uploaded_files["HIPAA"]?.[0].path;
+    const HIPAA_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find((file: File) => file.fieldname === "HIPAA")?.path
+        : uploaded_files["HIPAA"]?.[0].path;
 
-    const non_disclosure_path = uploaded_files instanceof Array ?
-      uploaded_files.find((file: File) => file.fieldname === "non_diclosure")?.path :
-      uploaded_files["non_diclosure"]?.[0].path;
+    const non_disclosure_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find(
+            (file: File) => file.fieldname === "non_disclosure"
+          )?.path
+        : uploaded_files["non_disclosure"]?.[0].path;
 
-    const licence_document_path = uploaded_files instanceof Array ?
-      uploaded_files.find((file: File) => file.fieldname === "licence_document")?.path :
-      uploaded_files["licence_document"]?.[0].path;
+    const licence_document_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find(
+            (file: File) => file.fieldname === "licence_document"
+          )?.path
+        : uploaded_files["licence_document"]?.[0].path;
 
-    const update_document = async (documentName: string, documentPath: string) => {
+    const update_document = async (
+      document_name: string,
+      document_path: string
+    ) => {
       const document_status = await Documents.findOne({
         where: {
           user_id,
-          document_name: documentName,
+          document_name: document_name,
         },
       });
 
       if (!document_status) {
         await Documents.create({
           user_id,
-          document_name: documentName,
-          document_path: documentPath,
+          document_name: document_name,
+          document_path: document_path,
         });
       } else {
         await Documents.update(
-          { document_path: documentPath },
+          { document_path: document_path },
           {
             where: {
               user_id,
-              document_name: documentName,
+              document_name: document_name,
             },
           }
         );
@@ -677,7 +799,10 @@ export const provider_onboarding_upload = async (
     };
 
     if (independent_contractor_agreement_path) {
-      await update_document("independent_contractor_agreement", independent_contractor_agreement_path);
+      await update_document(
+        "independent_contractor_agreement",
+        independent_contractor_agreement_path
+      );
     }
 
     if (background_check_path) {
@@ -689,7 +814,7 @@ export const provider_onboarding_upload = async (
     }
 
     if (non_disclosure_path) {
-      await update_document("non_diclosure", non_disclosure_path);
+      await update_document("non_disclosure", non_disclosure_path);
     }
 
     if (licence_document_path) {
@@ -711,13 +836,13 @@ export const provider_onboarding_delete = async (
 ) => {
   try {
     const { document_id } = req.params;
-    const delete_status = Documents.destroy({
+    const delete_status = await Documents.destroy({
       where: {
         document_id,
       },
     });
-    if (!delete_status) {
-      return res.status(200).json({ message: message_constants.EWDD });
+    if (delete_status == 0) {
+      return res.status(200).json({ message: message_constants.DNF });
     }
     return res.status(200).json({ message: message_constants.DS });
   } catch (error) {
@@ -762,6 +887,18 @@ export const create_provider_account_refactored: Controller = async (
     const hashed_password: string = await bcrypt.hash(password, 10);
     const uploaded_files: any = files || {};
 
+    const is_user = await User.findOne({
+      where:{
+        email
+      }
+    })
+
+    if(is_user){
+      return res.status(500).json({
+        message: message_constants.UE
+      })
+    }
+
     const get_file_path = (files: any, fieldname: string) => {
       if (!files || typeof files !== "object") {
         return null;
@@ -791,12 +928,12 @@ export const create_provider_account_refactored: Controller = async (
       "background_check"
     );
     const HIPAA_path = get_file_path(uploaded_files, "HIPAA");
-    const non_disclosure_path = get_file_path(uploaded_files, "non_diclosure");
+    const non_disclosure_path = get_file_path(uploaded_files, "non_disclosure");
 
     const is_role = await Role.findOne({
       where: {
         role_name: role,
-        account_type:"physician"
+        account_type: "physician",
       },
     });
     if (!is_role) {
@@ -870,7 +1007,7 @@ export const create_provider_account_refactored: Controller = async (
       background_check_path
     );
     await update_document(user.user_id, "HIPAA", HIPAA_path);
-    await update_document(user.user_id, "non_diclosure", non_disclosure_path);
+    await update_document(user.user_id, "non_disclosure", non_disclosure_path);
 
     return res.status(200).json({ message: message_constants.Success });
   } catch (error) {

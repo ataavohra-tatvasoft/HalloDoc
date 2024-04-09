@@ -4,7 +4,7 @@ import { Optional } from "sequelize";
 export interface LogsAttributes {
   log_id: number;
   type_of_log: string;
-  recipient: string;
+  recipient: string | null;
   action: string;
   role_name: string;
   email: string;
@@ -15,12 +15,13 @@ export interface LogsAttributes {
 }
 export interface LogsCreationAttributes
   extends Optional<
-  LogsAttributes,
+    LogsAttributes,
     | "sent"
     | "mobile_no"
     | "email"
     | "role_name"
     | "action"
+    | "recipient"
     | "createdAt"
     | "updatedAt"
     | "log_id"

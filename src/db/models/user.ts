@@ -1,4 +1,12 @@
-import { Table, Column, DataType, Model, HasMany, BelongsToMany,BelongsTo } from "sequelize-typescript";
+import {
+  Table,
+  Column,
+  DataType,
+  Model,
+  HasMany,
+  BelongsToMany,
+  BelongsTo,
+} from "sequelize-typescript";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces/user";
 import Shifts from "./shifts";
 import UserRegionMapping from "./user-region_mapping";
@@ -122,9 +130,9 @@ export default class User extends Model<
   role_id: number;
 
   @Column({
-    type: DataType.ENUM("active","pending","in-active"),
+    type: DataType.ENUM("active", "pending", "in-active"),
     allowNull: false,
-    defaultValue:"pending",
+    defaultValue: "pending",
   })
   status: string;
 
@@ -245,18 +253,16 @@ export default class User extends Model<
   @HasMany(() => Shifts, { foreignKey: "user_id" })
   Shifts: Shifts[];
 
-  
   @BelongsTo(() => Role, {
     foreignKey: "role_id",
     targetKey: "role_id",
   })
   Role: Role;
-  
+
   @BelongsToMany(() => Region, {
     through: () => UserRegionMapping,
     foreignKey: "user_id",
-    otherKey: 'region_id',
+    otherKey: "region_id",
   })
   Regions: Region[];
-
 }

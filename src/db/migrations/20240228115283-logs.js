@@ -17,7 +17,7 @@ module.exports = {
 
       recipient: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       action: {
         type: Sequelize.STRING,
@@ -34,7 +34,7 @@ module.exports = {
       },
 
       mobile_no: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       sent: {

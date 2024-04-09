@@ -5,7 +5,7 @@ import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Business from "../../db/models/business-vendor";
-import { Controller, verified_token } from "../../interfaces/common_interface";
+import { Controller, FormattedResponse, VerifiedToken } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
@@ -36,7 +36,7 @@ export const requests_by_request_state_provider: Controller = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
     const provider_id = verified_token.user_id;
 
     const { state, search, requestor, page, page_size } = req.query as {
@@ -70,7 +70,7 @@ export const requests_by_request_state_provider: Controller = async (
     }
 
     const handle_request_state = async (additionalAttributes?: Array<string>) => {
-      const formatted_response: any = {
+      const formatted_response: FormattedResponse<any> = {
         status: true,
         data: [],
       };
@@ -116,7 +116,7 @@ export const requests_by_request_state_provider: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
-        const formatted_request: any = {
+        const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
@@ -189,7 +189,7 @@ export const provider_accept_request: Controller = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
     const provider_id = verified_token.user_id;
 
     const is_request = await RequestModel.findOne({
@@ -247,7 +247,7 @@ export const transfer_request_provider: Controller = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
     const provider_id = verified_token.user_id;
 
     const request = await RequestModel.findOne({
@@ -315,7 +315,7 @@ export const view_notes_for_request_provider: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const formatted_response: any = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -356,7 +356,7 @@ export const view_notes_for_request_provider: Controller = async (
       },
       attributes: ["request_id", "note_id", "description", "type_of_note"],
     });
-    const formatted_request: any = {
+    const formatted_request = {
       confirmation_no: confirmation_no,
       transfer_notes: {
         notes: transfer_notes_list?.map((note) => ({
@@ -390,6 +390,7 @@ export const view_notes_for_request_provider: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
 export const save_view_notes_for_request_provider: Controller = async (
   req: Request,
   res: Response,

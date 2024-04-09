@@ -4,7 +4,7 @@ import Region from "../../db/models/region";
 import {
   Controller,
   FormattedResponse,
-  verified_token,
+  VerifiedToken,
 } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -36,7 +36,7 @@ export const admin_profile_view: Controller = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
     const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
@@ -92,7 +92,7 @@ export const admin_profile_view: Controller = async (
         message: message_constants.RoNF,
       });
     }
-    const formattedRequest: any = {
+    const formattedRequest = {
       admin_user_id: profile.user_id,
       admin_account_information: {
         username: "dummy",

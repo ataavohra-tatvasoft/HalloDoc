@@ -79,6 +79,7 @@ const message_constants = {
   AD: "Access Denied",
   ES: "Email Sent",
   MS: "Message Sent",
+  UE:"User Exists!!!"
 };
 
 export default message_constants;

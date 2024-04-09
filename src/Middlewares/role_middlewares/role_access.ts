@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
-import { verified_token } from "../../interfaces/common_interface";
+import { VerifiedToken } from "../../interfaces/common_interface";
 import Role from "../../db/models/role";
-import { where } from "sequelize";
 import Access from "../../db/models/access";
 
 export const role_access_middleware = async (
@@ -23,7 +21,7 @@ export const role_access_middleware = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
 
     console.log(verified_token.role_id);
     console.log(verified_token.firstname);

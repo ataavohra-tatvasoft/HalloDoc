@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
-import { verified_token } from "../../interfaces/common_interface";
+import { VerifiedToken } from "../../interfaces/common_interface";
 
 export const authmiddleware = async (
   req: Request,
@@ -20,7 +20,7 @@ export const authmiddleware = async (
     const verified_token = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
-    ) as verified_token;
+    ) as VerifiedToken;
 
     // console.log(token, " ", verified_token);
     console.log(verified_token);

@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import RequestModel from "../../db/models/request";
 import User from "../../db/models/user";
-import Notes from "../../db/models/notes";
 import { Controller, FormattedResponse } from "../../interfaces/common_interface";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
@@ -51,7 +49,7 @@ export const access_accountaccess: Controller = async (
 
     var i = offset + 1;
     for (const role of roles) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         role_id: role.role_id,
         name: role.role_name,
@@ -94,7 +92,7 @@ export const access_accountaccess_edit: Controller = async (
       });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       role_id: is_role.role_id,
       role_name: is_role.role_name,
       account_type: is_role.account_type,
@@ -267,7 +265,7 @@ export const access_account_access_create_access: Controller =
       });
   
       if (!role) {
-        return res.status(404).json({ error: message_constants.AcNF });
+        return res.status(404).json({ error: message_constants.RoNF });
       }
   
       const mapping = await RoleAccessMapping.destroy({
@@ -344,7 +342,7 @@ export const access_useraccess: Controller = async (
       return res.status(404).json({ error: message_constants.ANF });
     }
     for (const account of accounts) {
-      const formatted_request: any = {
+      const formatted_request = {
         user_id: account.user_id,
         account_type: account.type_of_user,
         account_poc: account.firstname + " " + account.lastname,
@@ -395,7 +393,7 @@ export const access_useraccess_edit: Controller = async (
       return res.status(404).json({ error: message_constants.ANF });
     }
 
-    const formatted_request: any = {
+    const formatted_request = {
       firstname: account.firstname,
       lastname: account.lastname,
       phone: account.mobile_no,

@@ -21,7 +21,7 @@ export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> 
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   recipient: string;
 
@@ -47,7 +47,7 @@ export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> 
     type: DataType.BIGINT,
     allowNull: true,
   })
-  mobile_no: number;
+  mobile_no: bigint;
 
   @Column({
     type: DataType.STRING,

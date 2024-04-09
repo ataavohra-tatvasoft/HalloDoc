@@ -6,7 +6,7 @@ import Notes from "../../db/models/notes";
 import {
   Controller,
   FormattedResponse,
-  verified_token,
+  VerifiedToken,
 } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
@@ -334,7 +334,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formatted_request: any = {
+          const formatted_request = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
@@ -547,7 +547,7 @@ export const requests_by_request_state: Controller = async (
 
         var i = offset + 1;
         for (const request of requests.rows) {
-          const formatted_request: any = {
+          const formatted_request = {
             sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,

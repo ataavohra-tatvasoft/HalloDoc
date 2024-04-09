@@ -51,7 +51,7 @@ module.exports = {
         },
         {
           request_id: 5,
-          confirmation_no: " Ma240307ShRo0005",
+          confirmation_no: "Ma240307ShRo0005",
           request_state: "new",
           request_status: "unassigned",
           patient_id: "6",
@@ -311,7 +311,7 @@ module.exports = {
         },
         {
           request_id: 27,
-          confirmation_no: " Ma240307ShRo0027",
+          confirmation_no: "Ma240307ShRo0027",
           request_state: "active",
           request_status: "accepted",
           patient_id: "6",
@@ -323,7 +323,7 @@ module.exports = {
         },
         {
           request_id: 28,
-          confirmation_no: " Ma240307ShRo0028",
+          confirmation_no: "Ma240307ShRo0028",
           request_state: "pending",
           request_status: "accepted",
           patient_id: "6",
@@ -335,7 +335,7 @@ module.exports = {
         },
         {
           request_id: 29,
-          confirmation_no: " Ma240307ShRo0029",
+          confirmation_no: "Ma240307ShRo0029",
           request_state: "conclude",
           request_status: "conclude",
           patient_id: "6",
@@ -347,7 +347,7 @@ module.exports = {
         },
         {
           request_id: 30,
-          confirmation_no: " Ma240307ShRo0030",
+          confirmation_no: "Ma240307ShRo0030",
           request_state: "toclose",
           request_status: "closed",
           patient_id: "6",
@@ -359,7 +359,7 @@ module.exports = {
         },
         {
           request_id: 31,
-          confirmation_no: " Ma240307ShRo0031",
+          confirmation_no: "Ma240307ShRo0031",
           request_state: "unpaid",
           request_status: "closed",
           patient_id: "6",
@@ -475,7 +475,7 @@ module.exports = {
         },
         {
           request_id: 41,
-          confirmation_no: " Ma240403ShRo0005",
+          confirmation_no: "Ma240403ShRo0005",
           request_state: "new",
           request_status: "assigned",
           patient_id: "6",

@@ -41,7 +41,7 @@ export default class Requestor extends Model<
     allowNull: false,
     unique: true,
   })
-  mobile_number: string;
+  mobile_number: bigint;
 
   @Column({
     type: DataType.STRING,
