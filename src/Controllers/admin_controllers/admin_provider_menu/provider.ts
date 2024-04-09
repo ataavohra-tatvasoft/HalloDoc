@@ -609,6 +609,10 @@ export const provider_onboarding_upload = async (
   next: NextFunction
 ) => {
   try {
+    interface File {
+      fieldname: string;
+      path: string;
+    }
     const { user_id } = req.body as { user_id: number };
     const user = await User.findOne({
       where: {
@@ -623,27 +627,27 @@ export const provider_onboarding_upload = async (
       });
     }
 
-    const uploaded_files: any = req.files || [];
+    const uploaded_files: File[] | { [fieldname: string]: File[] } = req.files || [];
 
-    const independent_contractor_agreement_path = uploaded_files.find(
-      (file: any) => file.fieldname === "independent_contractor_agreement"
-    )?.path;
+    const independent_contractor_agreement_path = uploaded_files instanceof Array ?
+      uploaded_files.find((file: File) => file.fieldname === "independent_contractor_agreement")?.path :
+      uploaded_files["independent_contractor_agreement"]?.[0].path;
 
-    const background_check_path = uploaded_files.find(
-      (file: any) => file.fieldname === "background_check"
-    )?.path;
+    const background_check_path = uploaded_files instanceof Array ?
+      uploaded_files.find((file: File) => file.fieldname === "background_check")?.path :
+      uploaded_files["background_check"]?.[0].path;
 
-    const HIPAA_path = uploaded_files.find(
-      (file: any) => file.fieldname === "HIPAA"
-    )?.path;
+    const HIPAA_path = uploaded_files instanceof Array ?
+      uploaded_files.find((file: File) => file.fieldname === "HIPAA")?.path :
+      uploaded_files["HIPAA"]?.[0].path;
 
-    const non_disclosure_path = uploaded_files.find(
-      (file: any) => file.fieldname === "non_diclosure"
-    )?.path;
+    const non_disclosure_path = uploaded_files instanceof Array ?
+      uploaded_files.find((file: File) => file.fieldname === "non_diclosure")?.path :
+      uploaded_files["non_diclosure"]?.[0].path;
 
-    const licence_document_path = uploaded_files.find(
-      (file: any) => file.fieldname === "licence_document"
-    )?.path;
+    const licence_document_path = uploaded_files instanceof Array ?
+      uploaded_files.find((file: File) => file.fieldname === "licence_document")?.path :
+      uploaded_files["licence_document"]?.[0].path;
 
     const update_document = async (documentName: string, documentPath: string) => {
       const document_status = await Documents.findOne({

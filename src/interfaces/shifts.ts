@@ -9,8 +9,8 @@ export interface ShiftsAttributes {
   physician: string;
   status: string;
   shift_date: Date;
-  start: any;
-  end: any;
+  start: string | Date;
+  end: string |Date;
   repeat_end: string;
   repeat_days: string;
   createdAt: Date;

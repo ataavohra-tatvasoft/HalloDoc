@@ -708,7 +708,7 @@ export const cancel_and_block_history: Controller = async (
     }
     var i = offset + 1;
     for (const request of requests) {
-      const formatted_request: any = {
+      const formatted_request = {
         sr_no: i,
         type_of_history: request.request_status,
         request_confirmation_no: request.confirmation_no,
