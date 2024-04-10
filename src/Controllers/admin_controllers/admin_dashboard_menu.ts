@@ -237,6 +237,7 @@ export const admin_create_request: Controller = async (
       message: message_constants.RC,
     });
   } catch (error: any) {
+    console.log(error);
     return res.status(500).json({
       status: false,
       error: error.errormessage,
@@ -254,10 +255,10 @@ export const admin_create_request_verify: Controller = async (
     const { state } = req.body;
 
     const valid_states = [
-      "district_of_columbia",
-      "new_york",
-      "virginia",
-      "maryland",
+      "District Of Columbia",
+      "New York",
+      "Virginia",
+      "Maryland",
     ];
 
     if (!valid_states.includes(state)) {

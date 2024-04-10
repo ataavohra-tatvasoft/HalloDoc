@@ -31,7 +31,7 @@ export const admin_create_request_verify_validation = {
     state: Joi.string()
       .trim()
       .required()
-      .valid("district_of_columbia", "new_york", "virginia", "maryland"),
+      .valid("District Of Columbia", "New York", "Virginia", "Maryland"),
   }).required(),
 };
 

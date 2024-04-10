@@ -464,16 +464,104 @@ export const active_state_encounter: Controller = async (
   next: NextFunction
 ) => {
   try {
+    const { confirmation_no } = req.params;
     const { type_of_care } = req.query as {
       [key: string]: string;
     };
 
-    if (type_of_care == "consult") {
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
 
-      
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    if (type_of_care == "consult") {
+      const update = await RequestModel.update(
+        {
+          request_state: "conclude",
+          request_status: "conclude",
+        },
+        {
+          where: {
+            confirmation_no,
+          },
+        }
+      );
+      if (!update) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    }
+
+    if (type_of_care == "housecall") {
+      const update = await RequestModel.update(
+        {
+          request_status: "md_on_site",
+        },
+        {
+          where: {
+            confirmation_no,
+          },
+        }
+      );
+      if (!update) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
     }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
+export const housecall: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const update = await RequestModel.update(
+      {
+        request_state: "conclude",
+        request_status: "conclude",
+      },
+      {
+        where: {
+          confirmation_no,
+        },
+      }
+    );
+    if (!update) {
+      return res.status(500).json({
+        message: message_constants.EWU,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
