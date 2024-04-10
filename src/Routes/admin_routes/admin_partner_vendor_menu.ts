@@ -4,12 +4,14 @@ import {
   add_business,
   update_business,
   delete_vendor,
+  update_business_view,
 } from "../../controllers";
 import {
   partner_vendor_list_validation,
   add_business_validation,
   update_business_validation,
   delete_vendor_validation,
+  update_business_view_validation,
 } from "../../validations";
 import { celebrate, Joi } from "celebrate";
 import { authmiddleware } from "../../middlewares";
@@ -29,6 +31,12 @@ router.post(
   authmiddleware,
   celebrate(add_business_validation),
   add_business
+);
+router.get(
+  "/partners/:business_id/update_business_view",
+  authmiddleware,
+  celebrate(update_business_view_validation ),
+  update_business_view
 );
 router.put(
   "/partners/:business_id/update_business",

@@ -122,6 +122,54 @@ export const add_business: Controller = async (
   }
 };
 
+export const update_business_view: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { business_id } = req.params as {
+      [key: string]: string;
+    };
+
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      data: [],
+    };
+
+    const business = await Business.findOne({
+      where: {
+        business_id,
+      },
+    });
+
+    const formatted_request = {
+      business_id: business?.business_id,
+      business_name: business?.business_name,
+      profession: business?.profession,
+      fax_number: business?.fax_number,
+      phone_no: business?.mobile_no,
+      email: business?.email,
+      business_contact: business?.business_contact,
+      street: business?.street,
+      city: business?.city,
+      state: business?.state,
+      zip: business?.zip,
+    };
+
+    formatted_response.data.push(formatted_request);
+
+    return res.status(200).json({
+      ...formatted_response,
+    });
+  } catch (error: any) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: message_constants.EWCB + " " + error.message });
+  }
+};
+
 export const update_business: Controller = async (
   req: Request,
   res: Response,

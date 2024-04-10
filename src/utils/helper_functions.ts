@@ -28,18 +28,20 @@ export const upload = multer({
   storage: storage,
   limits: { fileSize: 5000000 },
   fileFilter: (req, file, cb) => {
-    const allowedExtensions = ["image/png", "image/jpg", "image/jpeg"];
+    const allowedExtensions = ["image/png", "image/jpg", "image/jpeg", "application/pdf"];
     const extname = file.mimetype.toLowerCase();
     if (allowedExtensions.includes(extname)) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          "Invalid file type. Only PNG, JPG, and JPEG files are allowed."
+          "Invalid file type. Only PNG,PDF, JPG, and JPEG files are allowed."
         )
       );
     }
   },
+
+
 });
 
 export const update_region_mapping = async (

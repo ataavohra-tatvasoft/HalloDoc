@@ -110,6 +110,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false
+    
   },
   "ts-node": {
     "esm": true,

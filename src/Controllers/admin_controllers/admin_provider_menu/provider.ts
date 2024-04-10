@@ -102,26 +102,35 @@ export const stop_notification: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { user_id } = req.params;
-    const { stop_notification_status } = req.query as {
-      [key: string]: string;
+    // const { user_id } = req.params;
+    const { user_ids , stop_notification_status} = req.body as {
+      user_ids: Array<number>;
+      stop_notification_status: string
     };
-    const user = await User.findOne({
-      where: {
-        user_id,
-      },
-    });
-    if (!user) {
-      return res.status(404).json({ message: message_constants.UNF });
-    }
-    await User.update(
-      { stop_notification_status: stop_notification_status },
-      {
+    
+    for (const user_id of user_ids) {
+      const user = await User.findOne({
         where: {
           user_id,
         },
+      });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: message_constants.UNF + " for " + user_id} );
       }
-    );
+    }
+
+    for (const user_id of user_ids) {
+      await User.update(
+        { stop_notification_status: stop_notification_status },
+        {
+          where: {
+            user_id,
+          },
+        }
+      );
+    }
     return res.status(200).json({
       message: message_constants.US,
     });
@@ -888,15 +897,15 @@ export const create_provider_account_refactored: Controller = async (
     const uploaded_files: any = files || {};
 
     const is_user = await User.findOne({
-      where:{
-        email
-      }
-    })
+      where: {
+        email,
+      },
+    });
 
-    if(is_user){
+    if (is_user) {
       return res.status(500).json({
-        message: message_constants.UE
-      })
+        message: message_constants.UE,
+      });
     }
 
     const get_file_path = (files: any, fieldname: string) => {

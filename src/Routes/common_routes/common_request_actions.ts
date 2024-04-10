@@ -13,6 +13,7 @@ import {
   send_agreement,
   update_agreement,
   view_uploads_download_all,
+  view_uploads_send_mail,
 } from "../../controllers";
 import {
   professions_for_send_orders,
@@ -31,6 +32,7 @@ import {
   send_orders_for_request_validation,
   update_agreement_validation,
   send_agreement_validation,
+  view_uploads_send_mail_validation,
 } from "../../validations";
 import { upload } from "../../utils";
 const router: Router = express.Router();
@@ -92,7 +94,12 @@ router.get(
     celebrate(view_uploads_download_all_validation),
     view_uploads_download_all
   );
-
+  router.post(
+    "/dashboard/requests/:confirmation_no/actions/viewuploads/sendmail",
+    authmiddleware,
+    celebrate(view_uploads_send_mail_validation),
+    view_uploads_send_mail
+  );
 
 
 /**

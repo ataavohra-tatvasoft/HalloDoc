@@ -137,6 +137,7 @@ export const cancel_and_block_history_validation = {
     email: Joi.string().email().allow("").optional(),
     phone_no:Joi.string()
     .trim()
+    .allow("")
     .pattern(/^\d{11,13}$/)
     .optional(),
     page: Joi.string()

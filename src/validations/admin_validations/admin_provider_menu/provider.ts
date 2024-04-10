@@ -4,16 +4,17 @@ export const provider_list_validation = {
   query: Joi.object({
     region: Joi.string().allow(""),
     page: Joi.string()
-    .optional()
+      .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-    .optional()
+      .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }),
 };
 
 export const stop_notification_validation = {
-  query: Joi.object({
+  body: Joi.object({
+    user_ids: Joi.array().required(),
     stop_notification_status: Joi.string().valid("yes", "no").required(),
   }),
 };
@@ -22,9 +23,9 @@ export const contact_provider_validation = {
   query: Joi.object({
     email: Joi.string().email().optional(), // Require email if mobile_no is absent
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
   }),
 
   body: Joi.object({
@@ -59,16 +60,15 @@ export const save_user_information_validation = {
 
     status: Joi.string().allow("active", "in-active").optional(),
 
-    role: Joi.string()
-      .optional(),
+    role: Joi.string().optional(),
 
     firstname: Joi.string().trim().min(2).max(50).optional(),
     lastname: Joi.string().trim().min(2).max(50).optional(),
     email: Joi.string().email().lowercase().optional(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
 
     // Optional medical credentials
     medical_licence: Joi.string().allow(null, ""),
@@ -86,9 +86,9 @@ export const save_user_information_validation = {
 
     // Optional billing phone number
     billing_mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
 
     // Business details
     business_name: Joi.string().trim().optional(),
@@ -161,9 +161,9 @@ export const create_provider_account_validation = {
     lastname: Joi.string().trim().required(),
     email: Joi.string().email().required(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     medical_licence: Joi.string().allow(""), // Optional field
     NPI_no: Joi.string().allow(""), // Optional field
     district_of_columbia: Joi.string().allow(""),
@@ -179,9 +179,9 @@ export const create_provider_account_validation = {
       .pattern(/^[0-9]+$/)
       .required(),
     billing_mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     business_name: Joi.string().trim().allow(""), // Optional field
     business_website: Joi.string().allow(""), // Optional field
     admin_notes: Joi.string().allow(""), // Optional field
@@ -197,9 +197,9 @@ export const create_provider_account_refactored_validation = {
     lastname: Joi.string().trim().min(2).max(50).required(),
     email: Joi.string().email().lowercase().required(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     medical_licence: Joi.string().allow(null, ""),
     NPI_no: Joi.string().allow(null, ""),
     district_of_columbia: Joi.boolean().allow(null),
@@ -212,9 +212,9 @@ export const create_provider_account_refactored_validation = {
     state: Joi.string().trim().allow(null, ""),
     zip: Joi.string().trim().length(6).allow(null, ""),
     billing_mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     business_name: Joi.string().trim().required(),
     business_website: Joi.string().uri().allow(null, ""),
     admin_notes: Joi.string().allow(null, ""),

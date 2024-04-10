@@ -469,6 +469,8 @@ export const active_state_encounter: Controller = async (
     };
 
     if (type_of_care == "consult") {
+
+      
     }
   } catch (error) {
     console.log(error);

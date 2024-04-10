@@ -48,7 +48,7 @@ router.get(
   provider_list
 );
 router.put(
-  "/providermenu/provider_list/:user_id/stop_notification",
+  "/providermenu/provider_list/stop_notification",
   authmiddleware,
   celebrate(stop_notification_validation),
   stop_notification

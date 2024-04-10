@@ -24,7 +24,6 @@ module.exports = {
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        default: Sequelize.NOW,
       },
 
       updatedAt: {

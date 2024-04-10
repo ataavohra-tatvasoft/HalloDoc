@@ -1,4 +1,5 @@
 import { Joi } from "celebrate";
+import { query } from "express";
 
 export const partner_vendor_list_validation = {
   query: Joi.object({
@@ -25,6 +26,12 @@ export const add_business_validation = {
     city: Joi.string().required(),
     state: Joi.string().required(),
     zip: Joi.number().required(),
+  }),
+};
+
+export const update_business_view_validation = {
+  params: Joi.object({
+   business_id: Joi.number().required()
   }),
 };
 
