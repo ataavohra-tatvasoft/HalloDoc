@@ -64,6 +64,7 @@ export const access_accountaccess: Controller = async (
       ...formatted_response,
       total_pages: Math.ceil(count / limit),
       current_page: page_number,
+      total_count: count
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -316,7 +317,9 @@ export const access_useraccess: Controller = async (
 ) => {
   try {
     const { role, region } = req.query; // Get search parameters from query string
-    const where_clause: { [key: string]: any } = {};
+    const where_clause: { [key: string]: any } = {
+      ...(region && { state: region }),
+    };
     const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
@@ -325,14 +328,7 @@ export const access_useraccess: Controller = async (
       where_clause.role = {
         [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
       };
-      where_clause.state = {
-        [Op.like]: `%${region}%`, // Use LIKE operator for partial matching
-      };
-    } else {
-      where_clause.state = {
-        [Op.like]: `%${region}%`, // Use LIKE operator for partial matching
-      };
-    }
+    };
     const accounts = await User.findAll({
       attributes: [
         "role_id",

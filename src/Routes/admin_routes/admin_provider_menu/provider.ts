@@ -15,6 +15,7 @@ import {
   provider_onboarding_upload,
   provider_onboarding_delete,
   create_provider_account_refactored,
+  common_save_provider_account,
 } from "../../../controllers";
 import {
   provider_list_validation,
@@ -136,6 +137,14 @@ router.post(
   // celebrate(create_provider_account_refactored_validation),
   upload.any(),
   create_provider_account_refactored
+);
+
+router.put(
+  "/providermenu/provider_list/common_save_provider_account",
+  authmiddleware,
+  // celebrate(create_provider_account_refactored_validation),
+  upload.any(),
+  common_save_provider_account
 );
 
 export default router;

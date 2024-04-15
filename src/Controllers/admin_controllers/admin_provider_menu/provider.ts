@@ -103,11 +103,11 @@ export const stop_notification: Controller = async (
 ) => {
   try {
     // const { user_id } = req.params;
-    const { user_ids , stop_notification_status} = req.body as {
+    const { user_ids, stop_notification_status } = req.body as {
       user_ids: Array<number>;
-      stop_notification_status: string
+      stop_notification_status: string;
     };
-    
+
     for (const user_id of user_ids) {
       const user = await User.findOne({
         where: {
@@ -117,7 +117,7 @@ export const stop_notification: Controller = async (
       if (!user) {
         return res
           .status(404)
-          .json({ message: message_constants.UNF + " for " + user_id} );
+          .json({ message: message_constants.UNF + " for " + user_id });
       }
     }
 
@@ -876,6 +876,7 @@ export const create_provider_account_refactored: Controller = async (
         mobile_no,
         medical_licence,
         NPI_no,
+        synchronization_email,
         district_of_columbia,
         new_york,
         virginia,
@@ -928,6 +929,10 @@ export const create_provider_account_refactored: Controller = async (
       uploaded_files,
       "profile_picture"
     );
+    const signature_photo_path = get_file_path(
+      uploaded_files,
+      "signature_photo"
+    );
     const independent_contractor_agreement_path = get_file_path(
       uploaded_files,
       "independent_contractor_agreement"
@@ -962,6 +967,7 @@ export const create_provider_account_refactored: Controller = async (
       mobile_no,
       medical_licence,
       NPI_no,
+      synchronization_email,
       address_1,
       address_2,
       city,
@@ -972,6 +978,7 @@ export const create_provider_account_refactored: Controller = async (
       business_website,
       admin_notes,
       profile_picture: profile_picture_path,
+      signature_photo: signature_photo_path,
     });
 
     if (!user) {
@@ -1017,6 +1024,191 @@ export const create_provider_account_refactored: Controller = async (
     );
     await update_document(user.user_id, "HIPAA", HIPAA_path);
     await update_document(user.user_id, "non_disclosure", non_disclosure_path);
+
+    return res.status(200).json({ message: message_constants.Success });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const common_save_provider_account: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let {
+      body: {
+        user_id,
+        username,
+        password,
+        role,
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+        medical_licence,
+        NPI_no,
+        synchronization_email,
+        district_of_columbia,
+        new_york,
+        virginia,
+        maryland,
+        address_1,
+        address_2,
+        city,
+        state,
+        zip,
+        billing_mobile_no,
+        business_name,
+        business_website,
+        admin_notes,
+      },
+      files,
+    } = req;
+
+    const is_user = await User.findOne({
+      where: { user_id, type_of_user: "physician" },
+    });
+
+    if (!is_user) {
+      return res.status(404).json({ message: message_constants.UNF });
+    }
+
+    const hashed_password: string = await bcrypt.hash(password, 10);
+    const uploaded_files: any = files || {};
+
+    const get_file_path = (files: any, fieldname: string) => {
+      if (!files || typeof files !== "object") {
+        return null;
+      }
+
+      // If files is an array, use find
+      if (Array.isArray(files)) {
+        return (
+          files.find((file: any) => file.fieldname === fieldname)?.path || null
+        );
+      }
+
+      // If files is an object (e.g., from multer), use property access
+      return files[fieldname]?.path || null;
+    };
+
+    const profile_picture_path = get_file_path(
+      uploaded_files,
+      "profile_picture"
+    );
+    const signature_photo_path = get_file_path(
+      uploaded_files,
+      "signature_photo"
+    );
+    const independent_contractor_agreement_path = get_file_path(
+      uploaded_files,
+      "independent_contractor_agreement"
+    );
+    const background_check_path = get_file_path(
+      uploaded_files,
+      "background_check"
+    );
+    const HIPAA_path = get_file_path(uploaded_files, "HIPAA");
+    const non_disclosure_path = get_file_path(uploaded_files, "non_disclosure");
+
+    const is_role = await Role.findOne({
+      where: {
+        role_name: role,
+        account_type: "physician",
+      },
+    });
+    if (!is_role) {
+      return res.status(500).json({
+        message: message_constants.RoNF,
+      });
+    }
+    const user_update = await User.update(
+      {
+        type_of_user: "physician",
+        status: "active",
+        username,
+        password: hashed_password,
+        role_id: is_role.role_id,
+        firstname,
+        lastname,
+        email,
+        mobile_no,
+        medical_licence,
+        NPI_no,
+        synchronization_email,
+        address_1,
+        address_2,
+        city,
+        state,
+        zip,
+        billing_mobile_no,
+        business_name,
+        business_website,
+        admin_notes,
+        profile_picture: profile_picture_path,
+        signature_photo: signature_photo_path,
+      },
+      {
+        where: {
+          email: is_user.email,
+        },
+      }
+    );
+
+    if (!user_update) {
+      return res.status(500).json({ message: message_constants.EWU });
+    }
+
+    await update_region_mapping(
+      is_user.user_id,
+      "District of Columbia",
+      district_of_columbia
+    );
+
+    // console.log(typeof(new_york));
+
+    await update_region_mapping(is_user.user_id, "New York", new_york);
+    await update_region_mapping(is_user.user_id, "Virginia", virginia);
+    await update_region_mapping(is_user.user_id, "Maryland", maryland);
+
+    const update_document = async (
+      user_id: number,
+      document_name: string,
+      document_path: string
+    ) => {
+      if (!document_path) return;
+      const document_status = await Documents.findOne({
+        where: { user_id, document_name },
+      });
+      if (!document_status) {
+        await Documents.create({ user_id, document_name, document_path });
+      } else {
+        await Documents.update(
+          { document_path },
+          { where: { user_id, document_name } }
+        );
+      }
+    };
+
+    await update_document(
+      is_user.user_id,
+      "independent_contractor_agreement",
+      independent_contractor_agreement_path
+    );
+    await update_document(
+      is_user.user_id,
+      "background_check",
+      background_check_path
+    );
+    await update_document(is_user.user_id, "HIPAA", HIPAA_path);
+    await update_document(
+      is_user.user_id,
+      "non_disclosure",
+      non_disclosure_path
+    );
 
     return res.status(200).json({ message: message_constants.Success });
   } catch (error) {

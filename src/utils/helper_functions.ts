@@ -28,7 +28,12 @@ export const upload = multer({
   storage: storage,
   limits: { fileSize: 5000000 },
   fileFilter: (req, file, cb) => {
-    const allowedExtensions = ["image/png", "image/jpg", "image/jpeg", "application/pdf"];
+    const allowedExtensions = [
+      "image/png",
+      "image/jpg",
+      "image/jpeg",
+      "application/pdf",
+    ];
     const extname = file.mimetype.toLowerCase();
     if (allowedExtensions.includes(extname)) {
       cb(null, true);
@@ -40,14 +45,12 @@ export const upload = multer({
       );
     }
   },
-
-
 });
 
 export const update_region_mapping = async (
   user_id: number,
   region_name: string,
-  value: boolean
+  value: boolean  
 ) => {
   const region = await Region.findOne({
     where: { region_name },
@@ -58,21 +61,24 @@ export const update_region_mapping = async (
     return;
   }
 
-  const isExist = await UserRegionMapping.findOne({
+  const is_exist = await UserRegionMapping.findOne({
     where: { user_id, region_id: region.region_id },
   });
 
-  if (value) {
-    if (isExist) {
+  if (+value) {
+    if (is_exist) {
+      console.log("update");
       await UserRegionMapping.update(
         { user_id, region_id: region.region_id },
         { where: { user_id, region_id: region.region_id } }
       );
     } else {
+      console.log("create");
       await UserRegionMapping.create({ user_id, region_id: region.region_id });
     }
   } else {
-    if (isExist) {
+    if (is_exist) {
+      console.log("delete");
       await UserRegionMapping.destroy({
         where: { user_id, region_id: region.region_id },
       });
