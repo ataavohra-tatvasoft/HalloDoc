@@ -8,6 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         primaryKey: true,
+        autoIncrement: true,
       },
 
       request_id: {
@@ -197,10 +198,10 @@ module.exports = {
         unique: true,
       },
 
-      finalize: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        unique: true,
+      is_finalize: {
+        type: Sequelize.ENUM("true", "false"),
+        allowNull: false,
+        defaultValue: "false",
       },
 
       createdAt: {

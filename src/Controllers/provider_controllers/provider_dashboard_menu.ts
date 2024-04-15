@@ -22,6 +22,7 @@ import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
 import { string } from "joi";
+import EncounterForm from "../../db/models/encounter_form";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -517,6 +518,10 @@ export const active_state_encounter: Controller = async (
         });
       }
     }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
@@ -559,9 +564,387 @@ export const housecall: Controller = async (
         message: message_constants.EWU,
       });
     }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
+export const conclude_state_conclude_care_view: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      data: [],
+    };
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+      include: [
+        {
+          model: User,
+          as: "Patient",
+        },
+        {
+          model: Notes,
+          as: "Notes",
+          where: {
+            type_of_note: "physician_notes",
+          },
+        },
+        {
+          model: Documents,
+          as: "Documents",
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const formatted_request = {
+      confirmation_no: confirmation_no,
+      patient_name: request.Patient.firstname + " " + request.Patient.lastname,
+      documents: {
+        documents: request.Documents?.map((document) => ({
+          document_id: document.document_id,
+          document_name: document.document_name,
+          document_path: document.document_path,
+        })),
+      },
+      physician_notes: {
+        notes: request.Notes?.map((note) => ({
+          note_id: note.note_id,
+          type_of_note: note.type_of_note,
+          description: note.description,
+        })),
+      },
+    };
+
+    formatted_response.data.push(formatted_request);
+
+    return res.status(500).json({
+      ...formatted_response,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_conclude_care_upload: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    console.log("Uploaded file details:", req.file);
+    const file = req.file;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+
+    const new_document = await Documents.create({
+      request_id: request.request_id,
+      // document_name: file.fieldname,
+      document_path: file.path,
+    });
+    if (!new_document) {
+      return res.status(404).json({ error: message_constants.FTU });
+    }
+    return res.status(200).json({
+      status: true,
+      confirmation_no: confirmation_no,
+      message: message_constants.UpS,
+    });
+  } catch (error) {
+    res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_conclude_care: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+      include: [
+        {
+          model: EncounterForm,
+          as: "EncounterForm",
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    console.log(request);
+
+    if (request?.EncounterForm.is_finalize == "true") {
+      const update = await RequestModel.update(
+        {
+          request_state: "toclose",
+          request_status: "closed",
+        },
+        {
+          where: {
+            request_id: request.request_id,
+            confirmation_no: request.confirmation_no,
+          },
+        }
+      );
+
+      if (!update) {
+        return res.status(404).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      return res.status(500).json({
+        message: message_constants.EFNF,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_encounter_form: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const {
+      first_name,
+      last_name,
+      location,
+      date_of_birth,
+      date_of_service,
+      phone_no,
+      email,
+      history_of_present,
+      medical_history,
+      medications,
+      allergies,
+      temperature,
+      heart_rate,
+      respiratory_rate,
+      blood_pressure,
+      o2,
+      pain,
+      heent,
+      cv,
+      chest,
+      abd,
+      extr,
+      skin,
+      neuro,
+      other,
+      diagnosis,
+      treatment_plan,
+      medication_dispensed,
+      procedures,
+      follow_up,
+    } = req.body;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    if (encounter_form) {
+      const update = await EncounterForm.update(
+        {
+          request_id: request.request_id,
+          first_name,
+          last_name,
+          location,
+          date_of_birth,
+          date_of_service,
+          phone_no,
+          email,
+          history_of_present,
+          medical_history,
+          medications,
+          allergies,
+          temperature,
+          heart_rate,
+          respiratory_rate,
+          blood_pressure,
+          o2,
+          pain,
+          heent,
+          cv,
+          chest,
+          abd,
+          extr,
+          skin,
+          neuro,
+          other,
+          diagnosis,
+          treatment_plan,
+          medication_dispensed,
+          procedures,
+          follow_up,
+        },
+        {
+          where: {
+            request_id: request.request_id,
+          },
+        }
+      );
+
+      if (!update) {
+        return res.status(404).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      const create = await EncounterForm.create({
+        request_id: request.request_id,
+        first_name,
+        last_name,
+        location,
+        date_of_birth,
+        date_of_service,
+        phone_no,
+        email,
+        history_of_present,
+        medical_history,
+        medications,
+        allergies,
+        temperature,
+        heart_rate,
+        respiratory_rate,
+        blood_pressure,
+        o2,
+        pain,
+        heent,
+        cv,
+        chest,
+        abd,
+        extr,
+        skin,
+        neuro,
+        other,
+        diagnosis,
+        treatment_plan,
+        medication_dispensed,
+        procedures,
+        follow_up,
+      });
+      if (!create) {
+        return res.status(500).json({
+          message: message_constants.EWC,
+        });
+      }
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_encounter_form_finalize: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { finalize_status } = req.body;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    if (encounter_form) {
+      const update = await EncounterForm.update(
+        {
+          request_id: request.request_id,
+          is_finalize: finalize_status,
+        },
+        {
+          where: {
+            request_id: request.request_id,
+          },
+        }
+      );
+
+      if (!update) {
+        return res.status(404).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: message_constants.FoNF,
+      });
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};

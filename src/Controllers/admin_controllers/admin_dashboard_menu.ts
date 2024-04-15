@@ -654,7 +654,48 @@ export const requests_by_request_state_refactored: Controller = async (
                     "clear",
                   ],
           },
+          ...(requestor && { requested_by: requestor }),
         },
+        include: [
+          {
+            as: "Patient",
+            model: User,
+            attributes: [
+              "user_id",
+              "type_of_user",
+              "firstname",
+              "lastname",
+              "dob",
+              "mobile_no",
+              "address_1",
+              "state",
+            ],
+            where: where_clause_patient,
+          },
+          ...(state !== "new"
+            ? [
+                {
+                  as: "Physician",
+                  model: User,
+                  attributes: [
+                    "user_id",
+                    "type_of_user",
+                    "firstname",
+                    "lastname",
+                    "dob",
+                    "mobile_no",
+                    "address_1",
+                    "address_2",
+                  ],
+                  where: {
+                    type_of_user: "physician",
+                  },
+                },
+              ]
+            : []),
+        ],
+        limit,
+        offset,
       });
 
       var i = offset + 1;

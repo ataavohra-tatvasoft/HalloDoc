@@ -223,7 +223,7 @@ export const view_uploads_upload: Controller = async (
     });
 
     if (!request) {
-      return res.status(404).json({ error: message_constants.ISE });
+      return res.status(404).json({ error: message_constants.RNF });
     }
 
     const new_document = await Documents.create({

@@ -4,13 +4,13 @@ import {
   DataType,
   Model,
   BelongsTo,
+  AutoIncrement,
 } from "sequelize-typescript";
 import {
   EncounterFormAttributes,
   EncounterFormCreationAttributes,
 } from "../../interfaces/encounter_form";
 import Request from "./request";
-
 
 @Table({ timestamps: true, tableName: "encounter-form" })
 export default class EncounterForm extends Model<
@@ -21,6 +21,7 @@ export default class EncounterForm extends Model<
     type: DataType.INTEGER,
     allowNull: false,
     primaryKey: true,
+    autoIncrement: true,
   })
   form_id: number;
 
@@ -240,11 +241,11 @@ export default class EncounterForm extends Model<
   follow_up: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
-    unique: true,
+    type: DataType.ENUM("true", "false"),
+    allowNull: false,
+    defaultValue: "false",
   })
-  finalize: string;
+  is_finalize: string;
 
   @BelongsTo(() => Request, {
     foreignKey: "request_id",

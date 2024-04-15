@@ -34,14 +34,16 @@ export interface EncounterFormAttributes {
   medication_dispensed: string;
   procedures: string;
   follow_up: string;
-  finalize: string;
+  is_finalize: string;
 
   createdAt: Date;
   updatedAt: Date;
 }
 export interface EncounterFormCreationAttributes
   extends Optional<
-  EncounterFormAttributes,
+    EncounterFormAttributes,
+    | "form_id"
+    | "request_id"
     | "first_name"
     | "last_name"
     | "location"
@@ -71,8 +73,7 @@ export interface EncounterFormCreationAttributes
     | "medication_dispensed"
     | "procedures"
     | "follow_up"
-    | "finalize"
-
+    | "is_finalize"
     | "createdAt"
     | "updatedAt"
   > {}

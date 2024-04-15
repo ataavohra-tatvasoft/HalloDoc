@@ -16,6 +16,7 @@ import {
   RequestCreationAttributes,
   RequestAttributes,
 } from "../../interfaces/request";
+import EncounterForm from "./encounter_form";
 
 @Table({
   timestamps: true,
@@ -183,6 +184,9 @@ export default class Request extends Model<
 
   @HasOne(() => Order, { foreignKey: "request_id" })
   Order: Order[];
+
+  @HasOne(() => EncounterForm, { foreignKey: "request_id" })
+  EncounterForm: EncounterForm;
 
   @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })
   Documents: Documents[];

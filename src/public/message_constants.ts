@@ -25,6 +25,7 @@ const message_constants = {
   DNF: "Document not found",
   UNF: "User not found",
   FNF: "File not found",
+  FoNF:"Form not found",
   ANF: "Admin not found",
   RNF: "Request not found",
   AcNF: "Accounts not found",
@@ -79,7 +80,8 @@ const message_constants = {
   AD: "Access Denied",
   ES: "Email Sent",
   MS: "Message Sent",
-  UE:"User Exists!!!"
+  UE: "User Exists!!!",
+  EFNF: "Encouner form is not finalized",
 };
 
 export default message_constants;
