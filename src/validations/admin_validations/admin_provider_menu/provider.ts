@@ -221,6 +221,50 @@ export const create_provider_account_refactored_validation = {
   }),
   files: Joi.object({
     profile_picture: Joi.allow(Joi.string(), null),
+    signature_photo: Joi.allow(Joi.string(), null),
+    independent_contractor_agreement: Joi.allow(Joi.string(), null),
+    background_check: Joi.allow(Joi.string(), null),
+    HIPAA: Joi.allow(Joi.string(), null),
+    non_diclosure: Joi.allow(Joi.string(), null),
+  }).optional(),
+};
+
+export const common_save_provider_account_validation = {
+  body: Joi.object({
+    user_id: Joi.number().required(),
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(8).required(),
+    role: Joi.string().optional(),
+    firstname: Joi.string().trim().min(2).max(50).required(),
+    lastname: Joi.string().trim().min(2).max(50).required(),
+    email: Joi.string().email().lowercase().required(),
+    mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
+    medical_licence: Joi.string().allow(null, ""),
+    NPI_no: Joi.string().allow(null, ""),
+    synchronization_email:Joi.string().allow(null, ""),
+    district_of_columbia: Joi.boolean().allow(null),
+    new_york: Joi.boolean().allow(null),
+    virginia: Joi.boolean().allow(null),
+    maryland: Joi.boolean().allow(null),
+    address_1: Joi.string().trim().allow(null, ""),
+    address_2: Joi.string().trim().allow(null, ""),
+    city: Joi.string().trim().allow(null, ""),
+    state: Joi.string().trim().allow(null, ""),
+    zip: Joi.string().trim().length(6).allow(null, ""),
+    billing_mobile_no: Joi.string()
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
+    business_name: Joi.string().trim().required(),
+    business_website: Joi.string().uri().allow(null, ""),
+    admin_notes: Joi.string().allow(null, ""),
+  }),
+  files: Joi.object({
+    profile_picture: Joi.allow(Joi.string(), null),
+    signature_photo: Joi.allow(Joi.string(), null),
     independent_contractor_agreement: Joi.allow(Joi.string(), null),
     background_check: Joi.allow(Joi.string(), null),
     HIPAA: Joi.allow(Joi.string(), null),

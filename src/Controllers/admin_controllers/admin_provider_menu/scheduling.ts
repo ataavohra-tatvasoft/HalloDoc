@@ -438,7 +438,14 @@ export const view_shift: Controller = async (
       where: {
         shift_id: numeric_shift_id,
       },
-      attributes: ["region", "physician", "shift_date", "start", "end"],
+      attributes: [
+        "shift_id",
+        "region",
+        "physician",
+        "shift_date",
+        "start",
+        "end",
+      ],
     });
 
     if (!shift) {
