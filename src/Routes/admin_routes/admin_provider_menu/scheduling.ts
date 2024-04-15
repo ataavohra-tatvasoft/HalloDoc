@@ -7,6 +7,8 @@ import {
   delete_selected,
   create_shift,
   view_shift,
+  edit_shift,
+  edit_return_shift,
 } from "../../../controllers";
 import {
   provider_shifts_list_validation,
@@ -16,6 +18,8 @@ import {
   delete_selected_validation,
   create_shift_validation,
   view_shift_validation,
+  edit_return_shift_validation,
+  edit_shift_validation,
 } from "../../../validations";
 import { celebrate, Joi } from "celebrate";
 import { authmiddleware } from "../../../middlewares";
@@ -41,6 +45,18 @@ router.get(
   authmiddleware,
   celebrate(view_shift_validation),
   view_shift
+);
+router.put(
+  "/scheduling_menu/provider_shifts_lists/edit_shift",
+  authmiddleware,
+  celebrate(edit_shift_validation),
+  edit_shift
+);
+router.put(
+  "/scheduling_menu/provider_shifts_lists/:shift_id/edit_shift_return",
+  authmiddleware,
+  celebrate(edit_return_shift_validation),
+  edit_return_shift
 );
 router.get(
   "/scheduling_menu/requested_shifts",

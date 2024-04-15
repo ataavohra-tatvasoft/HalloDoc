@@ -26,14 +26,14 @@ export const requested_shifts_validation = {
 };
 
 export const approve_selected_validation = {
-  query: Joi.object({
-    shift_id: Joi.string().required(),
+  body: Joi.object({
+    shift_ids: Joi.array().required(),
   }),
 };
 
 export const delete_selected_validation = {
-  query: Joi.object({
-    shift_id: Joi.string().required(),
+  body: Joi.object({
+    shift_ids: Joi.array().required(),
   }),
 };
 
@@ -52,5 +52,22 @@ export const create_shift_validation = {
 export const view_shift_validation = {
   query: Joi.object({
     shift_id: Joi.string().required(),
+  }),
+};
+
+export const edit_shift_validation = {
+  body: Joi.object({
+    shift_id: Joi.number().required(),
+    region: Joi.string().allow(""), // Allow empty string for optional region update
+    physician: Joi.string().optional(),
+    shift_date: Joi.date().iso().optional(),
+    start: Joi.string().optional(),
+    end: Joi.string().optional(),
+  })
+};
+
+export const edit_return_shift_validation = {
+  params: Joi.object({
+    shift_id: Joi.number().required(),
   }),
 };

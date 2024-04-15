@@ -303,24 +303,27 @@ export const approve_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query;
-    const numeric_shift_id = Number(shift_id);
+    const { shift_ids } = req.body as {
+      shift_ids: Array<number>;
+    };
 
-    const shifts = Shifts.update(
-      {
-        status: "approved",
-      },
-      {
-        where: {
-          shift_id: numeric_shift_id,
+    for (const shift_id of shift_ids) {
+      // shift_id = Number(shift_id);
+      const shifts = Shifts.update(
+        {
+          status: "approved",
         },
+        {
+          where: {
+            shift_id,
+          },
+        }
+      );
+      if (!shifts) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
       }
-    );
-
-    if (!shifts) {
-      return res.status(500).json({
-        message: message_constants.EWU,
-      });
     }
 
     return res.status(200).json({
@@ -337,18 +340,22 @@ export const delete_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query;
-    const numeric_shift_id = Number(shift_id);
+    const { shift_ids } = req.body as {
+      shift_ids: Array<number>;
+    };
 
-    const shifts = Shifts.destroy({
-      where: {
-        shift_id: numeric_shift_id,
-      },
-    });
-    if (!shifts) {
-      return res.status(500).json({
-        message: message_constants.EWD,
+    for (const shift_id of shift_ids) {
+      // shift_id = Number(shift_id);
+      const shifts = Shifts.destroy({
+        where: {
+          shift_id,
+        },
       });
+      if (!shifts) {
+        return res.status(500).json({
+          message: message_constants.EWD,
+        });
+      }
     }
     return res.status(200).json({
       message: message_constants.Success,
@@ -440,6 +447,7 @@ export const view_shift: Controller = async (
       });
     }
     const formatted_request = {
+      shift_id: shift.shift_id,
       region: shift.region,
       physician: shift.physician,
       shift_date: shift.shift_date.toISOString().split("T")[0],
@@ -450,6 +458,137 @@ export const view_shift: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const edit_shift: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shift_id, region, physician, shift_date, start, end } = req.body;
+    const numeric_shift_id = Number(shift_id);
+
+    const shift = await Shifts.findOne({
+      where: {
+        shift_id: numeric_shift_id,
+      },
+      attributes: ["region", "physician", "shift_date", "start", "end"],
+    });
+
+    if (!shift) {
+      return res.status(500).json({
+        message: message_constants.NF,
+      });
+    }
+
+    const user = await User.findOne({
+      where: {
+        firstname: physician.split(" ")[0],
+        lastname: physician.split(" ")[1],
+      },
+    });
+    if (!user) {
+      return res.status(500).json({
+        message: message_constants.PhNF,
+      });
+    }
+
+    const update_shift = await Shifts.update(
+      {
+        user_id: user.user_id,
+        region,
+        physician,
+        shift_date,
+        start,
+        end,
+      },
+      {
+        where: {
+          shift_id,
+        },
+      }
+    );
+
+    if (!update_shift) {
+      return res.status(500).json({
+        message: message_constants.EWU,
+      });
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const edit_return_shift: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shift_id } = req.params;
+    const numeric_shift_id = Number(shift_id);
+
+    const shift = await Shifts.findOne({
+      where: {
+        shift_id: numeric_shift_id,
+      },
+    });
+
+    if (!shift) {
+      return res.status(500).json({
+        message: message_constants.NF,
+      });
+    }
+
+    if (shift.status == "pending") {
+      const update_shift = await Shifts.update(
+        {
+          status: "approved",
+        },
+        {
+          where: {
+            shift_id,
+          },
+        }
+      );
+
+      if (!update_shift) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      const update_shift = await Shifts.update(
+        {
+          status: "pending",
+        },
+        {
+          where: {
+            shift_id,
+          },
+        }
+      );
+
+      if (!update_shift) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
     });
   } catch (error) {
     console.log(error);
