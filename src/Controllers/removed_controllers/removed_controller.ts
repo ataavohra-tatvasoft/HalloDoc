@@ -132,8 +132,8 @@ export const requests_by_request_state: Controller = async (
 
         return res.status(200).json({
           ...formatted_response,
-          totalPages: Math.ceil(total_count / limit),
-          currentPage: page_number,
+          total_pages: Math.ceil(total_count / limit),
+          current_page: page_number,
           total_count: total_count,
         });
       }
@@ -261,8 +261,8 @@ export const requests_by_request_state: Controller = async (
 
         return res.status(200).json({
           ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
+          total_pages: Math.ceil(requests.count / limit),
+          current_page: page_number,
           total_count: requests.count,
         });
       }
@@ -368,8 +368,8 @@ export const requests_by_request_state: Controller = async (
 
         return res.status(200).json({
           ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
+          total_pages: Math.ceil(requests.count / limit),
+          current_page: page_number,
           total_count: requests.count,
         });
       }
@@ -478,8 +478,8 @@ export const requests_by_request_state: Controller = async (
 
         return res.status(200).json({
           ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
+          total_pages: Math.ceil(requests.count / limit),
+          current_page: page_number,
           total_count: requests.count,
         });
       }
@@ -577,8 +577,8 @@ export const requests_by_request_state: Controller = async (
 
         return res.status(200).json({
           ...formatted_response,
-          totalPages: Math.ceil(requests.count / limit),
-          currentPage: page_number,
+          total_pages: Math.ceil(requests.count / limit),
+          current_page: page_number,
           total_count: requests.count,
         });
         // return res.status(200).json({

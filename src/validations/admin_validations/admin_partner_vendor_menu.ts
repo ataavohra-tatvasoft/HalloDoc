@@ -3,8 +3,8 @@ import { query } from "express";
 
 export const partner_vendor_list_validation = {
   query: Joi.object({
-    firstname: Joi.string().allow("", null).optional(),
-    lastname: Joi.string().allow("", null).optional(),
+    vendor: Joi.string().allow("", null).optional(),
+    region: Joi.string().allow("", null).optional(),
     profession: Joi.string().allow("", null).optional(),
     page: Joi.number().integer().min(1).optional(),
     page_size: Joi.number().integer().min(1).optional(),

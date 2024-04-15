@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../db/models/user";
-import { Controller, FormattedResponse } from "../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+} from "../../interfaces/common_interface";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
@@ -11,9 +14,7 @@ import Role from "../../db/models/role";
 /** Configs */
 dotenv.config({ path: `.env` });
 
-
 /**                             Admin in Access Roles                                     */
-
 
 /** Admin Account Access */
 /**
@@ -29,11 +30,11 @@ export const access_accountaccess: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, page_size } = req.query ;
+    const { page, page_size } = req.query;
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -61,8 +62,8 @@ export const access_accountaccess: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -75,7 +76,7 @@ export const access_accountaccess_edit: Controller = async (
 ) => {
   try {
     const { role_id } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -201,101 +202,103 @@ export const access_accountaccess_edit_save: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-export const access_account_access_create_access: Controller =
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { role_name, account_type, access_ids } = req.body as {
-        role_name: string;
-        account_type: string;
-        access_ids: Array<number>;
-      };
+export const access_account_access_create_access: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { role_name, account_type, access_ids } = req.body as {
+      role_name: string;
+      account_type: string;
+      access_ids: Array<number>;
+    };
 
-      const new_role = await Role.create({
-        role_name,
-        account_type,
+    const new_role = await Role.create({
+      role_name,
+      account_type,
+    });
+
+    if (!new_role) {
+      return res.status(500).json({
+        message: message_constants.EWCA,
       });
+    }
 
-      if (!new_role) {
-        return res.status(500).json({
-          message: message_constants.EWCA,
-        });
-      }
-
-      for (const access of access_ids) {
-        const is_access = await Access.findOne({
-          where: {
-            access_id: access,
-          },
-        });
-        if (!is_access) {
-          return res.status(500).json({
-            message: message_constants.NF,
-          });
-        }
-        const create_access = RoleAccessMapping.create({
-          role_id: new_role.role_id,
+    for (const access of access_ids) {
+      const is_access = await Access.findOne({
+        where: {
           access_id: access,
-        });
-        if (!create_access) {
-          return res.status(500).json({
-            message: message_constants.EWC + " for " + access,
-          });
-        }
-      }
-
-      return res.status(200).json({
-        message: message_constants.Success,
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: message_constants.ISE });
-    }
-  };
-  export const access_account_access_delete: Controller = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const { role_id } = req.params;
-      const role = await Role.findOne({
-        where: {
-          role_id,
         },
       });
-  
-      if (!role) {
-        return res.status(404).json({ error: message_constants.RoNF });
-      }
-  
-      const mapping = await RoleAccessMapping.destroy({
-        where: { role_id },
-      });
-  
-      if (!mapping) {
+      if (!is_access) {
         return res.status(500).json({
-          message: message_constants.EWD,
+          message: message_constants.NF,
         });
       }
-  
-      const delete_role = await Role.destroy({
-        where: {
-          role_id,
-        },
+      const create_access = RoleAccessMapping.create({
+        role_id: new_role.role_id,
+        access_id: access,
       });
-      if (!delete_role) {
+      if (!create_access) {
         return res.status(500).json({
-          message: message_constants.EWD,
+          message: message_constants.EWC + " for " + access,
         });
       }
-      return res
-        .status(200)
-        .json({ status: true, message: message_constants.DS });
-    } catch (error) {
-      return res.status(500).json({ error: message_constants.ISE });
     }
-  };
 
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+export const access_account_access_delete: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { role_id } = req.params;
+    const role = await Role.findOne({
+      where: {
+        role_id,
+      },
+    });
+
+    if (!role) {
+      return res.status(404).json({ error: message_constants.RoNF });
+    }
+
+    const mapping = await RoleAccessMapping.destroy({
+      where: { role_id },
+    });
+
+    if (!mapping) {
+      return res.status(500).json({
+        message: message_constants.EWD,
+      });
+    }
+
+    const delete_role = await Role.destroy({
+      where: {
+        role_id,
+      },
+    });
+    if (!delete_role) {
+      return res.status(500).json({
+        message: message_constants.EWD,
+      });
+    }
+    return res
+      .status(200)
+      .json({ status: true, message: message_constants.DS });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
 
 /** Admin User Access */
 /**
@@ -312,9 +315,9 @@ export const access_useraccess: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { role } = req.query; // Get search parameters from query string
+    const { role, region } = req.query; // Get search parameters from query string
     const where_clause: { [key: string]: any } = {};
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -322,8 +325,14 @@ export const access_useraccess: Controller = async (
       where_clause.role = {
         [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
       };
+      where_clause.state = {
+        [Op.like]: `%${region}%`, // Use LIKE operator for partial matching
+      };
+    } else {
+      where_clause.state = {
+        [Op.like]: `%${region}%`, // Use LIKE operator for partial matching
+      };
     }
-
     const accounts = await User.findAll({
       attributes: [
         "role_id",
@@ -366,7 +375,7 @@ export const access_useraccess_edit: Controller = async (
 ) => {
   try {
     const { user_id } = req.params;
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };

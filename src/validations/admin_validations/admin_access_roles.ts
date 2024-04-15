@@ -20,22 +20,30 @@ export const access_accountaccess_edit_save_validation = {
     role_id: Joi.number().integer().positive().required(),
   }),
   body: Joi.object().keys({
-    role_name: Joi.string().trim().when('role_id', {
+    role_name: Joi.string()
+      .trim()
+      .when("role_id", {
+        is: Joi.exist(),
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(""), // Allow empty string if role_id is absent
+      }),
+    account_type: Joi.string()
+      .trim()
+      .when("role_id", {
+        is: Joi.exist(),
+        then: Joi.required().valid("admin", "user", "other"),
+        otherwise: Joi.optional().allow(""), // Allow empty string if role_id is absent
+      }),
+    access_ids: Joi.array().when("role_id", {
       is: Joi.exist(),
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(''), // Allow empty string if role_id is absent
-    }),
-    account_type: Joi.string().trim().when('role_id', {
-      is: Joi.exist(),
-      then: Joi.required().valid('admin', 'user', 'other'),
-      otherwise: Joi.optional().allow(''), // Allow empty string if role_id is absent
-    }),
-    access_ids: Joi.array().when('role_id', {
-      is: Joi.exist(),
-      then: Joi.array().items(Joi.number().integer().positive().required()).min(1).unique().optional(),
+      then: Joi.array()
+        .items(Joi.number().integer().positive().required())
+        .min(1)
+        .unique()
+        .optional(),
       otherwise: Joi.optional().allow(null), // Allow null if role_id is absent
     }),
-  })
+  }),
 };
 
 export const access_account_access_create_access_validation = {
@@ -64,6 +72,7 @@ export const access_account_access_delete_validation = {
 export const access_useraccess_validation = {
   query: Joi.object({
     role: Joi.string().trim().optional().allow(""), // Allow empty string for optional search
+    region: Joi.string().allow("").optional(),
   }),
 };
 
@@ -85,9 +94,9 @@ export const access_useraccess_edit_save_validation = {
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     address_1: Joi.string().trim().required(),
     address_2: Joi.string().trim().optional().allow(""),
     city: Joi.string().trim().required(),

@@ -80,8 +80,8 @@ export const patient_history: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -152,8 +152,8 @@ export const patient_records: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -477,8 +477,8 @@ export const search_records: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(total_count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(total_count / limit),
+      current_page: page_number,
       total_count: total_count,
     });
   } catch (error) {
@@ -621,8 +621,8 @@ export const logs_history: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(total_count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(total_count / limit),
+      current_page: page_number,
       total_count: total_count,
     });
   } catch (error) {
@@ -731,8 +731,8 @@ export const cancel_and_block_history: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(total_count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(total_count / limit),
+      current_page: page_number,
       total_count: total_count,
     });
   } catch (error) {

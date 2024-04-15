@@ -448,8 +448,8 @@ export const manage_requests_by_State: Controller = async (
 
       return res.status(200).json({
         ...formatted_response,
-        totalPages: Math.ceil(count / limit),
-        currentPage: page_number,
+        total_pages: Math.ceil(count / limit),
+        current_page: page_number,
         total_count: count,
       });
     };
@@ -496,15 +496,18 @@ export const requests_by_request_state_counts: Controller = async (
     for (const state of request_state) {
       const { count } = await RequestModel.findAndCountAll({
         where: {
-          request_status: {
-            [Op.notIn]: [
-              "cancelled by admin",
-              "cancelled by provider",
-              "blocked",
-              "clear",
-            ],
-          },
           request_state: state,
+          request_status: {
+            [Op.notIn]:
+              state === "toclose"
+                ? ["cancelled by provider", "blocked", "clear"]
+                : [
+                    "cancelled by admin",
+                    "cancelled by provider",
+                    "blocked",
+                    "clear",
+                  ],
+          },
         },
       });
       console.log(count);
@@ -534,7 +537,14 @@ export const requests_by_request_state_refactored: Controller = async (
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-
+    const request_state = [
+      "new",
+      "pending",
+      "active",
+      "conclude",
+      "toclose",
+      "unpaid",
+    ];
     const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
@@ -553,7 +563,7 @@ export const requests_by_request_state_refactored: Controller = async (
         status: true,
         data: [],
       };
-      const { count, rows: requests } = await RequestModel.findAndCountAll({
+      const { rows: requests } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
           request_status: {
@@ -630,6 +640,23 @@ export const requests_by_request_state_refactored: Controller = async (
         offset,
       });
 
+      const { count } = await RequestModel.findAndCountAll({
+        where: {
+          request_state: state,
+          request_status: {
+            [Op.notIn]:
+              state === "toclose"
+                ? ["cancelled by provider", "blocked", "clear"]
+                : [
+                    "cancelled by admin",
+                    "cancelled by provider",
+                    "blocked",
+                    "clear",
+                  ],
+          },
+        },
+      });
+
       var i = offset + 1;
       for (const request of requests) {
         const formatted_request = {
@@ -696,10 +723,11 @@ export const requests_by_request_state_refactored: Controller = async (
         formatted_response.data.push(formatted_request);
       }
 
+      console.log(count);
       return res.status(200).json({
         ...formatted_response,
-        totalPages: Math.ceil(count / limit),
-        currentPage: page_number,
+        total_pages: Math.ceil(count / limit),
+        current_page: page_number,
         total_count: count,
       });
     };

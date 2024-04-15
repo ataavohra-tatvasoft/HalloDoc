@@ -6,7 +6,7 @@ import {
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import Business from "../../db/models/business-vendor";
-import { WhereOptions } from "sequelize";
+import { Op, WhereOptions } from "sequelize";
 import { BusinessAttributes } from "../../interfaces/business-vendor";
 
 /** Configs */
@@ -18,7 +18,7 @@ export const partner_vendor_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { vendor, profession, page, page_size } = req.query as {
+    const { vendor, profession, region, page, page_size } = req.query as {
       [key: string]: string;
     };
     const page_number = Number(page) || 1;
@@ -30,8 +30,11 @@ export const partner_vendor_list: Controller = async (
       data: [],
     };
     const where_clause: WhereOptions<BusinessAttributes> = {
-      ...(vendor && { business_name: vendor }),
+      ...(vendor && {
+        [Op.or]: [{ business_name: { [Op.like]: `%${vendor}%` } }],
+      }),
       ...(profession && { profession }),
+      ...(region && { state: region }),
     };
 
     const { count: total_count, rows: businesses } =
@@ -70,8 +73,8 @@ export const partner_vendor_list: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(total_count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(total_count / limit),
+      current_page: page_number,
       total_count: total_count,
     });
   } catch (error) {

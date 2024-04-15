@@ -160,8 +160,8 @@ export const requests_by_request_state_provider: Controller = async (
 
       return res.status(200).json({
         ...formatted_response,
-        totalPages: Math.ceil(count / limit),
-        currentPage: page_number,
+        total_pages: Math.ceil(count / limit),
+        current_page: page_number,
         total_count: count,
       });
     };

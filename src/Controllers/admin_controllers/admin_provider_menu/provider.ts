@@ -87,8 +87,8 @@ export const provider_list: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(total_count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(total_count / limit),
+      current_page: page_number,
       total_count: total_count,
     });
   } catch (error) {

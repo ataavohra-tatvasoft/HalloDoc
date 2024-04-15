@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller, FormattedResponse, FormattedResponse_2 } from "../../../interfaces/common_interface";
+import {
+  Controller,
+  FormattedResponse,
+  FormattedResponse_2,
+} from "../../../interfaces/common_interface";
 import User from "../../../db/models/user";
 import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
@@ -18,12 +22,12 @@ export const provider_shifts_list: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, type_of_shift, page, page_size } = req.query ;
+    const { region, type_of_shift, page, page_size } = req.query;
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
@@ -57,7 +61,7 @@ export const provider_shifts_list: Controller = async (
             "repeat_days",
           ],
           where: {
-            region: region,
+            ...(region && { region: region }),
           },
         },
       ],
@@ -65,14 +69,14 @@ export const provider_shifts_list: Controller = async (
     var i = offset + 1;
     for (const provider of providers) {
       const is_role = await Role.findOne({
-        where:{
-          role_id: provider.role_id
-        }
+        where: {
+          role_id: provider.role_id,
+        },
       });
-      if(!is_role){
+      if (!is_role) {
         return res.status(500).json({
-          message:message_constants.RoNF
-        })
+          message: message_constants.RoNF,
+        });
       }
       const formatted_request = {
         sr_no: i,
@@ -99,8 +103,8 @@ export const provider_shifts_list: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -115,7 +119,7 @@ export const provider_on_call: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { page, page_size } = req.query ;
+    const { page, page_size } = req.query;
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
@@ -146,8 +150,7 @@ export const provider_on_call: Controller = async (
           sr_no: i,
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
-          type_of_user:
-            provider.type_of_user,
+          type_of_user: provider.type_of_user,
           status: provider.status,
           on_call_status: provider.on_call_status,
         };
@@ -157,8 +160,7 @@ export const provider_on_call: Controller = async (
           sr_no: i,
           user_id: provider.user_id,
           provider_name: provider.firstname + " " + provider.lastname,
-          type_of_user:
-            provider.type_of_user,
+          type_of_user: provider.type_of_user,
           status: provider.status,
           on_call_status: provider.on_call_status + " i.e NO",
         };
@@ -169,8 +171,8 @@ export const provider_on_call: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -184,7 +186,7 @@ export const requested_shifts: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { region, view_current_month_shift, page, page_size } = req.query ;
+    const { region, view_current_month_shift, page, page_size } = req.query;
     function get_current_month(): [number, number] {
       const today = new Date();
       const year = today.getFullYear();
@@ -197,12 +199,18 @@ export const requested_shifts: Controller = async (
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
 
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
     const { count, rows: providers } = await User.findAndCountAll({
-      attributes: ["user_id", "firstname", "lastname", "type_of_user", "role_id"],
+      attributes: [
+        "user_id",
+        "firstname",
+        "lastname",
+        "type_of_user",
+        "role_id",
+      ],
       where: {
         type_of_user: "physician",
         on_call_status: "yes",
@@ -224,6 +232,7 @@ export const requested_shifts: Controller = async (
           ],
           where: {
             region: region,
+            status: "pending",
             ...(view_current_month_shift && {
               [Op.and]: [
                 {
@@ -272,8 +281,8 @@ export const requested_shifts: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page_number,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
       total_count: count,
     });
   } catch (error) {
@@ -288,7 +297,7 @@ export const approve_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query ;
+    const { shift_id } = req.query;
     const numeric_shift_id = Number(shift_id);
 
     const shifts = Shifts.update(
@@ -322,7 +331,7 @@ export const delete_selected: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query ;
+    const { shift_id } = req.query;
     const numeric_shift_id = Number(shift_id);
 
     const shifts = Shifts.destroy({
@@ -357,7 +366,7 @@ export const create_shift: Controller = async (
       end,
       repeat_days,
       repeat_end,
-    } = req.body ;
+    } = req.body;
     console.log(physician);
     const firstname = physician.split(" ")[0];
     const lastname = physician.split(" ")[1];
@@ -405,10 +414,10 @@ export const view_shift: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { shift_id } = req.query ;
+    const { shift_id } = req.query;
     const numeric_shift_id = Number(shift_id);
 
-    const formatted_response:  FormattedResponse<any> = {
+    const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
     };
