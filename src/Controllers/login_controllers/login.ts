@@ -80,13 +80,15 @@ export const login: Controller = async (
       role_id: user.role_id,
     };
 
-    console.log(data.role_id);
+    // console.log(data.role_id);
 
     const jwt_token = jwt.sign(data, process.env.JWT_SECRET_KEY as string);
 
     return res.status(200).json({
       status: true,
       message: message_constants.OK,
+      user: user.firstname + " " + user.lastname,
+      type_of_user: user.type_of_user,
       jwt_token,
     });
   } catch (error: any) {

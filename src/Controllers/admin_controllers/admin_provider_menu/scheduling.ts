@@ -231,23 +231,29 @@ export const requested_shifts: Controller = async (
             "repeat_days",
           ],
           where: {
-            region: region,
+            ...(region && { region: region }),
             status: "pending",
             ...(view_current_month_shift && {
               [Op.and]: [
                 {
                   // Assuming 'shift_date' is your date column
                   shift_date: {
-                    [Op.gte]: `${currentYear}-${currentMonth}-01`, // Start of current month
+                    [Op.gte]: new Date(`${currentYear}-${currentMonth}-01`)
+                      .toISOString()
+                      .split("T")[0], // Start of current month
                   },
                 },
                 {
                   shift_date: {
-                    [Op.lte]: `${currentYear}-${currentMonth}-${new Date(
-                      currentYear,
-                      currentMonth,
-                      0
-                    ).getDate()}`, // End of current month (considering leap years)
+                    [Op.lte]: new Date(
+                      `${currentYear}-${currentMonth}-${new Date(
+                        currentYear,
+                        currentMonth,
+                        0
+                      ).getDate()}`
+                    )
+                      .toISOString()
+                      .split("T")[0], // End of current month (considering leap years)
                   },
                 },
               ],
