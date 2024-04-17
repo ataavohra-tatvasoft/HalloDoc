@@ -63,31 +63,34 @@ export const provider_request_to_admin: Controller = async (
       return res.status(404).json({ message: message_constants.ANF });
     }
 
-    for (const admin of admins) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: Number(process.env.EMAIL_PORT),
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
+      debug: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-      const mailOptions = {
+    console.log("Transporter-->", transporter);
+
+    for (const admin of admins) {
+
+      const info = await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: admin.email,
         subject: "Request to change physician information",
         text: message,
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-        } else {
-          console.log("Email sent: " + info.response);
-        }
       });
 
+      if (!info) {
+        return res.status(500).json({
+          message: message_constants.EWSM,
+        });
+      }
+      
       const email_log = await Logs.create({
         type_of_log: "Email",
         recipient: admin.firstname + " " + admin.lastname,
@@ -103,6 +106,7 @@ export const provider_request_to_admin: Controller = async (
         });
       }
     }
+
     return res.status(200).json({
       message: message_constants.Success,
     });
@@ -282,7 +286,7 @@ export const provider_profile_reset_password: Controller = async (
  * @returns {Response} A JSON response indicating the success or failure of the profile update operation.
  */
 
-export const provider_profile_upload: Controller = async (
+export const provider_provider_profile_upload: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction

@@ -12,6 +12,7 @@ export * from "./admin_controllers/admin_provider_menu/scheduling"
 
 /**Provider Controllers */
 export * from "./provider_controllers/provider_dashboard_menu";
+export * from "./provider_controllers/provider_my_profile";
 
 
 /**Common Controllers  */

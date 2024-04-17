@@ -132,7 +132,7 @@ export const requests_by_request_state_provider: Controller = async (
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,
-            phone: request.Patient.mobile_no,
+            mobile_no: request.Patient.mobile_no,
             address:
               request.Patient.address_1 +
               " " +
