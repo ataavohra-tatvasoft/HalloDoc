@@ -8,6 +8,7 @@ export interface RequestAttributes {
   patient_id: number;
   physician_id: number | null;
   requested_by: string;
+  relation_with_patient: string;
   requestor_id: number;
   requested_date: Date;
   concluded_date: Date;
@@ -29,6 +30,7 @@ export interface RequestCreationAttributes
     | "confirmation_no"
     | "patient_id"
     | "physician_id"
+    | "relation_with_patient"
     | "requestor_id"
     | "concluded_date"
     | "date_of_service"

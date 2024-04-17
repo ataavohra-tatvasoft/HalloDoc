@@ -80,6 +80,12 @@ export default class Request extends Model<
   requested_by: string;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  relation_with_patient: string;
+
+  @Column({
     type: DataType.INTEGER,
     allowNull: true,
   })

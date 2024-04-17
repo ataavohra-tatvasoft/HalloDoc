@@ -14,9 +14,10 @@ import provider_dashboard from "./provider_routes/provider_dashboard";
 import provider_my_profile from "./provider_routes/provider_my_profile";
 import provider_my_schedule from "./provider_routes/provider_my_schedule";
 
+import patient_create_request from "./patient_routes/create_request";
+
 import common_routes from "./common_routes/common_routes";
 import common_request_actions from "./common_routes/common_request_actions";
-
 
 
 const router: Router = express.Router();
@@ -39,6 +40,9 @@ router.use("/admin", admin_dashboard);
 router.use("/provider", provider_dashboard);
 router.use("/provider", provider_my_profile);
 router.use("/provider", provider_my_schedule);
+
+/** Patient Routes */
+router.use("/patient", patient_create_request);
 
 /**Common Routes */
 router.use(common_routes);

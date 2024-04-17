@@ -18,8 +18,6 @@ export interface RequestorAttributes {
 export interface RequestorCreationAttributes
   extends Optional<
     RequestorAttributes,
-    | "createdAt"
-    | "updatedAt"
     | "user_id"
     | "first_name"
     | "last_name"
@@ -30,4 +28,6 @@ export interface RequestorCreationAttributes
     | "city"
     | "state"
     | "zip"
+    | "createdAt"
+    | "updatedAt"
   > {}

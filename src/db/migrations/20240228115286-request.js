@@ -58,6 +58,10 @@ module.exports = {
         ),
         allowNull: false,
       },
+      relation_with_patient: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       requestor_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
