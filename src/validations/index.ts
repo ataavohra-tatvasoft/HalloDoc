@@ -13,6 +13,7 @@ export * from "./admin_validations/admin_provider_menu/scheduling"
 /**Provider Validations */
 export * from "./provider_validations/provider_dashboard";
 export * from "./provider_validations/provider_my_profile";
+export * from "./provider_validations/provider_my_schedule";
 
 /**Common Validations */
 export * from "./common_validations/common_request_actions";

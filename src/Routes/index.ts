@@ -12,6 +12,7 @@ import admin_records_menu from "./admin_routes/admin_records_menu";
 
 import provider_dashboard from "./provider_routes/provider_dashboard";
 import provider_my_profile from "./provider_routes/provider_my_profile";
+import provider_my_schedule from "./provider_routes/provider_my_schedule";
 
 import common_routes from "./common_routes/common_routes";
 import common_request_actions from "./common_routes/common_request_actions";
@@ -37,6 +38,7 @@ router.use("/admin", admin_dashboard);
 /** Provider Routes */
 router.use("/provider", provider_dashboard);
 router.use("/provider", provider_my_profile);
+router.use("/provider", provider_my_schedule);
 
 /**Common Routes */
 router.use(common_routes);

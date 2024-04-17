@@ -3,31 +3,65 @@ import RequestModel from "../../db/models/request";
 import User from "../../db/models/user";
 import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
-import Order from "../../db/models/order";
-import Business from "../../db/models/business-vendor";
 import {
   Controller,
   FormattedResponse,
   VerifiedToken,
 } from "../../interfaces/common_interface";
-import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import * as crypto from "crypto";
 import { Op } from "sequelize";
 import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
-import path, { dirname } from "path";
-import fs from "fs";
 import message_constants from "../../public/message_constants";
-import Logs from "../../db/models/log";
-import { string } from "joi";
 import EncounterForm from "../../db/models/encounter_form";
 
 /** Configs */
 dotenv.config({ path: `.env` });
 
 /**                              Provider in Dashboard                                       */
+
+export const provider_requests_by_request_state_counts: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+    const provider_id = verified_token.user_id;
+
+    const request_state = ["new", "pending", "active", "conclude"];
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      data: [],
+    };
+    for (const state of request_state) {
+      const { count } = await RequestModel.findAndCountAll({
+        where: {
+          request_state: state,
+          physician_id: provider_id,
+        },
+      });
+      console.log(count);
+      const formatted_request = {
+        request_state: state,
+        counts: count,
+      };
+      formatted_response.data.push(formatted_request);
+    }
+
+    return res.status(200).json({
+      ...formatted_response,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 export const requests_by_request_state_provider: Controller = async (
   req: Request,
@@ -127,7 +161,7 @@ export const requests_by_request_state_provider: Controller = async (
           sr_no: i,
           request_id: request.request_id,
           request_state: request.request_state,
-          confirmationNo: request.confirmation_no,
+          confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
           patient_data: {
             user_id: request.Patient.user_id,

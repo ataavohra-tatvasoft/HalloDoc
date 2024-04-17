@@ -9,6 +9,7 @@ import {
   conclude_state_encounter_form_finalize,
   housecall,
   provider_accept_request,
+  provider_requests_by_request_state_counts,
   requests_by_request_state_provider,
   save_view_notes_for_request_provider,
   transfer_request_provider,
@@ -34,6 +35,12 @@ import { upload } from "../../utils";
 const router: Router = express.Router();
 
 /**                              Provider in Dashboard                                       */
+
+router.get(
+  "/dashboard/requests_count",
+  authmiddleware,
+  provider_requests_by_request_state_counts
+);
 
 router.get(
   "/dashboard/requests",
