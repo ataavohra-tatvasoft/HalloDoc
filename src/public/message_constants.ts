@@ -25,7 +25,7 @@ const message_constants = {
   DNF: "Document not found",
   UNF: "User not found",
   FNF: "File not found",
-  FoNF:"Form not found",
+  FoNF: "Form not found",
   ANF: "Admin not found",
   RNF: "Request not found",
   AcNF: "Accounts not found",
@@ -64,6 +64,7 @@ const message_constants = {
   EWSM: "Error while sending mail!!!",
   EWCL: "Error while creating log",
   EWSL: "Error while creating link",
+  EWCounting: "Error while counting",
   NVFD: "No valid files found for download",
   FTU: "Failed to upload !!!",
   FS: "Failed to Sign-Up",
@@ -82,6 +83,7 @@ const message_constants = {
   MS: "Message Sent",
   UE: "User Exists!!!",
   EFNF: "Encouner form is not finalized",
+  EFoNF: "Encounter form not found",
 };
 
 export default message_constants;

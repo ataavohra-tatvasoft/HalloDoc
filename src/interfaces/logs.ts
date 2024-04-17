@@ -10,12 +10,16 @@ export interface LogsAttributes {
   email: string;
   mobile_no: bigint;
   sent: string;
+  sent_tries: number;
+  confirmation_no: string;
   createdAt: Date;
   updatedAt: Date;
 }
 export interface LogsCreationAttributes
   extends Optional<
     LogsAttributes,
+    | "sent_tries"
+    | "confirmation_no"
     | "sent"
     | "mobile_no"
     | "email"

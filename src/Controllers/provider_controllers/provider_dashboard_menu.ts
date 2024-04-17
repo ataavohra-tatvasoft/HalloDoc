@@ -593,17 +593,6 @@ export const conclude_state_conclude_care_view: Controller = async (
           model: User,
           as: "Patient",
         },
-        {
-          model: Notes,
-          as: "Notes",
-          where: {
-            type_of_note: "physician_notes",
-          },
-        },
-        {
-          model: Documents,
-          as: "Documents",
-        },
       ],
     });
 
@@ -613,18 +602,42 @@ export const conclude_state_conclude_care_view: Controller = async (
       });
     }
 
+    const notes = await Notes.findAll({
+      where: {
+        note_id: request.request_id,
+        type_of_note: "physician_notes",
+      },
+    });
+
+    if (!notes) {
+      return res.status(404).json({
+        message: message_constants.NF,
+      });
+    }
+
+    const documents = await Documents.findAll({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+
+    if (!documents) {
+      return res.status(404).json({
+        message: message_constants.NF,
+      });
+    }
     const formatted_request = {
       confirmation_no: confirmation_no,
       patient_name: request.Patient.firstname + " " + request.Patient.lastname,
       documents: {
-        documents: request.Documents?.map((document) => ({
+        documents: documents?.map((document) => ({
           document_id: document.document_id,
           document_name: document.document_name,
           document_path: document.document_path,
         })),
       },
       physician_notes: {
-        notes: request.Notes?.map((note) => ({
+        notes: notes?.map((note) => ({
           note_id: note.note_id,
           type_of_note: note.type_of_note,
           description: note.description,
@@ -650,6 +663,7 @@ export const conclude_state_conclude_care_upload: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
+    console.log(req.file?.fieldname);
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -667,7 +681,7 @@ export const conclude_state_conclude_care_upload: Controller = async (
 
     const new_document = await Documents.create({
       request_id: request.request_id,
-      // document_name: file.fieldname,
+      document_name: req.file?.fieldname,
       document_path: file.path,
     });
     if (!new_document) {
@@ -694,12 +708,6 @@ export const conclude_state_conclude_care: Controller = async (
       where: {
         confirmation_no,
       },
-      include: [
-        {
-          model: EncounterForm,
-          as: "EncounterForm",
-        },
-      ],
     });
 
     if (!request) {
@@ -708,9 +716,21 @@ export const conclude_state_conclude_care: Controller = async (
       });
     }
 
-    console.log(request);
+    // console.log(request);
 
-    if (request?.EncounterForm.is_finalize == "true") {
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+
+    if (!encounter_form) {
+      return res.status(404).json({
+        message: message_constants.EFoNF,
+      });
+    }
+
+    if (encounter_form.is_finalize == "true") {
       const update = await RequestModel.update(
         {
           request_state: "toclose",
@@ -729,6 +749,10 @@ export const conclude_state_conclude_care: Controller = async (
           message: message_constants.EWU,
         });
       }
+
+      return res.status(200).json({
+        message: message_constants.Success,
+      });
     } else {
       return res.status(500).json({
         message: message_constants.EFNF,
@@ -805,7 +829,7 @@ export const conclude_state_encounter_form: Controller = async (
           location,
           date_of_birth,
           date_of_service,
-          phone_no,
+          phone_no: BigInt(phone_no),
           email,
           history_of_present,
           medical_history,

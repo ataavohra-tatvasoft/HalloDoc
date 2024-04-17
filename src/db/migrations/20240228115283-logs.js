@@ -37,10 +37,22 @@ module.exports = {
         type: Sequelize.BIGINT,
         allowNull: true,
       },
+
       sent: {
         type: Sequelize.STRING,
         allowNull: true,
       },
+
+      sent_tries: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+
+      confirmation_no: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      
       createdAt: {
         type: Sequelize.DATE,
       },

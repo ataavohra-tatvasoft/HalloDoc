@@ -73,6 +73,8 @@ export const access_useraccess_validation = {
   query: Joi.object({
     role: Joi.string().trim().optional().allow(""), // Allow empty string for optional search
     region: Joi.string().allow("").optional(),
+    page: Joi.number().integer().min(1).optional(),
+    page_size: Joi.number().integer().min(1).optional(),
   }),
 };
 

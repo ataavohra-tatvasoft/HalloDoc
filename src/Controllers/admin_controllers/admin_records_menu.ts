@@ -371,7 +371,7 @@ export const search_records: Controller = async (
       // ... potentially add other WhereOptions properties
     };
 
-    const { count: total_count, rows: requests } =
+    const { rows: requests } =
       await RequestModel.findAndCountAll({
         attributes: [
           "request_id",
@@ -433,11 +433,46 @@ export const search_records: Controller = async (
         limit,
         offset,
       });
+
     if (!requests) {
       return res.status(404).json({
         message: message_constants.RNF,
       });
     }
+
+    const { count: total_count } =
+    await RequestModel.findAndCountAll({
+      where: where_clause,
+      include: [
+        {
+          model: User,
+          as: "Patient",
+          where: {
+            ...(patient_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${patient_name}%` } },
+                { lastname: { [Op.like]: `%${patient_name}%` } },
+              ],
+            }),
+            ...(email && {
+              email: { [Op.like]: `%${email}%` },
+            }),
+            ...(phone_no && {
+              mobile_no: { [Op.like]: `%${phone_no}%` },
+            }),
+          },
+        },
+      ],
+      limit,
+      offset,
+    });
+
+    if (!total_count) {
+      return res.status(404).json({
+        message: message_constants.EWCounting,
+      });
+    }
+
     var i: number = offset + 1;
     for (const request of requests) {
       const formatted_request = {
@@ -572,6 +607,8 @@ export const logs_history: Controller = async (
         "mobile_no",
         "createdAt",
         "sent",
+        "sent_tries",
+        "confirmation_no",
       ],
       where: {
         type_of_log,
@@ -614,6 +651,8 @@ export const logs_history: Controller = async (
         created_date: log.createdAt.toISOString().split("T")[0],
         sent_date: log.createdAt.toISOString().split("T")[0],
         sent: log.sent,
+        sent_tries: log?.sent_tries || "-",
+        confirmation_no: log?.confirmation_no || "-",
       };
       i++;
       formatted_response.data.push(formatted_request);

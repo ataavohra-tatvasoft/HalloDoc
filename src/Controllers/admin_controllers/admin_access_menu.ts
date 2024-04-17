@@ -64,7 +64,7 @@ export const access_accountaccess: Controller = async (
       ...formatted_response,
       total_pages: Math.ceil(count / limit),
       current_page: page_number,
-      total_count: count
+      total_count: count,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
@@ -316,10 +316,13 @@ export const access_useraccess: Controller = async (
   next: NextFunction
 ) => {
   try {
-    const { role, region } = req.query; // Get search parameters from query string
+    const { role, region, page, page_size } = req.query; // Get search parameters from query string
     const where_clause: { [key: string]: any } = {
       ...(region && { state: region }),
     };
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
+    const offset = (page_number - 1) * limit;
     const formatted_response: FormattedResponse<any> = {
       status: true,
       data: [],
@@ -328,8 +331,8 @@ export const access_useraccess: Controller = async (
       where_clause.role = {
         [Op.like]: `%${role}%`, // Use LIKE operator for partial matching
       };
-    };
-    const accounts = await User.findAll({
+    }
+    const { count, rows: accounts } = await User.findAndCountAll({
       attributes: [
         "role_id",
         "user_id",
@@ -341,6 +344,8 @@ export const access_useraccess: Controller = async (
         "open_requests",
       ],
       where: where_clause, // Apply constructed search criteria
+      limit,
+      offset,
     });
 
     if (!accounts) {
@@ -359,6 +364,9 @@ export const access_useraccess: Controller = async (
     }
     return res.status(200).json({
       ...formatted_response,
+      total_pages: Math.ceil(count / limit),
+      current_page: page_number,
+      total_count: count,
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });

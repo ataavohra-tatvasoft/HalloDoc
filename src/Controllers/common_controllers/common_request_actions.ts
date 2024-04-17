@@ -230,6 +230,9 @@ export const view_uploads_upload: Controller = async (
       request_id: request.request_id,
       document_path: file.path,
     });
+
+    // console.log(new_document);
+
     if (!new_document) {
       return res.status(404).json({ error: message_constants.FTU });
     }
@@ -728,6 +731,7 @@ export const view_uploads_send_mail: Controller = async (
       role_name: "Admin",
       email: request.Patient.email,
       sent: "Yes",
+      confirmation_no: confirmation_no
     });
 
     if (!email_log) {
@@ -976,6 +980,8 @@ export const send_agreement: Controller = async (
       role_name: "Admin",
       email: user.email,
       sent: "Yes",
+      confirmation_no: confirmation_no
+      
     });
 
     if (!email_log) {

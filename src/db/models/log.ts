@@ -1,15 +1,22 @@
-import { Table, Column, DataType, Model,BelongsTo, Sequelize } from "sequelize-typescript";
 import {
-    LogsAttributes,
-    LogsCreationAttributes,
-} from "../../interfaces/logs";
+  Table,
+  Column,
+  DataType,
+  Model,
+  BelongsTo,
+  Sequelize,
+} from "sequelize-typescript";
+import { LogsAttributes, LogsCreationAttributes } from "../../interfaces/logs";
 
-@Table({ timestamps: true , tableName: "logs" })
-export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> {
+@Table({ timestamps: true, tableName: "logs" })
+export default class Logs extends Model<
+  LogsAttributes,
+  LogsCreationAttributes
+> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey:true
+    primaryKey: true,
   })
   log_id: number;
 
@@ -41,7 +48,7 @@ export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> 
     type: DataType.STRING,
     allowNull: true,
   })
-  email:string;
+  email: string;
 
   @Column({
     type: DataType.BIGINT,
@@ -54,4 +61,16 @@ export default class Logs extends Model<LogsAttributes, LogsCreationAttributes> 
     allowNull: true,
   })
   sent: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  sent_tries: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  confirmation_no: string;
 }

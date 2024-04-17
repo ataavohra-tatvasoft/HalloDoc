@@ -17,9 +17,18 @@ import {
 
 import { authmiddleware } from "../../middlewares";
 import {
+  active_state_encounter_validation,
+  conclude_state_conclude_care_upload_validation,
+  conclude_state_conclude_care_validation,
+  conclude_state_conclude_care_view_validation,
+  conclude_state_encounter_form_finalize_validation,
+  conclude_state_encounter_form_validation,
+  housecall_validation,
   provider_accept_request_validation,
   requests_by_request_state_provider_validation,
+  save_view_notes_for_request_provider_validation,
   transfer_request_provider_validation,
+  view_notes_for_request_provider_validation,
 } from "../../validations";
 import { upload } from "../../utils";
 const router: Router = express.Router();
@@ -50,35 +59,35 @@ router.post(
 router.get(
   "/dashboard/requests/:confirmation_no/actions/view_notes",
   authmiddleware,
-  // celebrate(view_notes_for_request_provider_validation),
+  celebrate(view_notes_for_request_provider_validation),
   view_notes_for_request_provider
 );
 
 router.put(
   "/dashboard/requests/:confirmation_no/actions/save_view_notes",
   authmiddleware,
-  // celebrate(save_view_notes_for_request_provider_validation),
+  celebrate(save_view_notes_for_request_provider_validation),
   save_view_notes_for_request_provider
 );
 
 router.put(
   "/dashboard/requests/:confirmation_no/actions/encounter",
   authmiddleware,
-  // celebrate(active_state_encounter_validation),
+  celebrate(active_state_encounter_validation),
   active_state_encounter
 );
 
 router.put(
   "/dashboard/requests/:confirmation_no/actions/housecall",
   authmiddleware,
-  // celebrate(housecall_validation),
+  celebrate(housecall_validation),
   housecall
 );
 
 router.get(
   "/dashboard/requests/:confirmation_no/actions/conclude_care_view",
   authmiddleware,
-  // celebrate(conclude_state_conclude_care_view_validation),
+  celebrate(conclude_state_conclude_care_view_validation),
   conclude_state_conclude_care_view
 );
 
@@ -86,28 +95,28 @@ router.post(
   "/dashboard/requests/:confirmation_no/actions/conclude_care_upload",
   authmiddleware,
   upload.single("file"),
-  // celebrate(conclude_state_conclude_care_upload_validation),
+  celebrate(conclude_state_conclude_care_upload_validation),
   conclude_state_conclude_care_upload
 );
 
-router.post(
+router.put(
   "/dashboard/requests/:confirmation_no/actions/conclude_care",
   authmiddleware,
-  // celebrate(conclude_state_conclude_care_validation),
+  celebrate(conclude_state_conclude_care_validation),
   conclude_state_conclude_care
 );
 
 router.put(
   "/dashboard/requests/:confirmation_no/actions/encounter_form",
   authmiddleware,
-  // celebrate(conclude_state_encounter_form_validation),
+  celebrate(conclude_state_encounter_form_validation),
   conclude_state_encounter_form
 );
 
 router.put(
   "/dashboard/requests/:confirmation_no/actions/encounter_form_finalize",
   authmiddleware,
-  // celebrate(conclude_state_encounter_form_finalize_validation),
+  celebrate(conclude_state_encounter_form_finalize_validation),
   conclude_state_encounter_form_finalize
 );
 export default router;
