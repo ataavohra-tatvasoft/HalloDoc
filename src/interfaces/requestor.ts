@@ -2,16 +2,16 @@ import { any } from "joi";
 import { Optional } from "sequelize";
 
 export interface RequestorAttributes {
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  mobile_number: bigint;
-  email: string;
-  house_name: string;
-  street: string;
-  city: string;
-  state: string;
-  zip: number;
+  user_id?: number;
+  first_name?: string;
+  last_name?: string;
+  mobile_number?: bigint;
+  email?: string;
+  house_name?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  zip?: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -15,6 +15,7 @@ import JSZip from "jszip";
 import { FormattedResponse } from "../../interfaces/common_interface";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
+import { request } from "http";
 
 export const is_patient_registered: Controller = async (
   req: Request,
@@ -74,8 +75,8 @@ export const create_request_by_patient: Controller = async (
     console.log(req.body);
     console.log(email, password);
 
-    const hashed_password = await bcrypt.hash(password, 10)
- 
+    const hashed_password = await bcrypt.hash(password, 10);
+
     const generate_confirmation_number = (
       state: string,
       firstname: string,
@@ -239,7 +240,6 @@ export const create_request_by_family_friend: Controller = async (
 ) => {
   try {
     const file = req.file;
-
     const {
       your_first_name,
       your_last_name,
@@ -357,45 +357,51 @@ export const create_request_by_family_friend: Controller = async (
         email: your_email,
       },
     });
+    let requestor;
 
-    // if (is_requestor) {
-    //   const requestor = await Requestor.create({
-    //     first_name: your_first_name,
-    //     last_name: your_last_name,
-    //     mobile_number: BigInt(your_mobile_no),
-    //     email: your_email,
-    //   });
+    if (is_requestor) {
+      requestor = await Requestor.update(
+        {
+          first_name: your_first_name,
+          last_name: your_last_name,
+          mobile_number: BigInt(your_mobile_no),
+          email: your_email,
+        },
+        {
+          where: {
+            email: your_email,
+          },
+        }
+      );
+      if (!requestor) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    }
 
-    //   if (!requestor) {
-    //     return res.status(404).json({
-    //       message: message_constants.ReNF,
-    //     });
-    //   }
-    // } else {
-    //   const requestor = await Requestor.update(
-    //     {
-    //       first_name: your_first_name,
-    //       last_name: your_last_name,
-    //       mobile_number: BigInt(your_mobile_no),
-    //       email: your_email,
-    //     },
-    //     {
-    //       where: {
-    //         email: your_email,
-    //       },
-    //     }
-    //   );
-    //   if (!requestor) {
-    //     return res.status(500).json({
-    //       message: message_constants.EWU,
-    //     });
-    //   }
-    // }
+    if (!is_requestor) {
+      requestor = await Requestor.create({
+        first_name: your_first_name,
+        last_name: your_last_name,
+        mobile_number: BigInt(your_mobile_no),
+        email: your_email,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      if (!requestor) {
+        return res.status(404).json({
+          message: message_constants.ReNF,
+        });
+      }
+    }
 
     const request_data = await RequestModel.create({
       request_state: "new",
       patient_id: patient_data.user_id,
       requested_by: "family/friend",
+      requestor_id: is_requestor?.user_id,
       requested_date: new Date(),
       confirmation_no,
       notes_symptoms: symptoms,
@@ -415,12 +421,6 @@ export const create_request_by_family_friend: Controller = async (
           request_id: request_data.request_id,
         },
       });
-
-      if (!is_document) {
-        return res.status(404).json({
-          message: message_constants.DNF,
-        });
-      }
 
       if (is_document) {
         const document_update = await Documents.update(
@@ -452,6 +452,7 @@ export const create_request_by_family_friend: Controller = async (
       message: message_constants.RC,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };

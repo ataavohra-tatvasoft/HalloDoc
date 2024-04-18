@@ -11,21 +11,19 @@ export const create_request_by_patient_validation = {
     symptoms: Joi.string().allow(""),
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
-    date_of_birth: Joi.string().required(),
+    date_of_birth: Joi.string().optional(),
     email: Joi.string().email().required(),
     mobile_no: Joi.string().allow(""),
     street: Joi.string().allow(""),
     city: Joi.string().allow(""),
-    state: Joi.string().alphanum().required(),
+    state: Joi.string().alphanum().optional(),
     zip: Joi.string().allow(""),
     room: Joi.string().allow(""),
-    password: Joi.string().min(6).required(),
+    password: Joi.string().min(6).optional(),
   }),
-  files: Joi.array().items(
-    Joi.object({
-      fieldname: Joi.string().required(),
-    })
-  ),
+  // file: Joi.object({
+  //   fieldname: Joi.string().optional(),
+  // }).optional(),
 };
 
 export const create_request_by_family_friend_validation = {
@@ -33,23 +31,21 @@ export const create_request_by_family_friend_validation = {
     your_first_name: Joi.string().required(),
     your_last_name: Joi.string().required(),
     your_mobile_no: Joi.string().allow(""),
-    your_email: Joi.string().email().required(),
-    your_relation_with_patient: Joi.string().required(),
+    your_email: Joi.string().email().optional(),
+    your_relation_with_patient: Joi.string().optional(),
     symptoms: Joi.string().allow(""),
-    firstname: Joi.string().required(),
-    lastname: Joi.string().required(),
-    date_of_birth: Joi.string().required(),
-    email: Joi.string().email().required(),
+    firstname: Joi.string().optional(),
+    lastname: Joi.string().optional(),
+    date_of_birth: Joi.string().optional(),
+    email: Joi.string().email().optional(),
     mobile_no: Joi.string().allow(""),
     street: Joi.string().allow(""),
     city: Joi.string().allow(""),
-    state: Joi.string().alphanum().required(),
+    state: Joi.string().alphanum().optional(),
     zip: Joi.string().allow(""),
     room: Joi.string().allow(""),
   }),
-  files: Joi.array().items(
-    Joi.object({
-      fieldname: Joi.string().required(),
-    })
-  ),
+  // file: Joi.object({
+  //   fieldname: Joi.string().optional(),
+  // }).optional(),
 };

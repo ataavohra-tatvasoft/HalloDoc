@@ -158,6 +158,11 @@ export const requests_by_request_state_provider: Controller = async (
 
       var i = offset + 1;
       for (const request of requests) {
+        const encounter_form = await EncounterForm.findOne({
+          where:{
+            request_id:  request.request_id
+          }
+        })
         const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
@@ -165,6 +170,7 @@ export const requests_by_request_state_provider: Controller = async (
           confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
           request_status: request.request_status,
+          is_finalized: encounter_form?.is_finalize || "Not finalized and Encounter form is not created yet",
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,

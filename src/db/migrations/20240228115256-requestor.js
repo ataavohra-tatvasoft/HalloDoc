@@ -30,23 +30,23 @@ module.exports = {
       },
       house_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       street: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       city: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       state: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       zip: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,

@@ -22,14 +22,14 @@ router.post(
 router.post(
   "/create_request/create_request_by_patient",
   upload.single("file"),
-  // celebrate(create_request_by_patient_validation),
+  celebrate(create_request_by_patient_validation),
   create_request_by_patient
 );
 
 router.post(
   "/create_request/create_request_by_family_friend",
   upload.single("file"),
-  // celebrate(create_request_by_family_friend_validation),
+  celebrate(create_request_by_family_friend_validation),
   create_request_by_family_friend
 );
 
