@@ -1,9 +1,12 @@
 "use strict";
 
 /** @type {import('sequelize-cli').Migration} */
+const bcrypt = require("bcrypt");
 module.exports = {
   async up(queryInterface, Sequelize) {
     const dob = new Date("2001-07-20");
+    const password = "Password@6789";
+    const hashed_password = await bcrypt.hash(password, 10);
     await queryInterface.bulkInsert(
       "user",
       [
@@ -157,6 +160,7 @@ module.exports = {
           type_of_user: "physician",
           firstname: "Vikram",
           lastname: "Singh",
+          password: hashed_password,
           mobile_no: 918402372758,
           address_1: "Room 10",
           address_2: "Hostel",

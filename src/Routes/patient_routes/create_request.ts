@@ -39,6 +39,7 @@ router.post(
 
 router.post(
   "/create_request/create_request_by_concierge",
+  upload.single("file"),
   celebrate(create_request_by_concierge_validation),
   create_request_by_concierge
 );

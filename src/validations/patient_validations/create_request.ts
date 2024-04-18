@@ -52,8 +52,8 @@ export const create_request_by_family_friend_validation = {
 
 export const create_request_by_concierge_validation = {
   body: Joi.object({
-    your_first_name: Joi.string().required(),
-    your_last_name: Joi.string().required(),
+    your_first_name: Joi.string().optional(),
+    your_last_name: Joi.string().optional(),
     your_mobile_no: Joi.string().allow(""),
     your_email: Joi.string().email().optional(),
     your_house_name: Joi.string().allow(""),
@@ -70,6 +70,7 @@ export const create_request_by_concierge_validation = {
     email: Joi.string().email().optional(),
     mobile_no: Joi.string().allow(""),
     room: Joi.string().allow(""),
+    state: Joi.string().allow("")
   }),
 };
 

@@ -170,7 +170,7 @@ export const requests_by_request_state_provider: Controller = async (
           confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
           request_status: request.request_status,
-          is_finalized: encounter_form?.is_finalize || "Not finalized and Encounter form is not created yet",
+          is_finalized: encounter_form?.is_finalize || false,
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,
@@ -689,7 +689,7 @@ export const conclude_state_conclude_care_view: Controller = async (
 
     formatted_response.data.push(formatted_request);
 
-    return res.status(500).json({
+    return res.status(200).json({
       ...formatted_response,
     });
   } catch (error) {

@@ -16,6 +16,7 @@ import { FormattedResponse } from "../../interfaces/common_interface";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
 import { request } from "http";
+import { SsmlEmphasis } from "twilio/lib/twiml/VoiceResponse";
 
 export const is_patient_registered: Controller = async (
   req: Request,
@@ -477,10 +478,13 @@ export const create_request_by_concierge: Controller = async (
       firstname,
       lastname,
       date_of_birth,
+      state,
       email,
       mobile_no,
       room,
     } = req.body;
+
+    console.log(req.body);
 
     const generate_confirmation_number = (
       state: string,
@@ -492,6 +496,7 @@ export const create_request_by_concierge: Controller = async (
       const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
       const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
       const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+      console.log(state);
       return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
         0,
         2
@@ -518,6 +523,7 @@ export const create_request_by_concierge: Controller = async (
           mobile_no,
           dob: new Date(date_of_birth),
           address_1: room,
+          state,
         },
         {
           where: {
@@ -539,6 +545,7 @@ export const create_request_by_concierge: Controller = async (
         lastname,
         mobile_no,
         email,
+        state,
         dob: new Date(date_of_birth),
         address_1: room,
       });
@@ -550,7 +557,7 @@ export const create_request_by_concierge: Controller = async (
         });
       }
     }
-
+    // console.log(patient_data);
     const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
@@ -559,6 +566,8 @@ export const create_request_by_concierge: Controller = async (
         },
       },
     });
+
+    console.log(todays_requests_count);
 
     const confirmation_no = generate_confirmation_number(
       patient_data.state,
