@@ -10,6 +10,7 @@ import {
   create_request_by_patient_validation,
   is_patient_registered_validation,
 } from "../../validations/index";
+import { upload } from "../../utils";
 const router: Router = express.Router();
 
 router.post(
@@ -20,13 +21,15 @@ router.post(
 
 router.post(
   "/create_request/create_request_by_patient",
-  celebrate(create_request_by_patient_validation),
+  upload.single("file"),
+  // celebrate(create_request_by_patient_validation),
   create_request_by_patient
 );
 
 router.post(
   "/create_request/create_request_by_family_friend",
-  celebrate(create_request_by_family_friend_validation),
+  upload.single("file"),
+  // celebrate(create_request_by_family_friend_validation),
   create_request_by_family_friend
 );
 

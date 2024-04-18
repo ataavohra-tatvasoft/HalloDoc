@@ -21,9 +21,11 @@ export const create_request_by_patient_validation = {
     room: Joi.string().allow(""),
     password: Joi.string().min(6).required(),
   }),
-  files: Joi.object().keys({
-    document: Joi.optional(),
-  }),
+  files: Joi.array().items(
+    Joi.object({
+      fieldname: Joi.string().required(),
+    })
+  ),
 };
 
 export const create_request_by_family_friend_validation = {
@@ -44,8 +46,10 @@ export const create_request_by_family_friend_validation = {
     state: Joi.string().alphanum().required(),
     zip: Joi.string().allow(""),
     room: Joi.string().allow(""),
-    files: Joi.object().keys({
-      document: Joi.required(),
-    }),
   }),
+  files: Joi.array().items(
+    Joi.object({
+      fieldname: Joi.string().required(),
+    })
+  ),
 };

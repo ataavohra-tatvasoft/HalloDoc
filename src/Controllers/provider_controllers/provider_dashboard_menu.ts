@@ -126,6 +126,7 @@ export const requests_by_request_state_provider: Controller = async (
           "request_state",
           "confirmation_no",
           "requested_by",
+          "request_status",
           "physician_id",
           "patient_id",
           ...(additionalAttributes || []),
@@ -163,6 +164,7 @@ export const requests_by_request_state_provider: Controller = async (
           request_state: request.request_state,
           confirmation_no: request.confirmation_no,
           requestor: request.requested_by,
+          request_status: request.request_status,
           patient_data: {
             user_id: request.Patient.user_id,
             name: request.Patient.firstname + " " + request.Patient.lastname,

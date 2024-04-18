@@ -51,7 +51,7 @@ export const active_state_encounter_validation = {
     confirmation_no: Joi.string().required(),
   }),
   query: Joi.object({
-    type_of_care: Joi.string().required().valid("consult", "housecall"),
+    type_of_care: Joi.string().required(),
   }),
 };
 

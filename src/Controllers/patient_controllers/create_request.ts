@@ -16,7 +16,6 @@ import { FormattedResponse } from "../../interfaces/common_interface";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
 
-
 export const is_patient_registered: Controller = async (
   req: Request,
   res: Response,
@@ -52,28 +51,31 @@ export const create_request_by_patient: Controller = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    const {
-      symptoms,
-      firstname,
-      lastname,
-      date_of_birth,
-      email,
-      mobile_no,
-      street,
-      city,
-      state,
-      zip,
-      room,
-      password,
-    } = req.body;
-
+    // console.log(req);
     const file = req.file;
+    console.log(file);
+    const {
+      body: {
+        symptoms,
+        firstname,
+        lastname,
+        date_of_birth,
+        email,
+        mobile_no,
+        street,
+        city,
+        state,
+        zip,
+        room,
+        password,
+      },
+    } = req;
 
-    const hashed_password: string = await bcrypt.hash(password, 10);
+    console.log(req.body);
+    console.log(email, password);
 
+    const hashed_password = await bcrypt.hash(password, 10)
+ 
     const generate_confirmation_number = (
       state: string,
       firstname: string,
@@ -92,6 +94,7 @@ export const create_request_by_patient: Controller = async (
         "0"
       )}`;
     };
+
     const is_patient = await User.findOne({
       where: {
         type_of_user: "patient",
@@ -101,17 +104,19 @@ export const create_request_by_patient: Controller = async (
 
     let patient_data;
 
+    // console.log("error is here");
+
     if (is_patient) {
       const update_status = await User.update(
         {
           firstname,
           lastname,
-          mobile_no,
+          mobile_no: BigInt(mobile_no),
           dob: new Date(date_of_birth),
           street,
           city,
           state,
-          zip,
+          zip: Number(zip),
           address_1: room,
         },
         {
@@ -132,13 +137,13 @@ export const create_request_by_patient: Controller = async (
         type_of_user: "patient",
         firstname,
         lastname,
-        mobile_no,
+        mobile_no: BigInt(mobile_no),
         email,
         dob: new Date(date_of_birth),
         street,
         city,
         state,
-        zip,
+        zip: Number(zip),
         address_1: room,
         password: hashed_password,
       });
@@ -150,6 +155,8 @@ export const create_request_by_patient: Controller = async (
         });
       }
     }
+
+    console.log("error_2 is here");
 
     const todays_requests_count: number = await RequestModel.count({
       where: {
@@ -183,13 +190,36 @@ export const create_request_by_patient: Controller = async (
       });
     }
 
-    const new_document = await Documents.create({
-      request_id: request_data.request_id,
-      document_path: file.path,
-    });
+    if (file) {
+      const is_document = await Documents.findOne({
+        where: {
+          request_id: request_data.request_id,
+        },
+      });
 
-    if (!new_document) {
-      return res.status(404).json({ error: message_constants.FTU });
+      if (is_document) {
+        const document_update = await Documents.update(
+          {
+            document_path: file.path,
+          },
+          {
+            where: { request_id: request_data.request_id },
+          }
+        );
+
+        if (!document_update) {
+          return res.status(404).json({ error: message_constants.EWU });
+        }
+      } else {
+        const new_document = await Documents.create({
+          request_id: request_data.request_id,
+          document_path: file.path,
+        });
+
+        if (!new_document) {
+          return res.status(404).json({ error: message_constants.FTU });
+        }
+      }
     }
 
     return res.status(200).json({
@@ -197,7 +227,8 @@ export const create_request_by_patient: Controller = async (
       message: message_constants.RC,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -207,9 +238,8 @@ export const create_request_by_family_friend: Controller = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+    const file = req.file;
+
     const {
       your_first_name,
       your_last_name,
@@ -228,26 +258,6 @@ export const create_request_by_family_friend: Controller = async (
       zip,
       room,
     } = req.body;
-    // as {
-    //     your_first_name: string,
-    //   your_last_name: string,
-    //   your_mobile_no: bigint,
-    //   your_email: string,
-    //   your_relation_with_patient: string,
-    //   symptoms: string,
-    //   firstname: string,
-    //   lastname: string,
-    //   date_of_birth: Date,
-    //   email: string,
-    //   mobile_no: bigint,
-    //   street: string,
-    //   city: string,
-    //   state: string,
-    //   zip: bigint,
-    //   room: string,
-    // };
-
-    const file = req.file;
 
     const generate_confirmation_number = (
       state: string,
@@ -267,6 +277,7 @@ export const create_request_by_family_friend: Controller = async (
         "0"
       )}`;
     };
+
     const is_patient = await User.findOne({
       where: {
         type_of_user: "patient",
@@ -275,6 +286,7 @@ export const create_request_by_family_friend: Controller = async (
     });
 
     let patient_data;
+
     if (is_patient) {
       const update_status = await User.update(
         {
@@ -340,17 +352,44 @@ export const create_request_by_family_friend: Controller = async (
       todays_requests_count
     );
 
-    // const requestor = await Requestor.create({
-    //   first_name: your_first_name,
-    //   last_name: your_last_name,
-    //   mobile_number: BigInt(your_mobile_no),
-    //   email: your_email,
-    // });
+    const is_requestor = await Requestor.findOne({
+      where: {
+        email: your_email,
+      },
+    });
 
-    // if (!requestor) {
-    //   return res.status(404).json({
-    //     message: message_constants.ReNF,
+    // if (is_requestor) {
+    //   const requestor = await Requestor.create({
+    //     first_name: your_first_name,
+    //     last_name: your_last_name,
+    //     mobile_number: BigInt(your_mobile_no),
+    //     email: your_email,
     //   });
+
+    //   if (!requestor) {
+    //     return res.status(404).json({
+    //       message: message_constants.ReNF,
+    //     });
+    //   }
+    // } else {
+    //   const requestor = await Requestor.update(
+    //     {
+    //       first_name: your_first_name,
+    //       last_name: your_last_name,
+    //       mobile_number: BigInt(your_mobile_no),
+    //       email: your_email,
+    //     },
+    //     {
+    //       where: {
+    //         email: your_email,
+    //       },
+    //     }
+    //   );
+    //   if (!requestor) {
+    //     return res.status(500).json({
+    //       message: message_constants.EWU,
+    //     });
+    //   }
     // }
 
     const request_data = await RequestModel.create({
@@ -370,13 +409,42 @@ export const create_request_by_family_friend: Controller = async (
       });
     }
 
-    const new_document = await Documents.create({
-      request_id: request_data.request_id,
-      document_path: file.path,
-    });
+    if (file) {
+      const is_document = await Documents.findOne({
+        where: {
+          request_id: request_data.request_id,
+        },
+      });
 
-    if (!new_document) {
-      return res.status(404).json({ error: message_constants.FTU });
+      if (!is_document) {
+        return res.status(404).json({
+          message: message_constants.DNF,
+        });
+      }
+
+      if (is_document) {
+        const document_update = await Documents.update(
+          {
+            document_path: file.path,
+          },
+          {
+            where: { request_id: request_data.request_id },
+          }
+        );
+
+        if (!document_update) {
+          return res.status(404).json({ error: message_constants.EWU });
+        }
+      } else {
+        const new_document = await Documents.create({
+          request_id: request_data.request_id,
+          document_path: file.path,
+        });
+
+        if (!new_document) {
+          return res.status(404).json({ error: message_constants.FTU });
+        }
+      }
     }
 
     return res.status(200).json({
@@ -387,4 +455,3 @@ export const create_request_by_family_friend: Controller = async (
     res.status(500).json({ error: message_constants.ISE });
   }
 };
-
