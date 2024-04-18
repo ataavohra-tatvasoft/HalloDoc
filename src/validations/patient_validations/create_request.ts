@@ -49,3 +49,49 @@ export const create_request_by_family_friend_validation = {
   //   fieldname: Joi.string().optional(),
   // }).optional(),
 };
+
+export const create_request_by_concierge_validation = {
+  body: Joi.object({
+    your_first_name: Joi.string().required(),
+    your_last_name: Joi.string().required(),
+    your_mobile_no: Joi.string().allow(""),
+    your_email: Joi.string().email().optional(),
+    your_house_name: Joi.string().allow(""),
+    your_street: Joi.string().allow(""),
+    your_city: Joi.string().allow(""),
+    your_state: Joi.string().alphanum().optional(),
+    your_zip: Joi.string().allow(""),
+    symptoms: Joi.string().allow(""),
+
+    // Patient Details (optional)
+    firstname: Joi.string().optional(),
+    lastname: Joi.string().optional(),
+    date_of_birth: Joi.string().optional(),
+    email: Joi.string().email().optional(),
+    mobile_no: Joi.string().allow(""),
+    room: Joi.string().allow(""),
+  }),
+};
+
+export const create_request_by_business_validation = {
+  body: Joi.object({
+    your_first_name: Joi.string().optional(),
+    your_last_name: Joi.string().optional(),
+    your_mobile_no: Joi.string().allow(""),
+    your_email: Joi.string().email().optional(),
+    your_property_name: Joi.string().optional(),
+    symptoms: Joi.string().allow(""),
+
+    // Patient Details (optional)
+    firstname: Joi.string().optional(),
+    lastname: Joi.string().optional(),
+    date_of_birth: Joi.string().optional(),
+    email: Joi.string().email().optional(),
+    mobile_no: Joi.string().allow(""),
+    street: Joi.string().allow(""),
+    city: Joi.string().allow(""),
+    state: Joi.string().alphanum().optional(),
+    zip: Joi.string().allow(""),
+    room: Joi.string().allow(""),
+  }),
+};
