@@ -103,6 +103,7 @@ module.exports = {
         {
           user_id: 7,
           email: "billgates@outlook.com",
+          password: hashed_password,
           type_of_user: "patient",
           firstname: "Bill ",
           lastname: "Gates",

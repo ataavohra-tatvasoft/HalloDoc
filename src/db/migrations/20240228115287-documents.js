@@ -20,6 +20,11 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      uploader: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
       document_name: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -41,7 +46,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('documents');
-
+    await queryInterface.dropTable("documents");
   },
 };

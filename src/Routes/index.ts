@@ -14,7 +14,7 @@ import provider_dashboard from "./provider_routes/provider_dashboard";
 import provider_my_profile from "./provider_routes/provider_my_profile";
 import provider_my_schedule from "./provider_routes/provider_my_schedule";
 
-import patient_create_request from "./patient_routes/create_request";
+import patient_create_request from "./patient_routes/patient_create_request";
 
 import common_routes from "./common_routes/common_routes";
 import common_request_actions from "./common_routes/common_request_actions";

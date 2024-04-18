@@ -2,10 +2,11 @@ import { any } from "joi";
 import { Optional } from "sequelize";
 
 export interface DocumentsAttributes {
-  request_id: number| null;
+  request_id: number | null;
   user_id: number | null;
   document_id: number;
-  document_name: string| null;
+  uploader: string;
+  document_name: string | null;
   document_path: string;
   createdAt: Date;
   updatedAt: Date;
@@ -13,5 +14,11 @@ export interface DocumentsAttributes {
 export interface DocumentsCreationAttributes
   extends Optional<
     DocumentsAttributes,
-    "createdAt" | "updatedAt" | "user_id" | "document_id" | "document_name"| "request_id"
+    | "createdAt"
+    | "updatedAt"
+    | "user_id"
+    | "uploader"
+    | "document_id"
+    | "document_name"
+    | "request_id"
   > {}

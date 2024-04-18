@@ -1,22 +1,12 @@
-import Region from "../../db/models/region";
-import Profession from "../../db/models/profession";
 import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../interfaces/common_interface";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import RequestModel from "../../db/models/request";
-import Role from "../../db/models/role";
-import ExcelJS from "exceljs";
 import { Op } from "sequelize";
 import Requestor from "../../db/models/requestor";
-import Notes from "../../db/models/notes";
-import Access from "../../db/models/access";
-import JSZip from "jszip";
-import { FormattedResponse } from "../../interfaces/common_interface";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
-import { request } from "http";
-import { SsmlEmphasis } from "twilio/lib/twiml/VoiceResponse";
 
 export const is_patient_registered: Controller = async (
   req: Request,

@@ -44,6 +44,14 @@ export default class Documents extends Model<
   })
   document_id: number;
 
+  
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null
+  })
+  uploader: number;
+
   @Column({
     type: DataType.STRING,
     allowNull: true,

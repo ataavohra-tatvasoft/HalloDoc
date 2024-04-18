@@ -16,7 +16,7 @@ export * from "./provider_validations/provider_my_profile";
 export * from "./provider_validations/provider_my_schedule";
 
 /**Patient Validations */
-export * from "./patient_validations/create_request";
+export * from "./patient_validations/patient_create_request";
 
 /**Common Validations */
 export * from "./common_validations/common_request_actions";
