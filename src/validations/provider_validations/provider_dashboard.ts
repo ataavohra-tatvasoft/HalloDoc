@@ -79,6 +79,12 @@ export const conclude_state_conclude_care_validation = {
   }),
 };
 
+export const conclude_state_get_encounter_form_validation = {
+  params: Joi.object({
+    confirmation_no: Joi.string().required(),
+  }),
+};
+
 export const conclude_state_encounter_form_validation = {
   params: Joi.object({
     confirmation_no: Joi.string().required(),

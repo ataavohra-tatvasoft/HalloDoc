@@ -86,6 +86,7 @@ const message_constants = {
   MS: "Message Sent",
   UE: "User Exists!!!",
   EFNF: "Encouner form is not finalized",
+  EFIF: "Encouner form is finalized",
   EFoNF: "Encounter form not found",
 };
 

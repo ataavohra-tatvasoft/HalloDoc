@@ -7,6 +7,7 @@ import {
   conclude_state_conclude_care_view,
   conclude_state_encounter_form,
   conclude_state_encounter_form_finalize,
+  conclude_state_get_encounter_form,
   housecall,
   provider_accept_request,
   provider_requests_by_request_state_counts,
@@ -24,6 +25,7 @@ import {
   conclude_state_conclude_care_view_validation,
   conclude_state_encounter_form_finalize_validation,
   conclude_state_encounter_form_validation,
+  conclude_state_get_encounter_form_validation,
   housecall_validation,
   provider_accept_request_validation,
   requests_by_request_state_provider_validation,
@@ -111,6 +113,13 @@ router.put(
   authmiddleware,
   celebrate(conclude_state_conclude_care_validation),
   conclude_state_conclude_care
+);
+
+router.get(
+  "/dashboard/requests/:confirmation_no/actions/get_encounter_form",
+  authmiddleware,
+  celebrate(conclude_state_get_encounter_form_validation),
+  conclude_state_get_encounter_form
 );
 
 router.put(

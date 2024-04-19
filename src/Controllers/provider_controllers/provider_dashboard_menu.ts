@@ -159,10 +159,10 @@ export const requests_by_request_state_provider: Controller = async (
       var i = offset + 1;
       for (const request of requests) {
         const encounter_form = await EncounterForm.findOne({
-          where:{
-            request_id:  request.request_id
-          }
-        })
+          where: {
+            request_id: request.request_id,
+          },
+        });
         const formatted_request = {
           sr_no: i,
           request_id: request.request_id,
@@ -800,6 +800,94 @@ export const conclude_state_conclude_care: Controller = async (
         message: message_constants.EFNF,
       });
     }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_get_encounter_form: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      data: [],
+    };
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    if (encounter_form) {
+      if (encounter_form.is_finalize == "true") {
+        return res.status(200).json({
+          message: message_constants.EFIF,
+        });
+      } else {
+        const formatted_request = {
+          confirmation_no: request.confirmation_no,
+          request_id: request.request_id,
+          form_id: encounter_form.form_id,
+          first_name: encounter_form.first_name,
+          last_name: encounter_form.last_name,
+          location: encounter_form.location,
+          date_of_birth: encounter_form.date_of_birth,
+          date_of_service: encounter_form.date_of_service,
+          phone_no: encounter_form.phone_no,
+          email: encounter_form.email,
+          history_of_present: encounter_form.history_of_present,
+          medical_history: encounter_form.medical_history,
+          medications: encounter_form.medications,
+          allergies: encounter_form.allergies,
+          temperature: encounter_form.temperature,
+          heart_rate: encounter_form.heart_rate,
+          respiratory_rate: encounter_form.respiratory_rate,
+          blood_pressure: encounter_form.blood_pressure,
+          o2: encounter_form.o2,
+          pain: encounter_form.pain,
+          heent: encounter_form.heent,
+          cv: encounter_form.cv,
+          chest: encounter_form.chest,
+          abd: encounter_form.abd,
+          extr: encounter_form.extr,
+          skin: encounter_form.skin,
+          neuro: encounter_form.neuro,
+          other: encounter_form.other,
+          diagnosis: encounter_form.diagnosis,
+          treatment_plan: encounter_form.treatment_plan,
+          medication_dispensed: encounter_form.medication_dispensed,
+          procedures: encounter_form.procedures,
+          follow_up: encounter_form.follow_up,
+          created_at: encounter_form.createdAt,
+          updated_at: encounter_form.updatedAt,
+        };
+        formatted_response.data.push(formatted_request);
+      }
+    } else {
+      return res.status(404).json({
+        message: message_constants.EFoNF + " ,kindly create first",
+      });
+    }
+    return res.status(200).json({
+      ...formatted_response,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
