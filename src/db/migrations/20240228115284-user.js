@@ -31,11 +31,11 @@ module.exports = {
       // Common fields
       firstname: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       lastname: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       mobile_no: {
         type: Sequelize.BIGINT,

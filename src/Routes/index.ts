@@ -15,6 +15,8 @@ import provider_my_profile from "./provider_routes/provider_my_profile";
 import provider_my_schedule from "./provider_routes/provider_my_schedule";
 
 import patient_create_request from "./patient_routes/patient_create_request";
+import patient_dashboard from "./patient_routes/patient_dashboard";
+import patient_my_profile from "./patient_routes/patient_my_profile";
 
 import common_routes from "./common_routes/common_routes";
 import common_request_actions from "./common_routes/common_request_actions";
@@ -43,6 +45,9 @@ router.use("/provider", provider_my_schedule);
 
 /** Patient Routes */
 router.use("/patient", patient_create_request);
+router.use("/patient", patient_dashboard);
+router.use("/patient", patient_my_profile);
+
 
 /**Common Routes */
 router.use(common_routes);

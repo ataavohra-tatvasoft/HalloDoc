@@ -17,6 +17,8 @@ export * from "./provider_controllers/provider_my_schedule";
 
 /**Patient Controllers */
 export * from "./patient_controllers/patient_create_request";
+export * from "./patient_controllers/patient_dashboard";
+export * from "./patient_controllers/patient_my_profile";
 
 /**Common Controllers  */
 export * from "./common_controllers/common_controllers";

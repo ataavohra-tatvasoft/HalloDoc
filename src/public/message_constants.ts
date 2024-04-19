@@ -89,6 +89,7 @@ const message_constants = {
   EFNF: "Encounter form is not finalized",
   EFIF: "Encounter form is finalized",
   EFoNF: "Encounter form not found",
+  PAC: "Patient Already Created !!!",
 };
 
 export default message_constants;

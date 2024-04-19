@@ -985,7 +985,7 @@ export const conclude_state_download_encounter_form: Controller = async (
       doc.text(`Blood Pressure 1: ${encounter_form.blood_pressure_1}`, {
         align: "left",
       });
-      doc.text(`Blood Pressure 1: ${encounter_form.blood_pressure_2}`, {
+      doc.text(`Blood Pressure 2: ${encounter_form.blood_pressure_2}`, {
         align: "left",
       });
       doc.text(`O2: ${encounter_form.o2}`, { align: "left" });

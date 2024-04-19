@@ -96,7 +96,7 @@ export const medical_history: Controller = async (
   }
 };
 
-export const request_document: Controller = async (
+export const request_action_document: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -177,3 +177,4 @@ export const request_document: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+

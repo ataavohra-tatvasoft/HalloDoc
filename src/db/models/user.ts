@@ -57,13 +57,13 @@ export default class User extends Model<
   // Common fields
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   firstname: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   lastname: string;
 
@@ -131,7 +131,7 @@ export default class User extends Model<
 
   @Column({
     type: DataType.ENUM("active", "pending", "in-active"),
-    allowNull: false,
+    allowNull: true,
     defaultValue: "pending",
   })
   status: string;

@@ -332,12 +332,6 @@ export const view_uploads_actions_download: Controller = async (
           ],
         },
       },
-      include: [
-        {
-          model: Documents,
-          attributes: ["request_id", "document_id", "document_path"],
-        },
-      ],
     });
 
     if (!request) {
