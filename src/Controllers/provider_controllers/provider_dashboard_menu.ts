@@ -16,7 +16,7 @@ import message_constants from "../../public/message_constants";
 import EncounterForm from "../../db/models/encounter_form";
 import fs from "fs";
 import pdfkit from "pdfkit";
-
+import path from "path";
 import { unlink } from "node:fs";
 
 /** Configs */
@@ -909,92 +909,150 @@ export const conclude_state_download_encounter_form: Controller = async (
   next: NextFunction
 ) => {
   try {
-    // const { confirmation_no } = req.params;
+    const { confirmation_no } = req.params;
 
-    // const generate_encounter_form_PDF = async (encounter_form: any) => {
-    //   const doc = new pdfkit();
-    //   const product_path = path.join("src", "data", "Invoices", product_name);
+    const generate_encounter_form_PDF = async (encounter_form: any) => {
+      const doc = new pdfkit();
+      const form_name = `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`;
+      // const form_path = path.join(
+      //   __dirname,
+      //   "../",
+      //   "../",
+      //   "public",
+      //   "uploads",
+      //   form_name
+      // );
 
-    //   // Create a writable stream using fs.createWriteStream
-    //   const writableStream = fs.createWriteStream("encounter_form.pdf");
+      // Create a writable stream using fs.createWriteStream
+      const writable_stream = fs.createWriteStream(form_name);
+      let chunks: Uint8Array[] = [];
 
-    //   let chunks: Uint8Array[];
+      doc.pipe(writable_stream);
+      doc.on("end", async () => {
+        try {
+          await fs.promises.writeFile(form_name, Buffer.concat(chunks));
+          console.log("PDF file created successfully!");
+        } catch (err) {
+          console.error("Error writing encounter form PDF:", err);
+        }
+      });
 
-    //   // Pipe the PDF document stream to the writable stream
-    //   doc.pipe(writableStream);
+      doc.fontSize(12);
 
-    //   // After finishing the document creation, write chunks to a file (promise-based)
-    //   doc.on("end", async () => {
-    //     try {
-    //       await fs.promises.writeFile(
-    //         "encounter_form.pdf",
-    //         Buffer.concat(chunks)
-    //       );
-    //       console.log("PDF file created successfully!");
-    //     } catch (err) {
-    //       console.error("Error writing encounter form PDF:", err);
-    //     }
-    //   });
+      // Add document title and headers
+      doc.text("Encounter Form Details", { align: "center" });
+      doc.text("  ", { align: "center" });
+      doc.text(
+        `Confirmation Number: ${encounter_form.Request.confirmation_no}`,
+        {
+          align: "left",
+        }
+      );
+      doc.text(`First Name: ${encounter_form.first_name}`, { align: "left" });
+      doc.text(`Last Name: ${encounter_form.last_name}`, { align: "left" });
+      doc.text(`Location: ${encounter_form.location}`, { align: "left" });
+      doc.text(
+        `Date of birth: ${
+          encounter_form?.date_of_birth.toISOString().split("T")[0]
+        }`,
+        {
+          align: "left",
+        }
+      );
+      doc.text(
+        `Date of Service: ${
+          encounter_form?.date_of_service.toISOString().split("T")[0]
+        }`,
+        {
+          align: "left",
+        }
+      );
+      doc.text(`Phone No.: ${encounter_form.phone_no}`, { align: "left" });
+      doc.text(`Email: ${encounter_form.email}`, { align: "left" });
+      doc.text(`History of Payment: ${encounter_form.history_of_present}`, {
+        align: "left",
+      });
+      doc.text(`Medical History: ${encounter_form.medical_history}`, {
+        align: "left",
+      });
+      doc.text(`Medications: ${encounter_form.medications}`, { align: "left" });
+      doc.text(`Allergies: ${encounter_form.allergies}`, { align: "left" });
+      doc.text(`Temperature: ${encounter_form.temperature}`, { align: "left" });
+      doc.text(`Heart Rate: ${encounter_form.heart_rate}`, { align: "left" });
+      doc.text(`Respiratory Rate: ${encounter_form.respiratory_rate}`, {
+        align: "left",
+      });
+      doc.text(`Blood Pressure 1: ${encounter_form.blood_pressure_1}`, {
+        align: "left",
+      });
+      doc.text(`Blood Pressure 1: ${encounter_form.blood_pressure_2}`, {
+        align: "left",
+      });
+      doc.text(`O2: ${encounter_form.o2}`, { align: "left" });
+      doc.text(`Pain: ${encounter_form.pain}`, { align: "left" });
+      doc.text(`HEENT: ${encounter_form.heent}`, { align: "left" });
+      doc.text(`CV: ${encounter_form.cv}`, { align: "left" });
+      doc.text(`Chest: ${encounter_form.chest}`, { align: "left" });
+      doc.text(`ABD: ${encounter_form.abd}`, { align: "left" });
+      doc.text(`EXTR: ${encounter_form.extr}`, { align: "left" });
+      doc.text(`Skin: ${encounter_form.skin}`, { align: "left" });
+      doc.text(`Neuro: ${encounter_form.neuro}`, { align: "left" });
+      doc.text(`other: ${encounter_form.other}`, { align: "left" });
+      doc.text(`diagnosis: ${encounter_form.diagnosis}`, { align: "left" });
+      doc.text(`treatment_plan: ${encounter_form.treatment_plan}`, {
+        align: "left",
+      });
+      doc.text(`Medication Dispensed: ${encounter_form.medication_dispensed}`, {
+        align: "left",
+      });
+      doc.text(`Procedures: ${encounter_form.procedures}`, { align: "left" });
+      doc.text(`Follow Up: ${encounter_form.follow_up}`, { align: "left" });
 
-    //   doc.fontSize(12);
+      doc.end();
+    };
 
-    //   // Add document title and headers
-    //   doc.text("Encounter Form Details", { align: "center" });
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
 
-    //   // Add confirmation number
-    //   doc.text(`Confirmation Number: ${encounter_form.request_id}`, {
-    //     align: "left",
-    //   });
+    if (!request) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
 
-    //   // Add other encounter form details as needed
-    //   // (e.g., patient information, medical history, etc.)
-    //   doc.text(`First Name: ${encounter_form.first_name}`, { align: "left" });
-    //   doc.text(`Last Name: ${encounter_form.last_name}`, { align: "left" });
-
-    //   // ... (add other details)
-
-    //   doc.end();
-    // };
-
-    // const request = await RequestModel.findOne({
-    //   where: {
-    //     confirmation_no,
-    //   },
-    // });
-
-    // if (!request) {
-    //   return res.status(404).json({
-    //     message: message_constants.RNF,
-    //   });
-    // }
-
-    // const encounter_form = await EncounterForm.findOne({
-    //   where: {
-    //     request_id: request.request_id,
-    //   },
-    // });
-    // if (encounter_form) {
-    //   if (encounter_form.is_finalize == "true") {
-    //     console.log(req.params);
-    //     await generate_encounter_form_PDF(encounter_form);
-    //     return res.download("encounter_form.pdf", (err) => {
-    //       if (err) {
-    //         console.error(err);
-    //         return res.status(500).json({ message: message_constants.EWD });
-    //       }
-    //       // Delete temporary PDF file after download
-    //       // try {
-    //       //   fs.unlink('encounter_form.pdf'); // Proper usage with promises
-    //       // } catch (err) {
-    //       //   console.error('Error deleting encounter form PDF:', err);
-    //       // }
-    //     });
-    //   } else {
-    //     return res.status(500).json({
-    //       message: message_constants.EFNF,
-    //     });
-    //   }
-    // }
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+      include: [
+        {
+          model: RequestModel,
+          as: "Request",
+        },
+      ],
+    });
+    if (encounter_form) {
+      if (encounter_form.is_finalize == "true") {
+        console.log(req.params);
+        await generate_encounter_form_PDF(encounter_form);
+        return res.download(
+          `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`,
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: message_constants.EWDO });
+            }
+          }
+        );
+      } else {
+        return res.status(500).json({
+          message: message_constants.EFNF,
+        });
+      }
+    }
     return res.status(200).json({
       message: message_constants.Success,
     });
