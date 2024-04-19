@@ -1043,7 +1043,7 @@ export const conclude_state_download_encounter_form: Controller = async (
           (err) => {
             if (err) {
               console.error(err);
-              return res.status(500).json({ message: message_constants.EWDO });
+              return res.status(500).json({ message: message_constants.EWDo });
             }
           }
         );
