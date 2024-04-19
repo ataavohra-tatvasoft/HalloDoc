@@ -5,6 +5,7 @@ import {
   conclude_state_conclude_care,
   conclude_state_conclude_care_upload,
   conclude_state_conclude_care_view,
+  conclude_state_download_encounter_form,
   conclude_state_encounter_form,
   conclude_state_encounter_form_finalize,
   conclude_state_get_encounter_form,
@@ -23,6 +24,7 @@ import {
   conclude_state_conclude_care_upload_validation,
   conclude_state_conclude_care_validation,
   conclude_state_conclude_care_view_validation,
+  conclude_state_download_encounter_form_validation,
   conclude_state_encounter_form_finalize_validation,
   conclude_state_encounter_form_validation,
   conclude_state_get_encounter_form_validation,
@@ -120,6 +122,13 @@ router.get(
   authmiddleware,
   celebrate(conclude_state_get_encounter_form_validation),
   conclude_state_get_encounter_form
+);
+
+router.get(
+  "/dashboard/requests/:confirmation_no/actions/download_encounter_form",
+  authmiddleware,
+  celebrate(conclude_state_download_encounter_form_validation),
+  conclude_state_download_encounter_form
 );
 
 router.put(

@@ -133,7 +133,15 @@ export default class EncounterForm extends Model<
     allowNull: true,
     unique: true,
   })
-  blood_pressure: number;
+  blood_pressure_1: number;
+
+  
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    unique: true,
+  })
+  blood_pressure_2: number;
 
   @Column({
     type: DataType.INTEGER,

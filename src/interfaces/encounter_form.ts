@@ -18,7 +18,8 @@ export interface EncounterFormAttributes {
   temperature: number;
   heart_rate: number;
   respiratory_rate: number;
-  blood_pressure: number;
+  blood_pressure_1: number;
+  blood_pressure_2: number;
   o2: number;
   pain: string;
   heent: string;
@@ -57,7 +58,8 @@ export interface EncounterFormCreationAttributes
     | "temperature"
     | "heart_rate"
     | "respiratory_rate"
-    | "blood_pressure"
+    | "blood_pressure_1"
+    | "blood_pressure_2"
     | "o2"
     | "pain"
     | "heent"

@@ -85,6 +85,12 @@ export const conclude_state_get_encounter_form_validation = {
   }),
 };
 
+export const conclude_state_download_encounter_form_validation = {
+  params: Joi.object({
+    confirmation_no: Joi.string().required(),
+  }),
+};
+
 export const conclude_state_encounter_form_validation = {
   params: Joi.object({
     confirmation_no: Joi.string().required(),
@@ -104,7 +110,8 @@ export const conclude_state_encounter_form_validation = {
     temperature: Joi.number().allow(""), // Optional field, can be empty string or a number
     heart_rate: Joi.number().allow(""), // Optional field, can be empty string or a number
     respiratory_rate: Joi.number().allow(""), // Optional field, can be empty string or a number
-    blood_pressure: Joi.number().allow(""), // Optional field, can be empty string
+    blood_pressure_1: Joi.number().allow(""), // Optional field, can be empty string
+    blood_pressure_2: Joi.number().allow(""), // Optional field, can be empty string
     o2: Joi.number().allow(""), // Optional field, can be empty string or a number
     pain: Joi.string().allow(""), // Optional field, can be empty string
     heent: Joi.string().allow(""), // Optional field, can be empty string

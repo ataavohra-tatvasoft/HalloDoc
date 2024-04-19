@@ -14,6 +14,10 @@ import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import EncounterForm from "../../db/models/encounter_form";
+import fs from "fs";
+import pdfkit from "pdfkit";
+
+import { unlink } from "node:fs";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -848,8 +852,12 @@ export const conclude_state_get_encounter_form: Controller = async (
           first_name: encounter_form.first_name,
           last_name: encounter_form.last_name,
           location: encounter_form.location,
-          date_of_birth: encounter_form.date_of_birth,
-          date_of_service: encounter_form.date_of_service,
+          date_of_birth: encounter_form?.date_of_birth
+            .toISOString()
+            .split("T")[0],
+          date_of_service: encounter_form?.date_of_service
+            ?.toISOString()
+            .split("T")[0],
           phone_no: encounter_form.phone_no,
           email: encounter_form.email,
           history_of_present: encounter_form.history_of_present,
@@ -859,7 +867,8 @@ export const conclude_state_get_encounter_form: Controller = async (
           temperature: encounter_form.temperature,
           heart_rate: encounter_form.heart_rate,
           respiratory_rate: encounter_form.respiratory_rate,
-          blood_pressure: encounter_form.blood_pressure,
+          blood_pressure_1: encounter_form.blood_pressure_1,
+          blood_pressure_2: encounter_form.blood_pressure_2,
           o2: encounter_form.o2,
           pain: encounter_form.pain,
           heent: encounter_form.heent,
@@ -875,8 +884,8 @@ export const conclude_state_get_encounter_form: Controller = async (
           medication_dispensed: encounter_form.medication_dispensed,
           procedures: encounter_form.procedures,
           follow_up: encounter_form.follow_up,
-          created_at: encounter_form.createdAt,
-          updated_at: encounter_form.updatedAt,
+          created_at: encounter_form?.createdAt?.toISOString().split("T")[0],
+          updated_at: encounter_form?.updatedAt?.toISOString().split("T")[0],
         };
         formatted_response.data.push(formatted_request);
       }
@@ -887,6 +896,107 @@ export const conclude_state_get_encounter_form: Controller = async (
     }
     return res.status(200).json({
       ...formatted_response,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const conclude_state_download_encounter_form: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // const { confirmation_no } = req.params;
+
+    // const generate_encounter_form_PDF = async (encounter_form: any) => {
+    //   const doc = new pdfkit();
+    //   const product_path = path.join("src", "data", "Invoices", product_name);
+
+    //   // Create a writable stream using fs.createWriteStream
+    //   const writableStream = fs.createWriteStream("encounter_form.pdf");
+
+    //   let chunks: Uint8Array[];
+
+    //   // Pipe the PDF document stream to the writable stream
+    //   doc.pipe(writableStream);
+
+    //   // After finishing the document creation, write chunks to a file (promise-based)
+    //   doc.on("end", async () => {
+    //     try {
+    //       await fs.promises.writeFile(
+    //         "encounter_form.pdf",
+    //         Buffer.concat(chunks)
+    //       );
+    //       console.log("PDF file created successfully!");
+    //     } catch (err) {
+    //       console.error("Error writing encounter form PDF:", err);
+    //     }
+    //   });
+
+    //   doc.fontSize(12);
+
+    //   // Add document title and headers
+    //   doc.text("Encounter Form Details", { align: "center" });
+
+    //   // Add confirmation number
+    //   doc.text(`Confirmation Number: ${encounter_form.request_id}`, {
+    //     align: "left",
+    //   });
+
+    //   // Add other encounter form details as needed
+    //   // (e.g., patient information, medical history, etc.)
+    //   doc.text(`First Name: ${encounter_form.first_name}`, { align: "left" });
+    //   doc.text(`Last Name: ${encounter_form.last_name}`, { align: "left" });
+
+    //   // ... (add other details)
+
+    //   doc.end();
+    // };
+
+    // const request = await RequestModel.findOne({
+    //   where: {
+    //     confirmation_no,
+    //   },
+    // });
+
+    // if (!request) {
+    //   return res.status(404).json({
+    //     message: message_constants.RNF,
+    //   });
+    // }
+
+    // const encounter_form = await EncounterForm.findOne({
+    //   where: {
+    //     request_id: request.request_id,
+    //   },
+    // });
+    // if (encounter_form) {
+    //   if (encounter_form.is_finalize == "true") {
+    //     console.log(req.params);
+    //     await generate_encounter_form_PDF(encounter_form);
+    //     return res.download("encounter_form.pdf", (err) => {
+    //       if (err) {
+    //         console.error(err);
+    //         return res.status(500).json({ message: message_constants.EWD });
+    //       }
+    //       // Delete temporary PDF file after download
+    //       // try {
+    //       //   fs.unlink('encounter_form.pdf'); // Proper usage with promises
+    //       // } catch (err) {
+    //       //   console.error('Error deleting encounter form PDF:', err);
+    //       // }
+    //     });
+    //   } else {
+    //     return res.status(500).json({
+    //       message: message_constants.EFNF,
+    //     });
+    //   }
+    // }
+    return res.status(200).json({
+      message: message_constants.Success,
     });
   } catch (error) {
     console.log(error);
@@ -916,7 +1026,8 @@ export const conclude_state_encounter_form: Controller = async (
       temperature,
       heart_rate,
       respiratory_rate,
-      blood_pressure,
+      blood_pressure_1,
+      blood_pressure_2,
       o2,
       pain,
       heent,
@@ -968,7 +1079,8 @@ export const conclude_state_encounter_form: Controller = async (
           temperature,
           heart_rate,
           respiratory_rate,
-          blood_pressure,
+          blood_pressure_1,
+          blood_pressure_2,
           o2,
           pain,
           heent,
@@ -1014,7 +1126,8 @@ export const conclude_state_encounter_form: Controller = async (
         temperature,
         heart_rate,
         respiratory_rate,
-        blood_pressure,
+        blood_pressure_1,
+        blood_pressure_2,
         o2,
         pain,
         heent,

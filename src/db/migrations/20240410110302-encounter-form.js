@@ -103,7 +103,14 @@ module.exports = {
         allowNull: true,
         unique: true,
       },
-      blood_pressure: {
+
+      blood_pressure_1: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        unique: true,
+      },
+
+      blood_pressure_2: {
         type: Sequelize.INTEGER,
         allowNull: true,
         unique: true,
