@@ -115,6 +115,92 @@ export const provider_request_to_admin: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+export const provider_request_to_admin_refactored: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+    const provider_id = verified_token.user_id;
+    const { message } = req.body;
+
+    const profile = await User.findOne({
+      where: {
+        user_id: provider_id,
+      },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: message_constants.ANF });
+    }
+
+    const admins = await User.findAll({
+      where: {
+        type_of_user: "admin",
+      },
+    });
+
+    if (!admins || admins.length === 0) {
+      return res.status(404).json({ message: message_constants.ANF });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    console.log("Transporter-->", transporter);
+
+    for (const admin of admins) {
+      try {
+        const info = await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: admin.email,
+          subject: "Request to change physician information",
+          text: message,
+        });
+
+        if (!info) {
+          throw new Error("Error sending email");
+        }
+
+        const email_log = await Logs.create({
+          type_of_log: "Email",
+          recipient: admin.firstname + " " + admin.lastname,
+          action: "Request to change physician information",
+          role_name: "Physician",
+          email: admin.email,
+          sent: "Yes",
+        });
+
+        if (!email_log) {
+          throw new Error("Error creating email log");
+        }
+      } catch (error) {
+        console.error("Error sending email:", error);
+        // Continue to the next admin even if there's an error sending email
+      }
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
 
 /**
  * @description Retrieves and formats the profile data of an provider/physician user.

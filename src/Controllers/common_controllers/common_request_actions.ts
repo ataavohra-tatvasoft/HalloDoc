@@ -372,13 +372,11 @@ export const view_uploads_actions_download: Controller = async (
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${path.basename(
-        document.document_path
-      )}.${path.extname(document.document_path)}`
+      `attachment; filename="${path.basename(file_path)}"`
     );
 
-    // Initiate file download with `res.download`
-    res.download(file_path, (error) => {
+    // Initiate file download with `res.sendFile`
+    res.sendFile(file_path, (error) => {
       if (error) {
         return res.status(500).json({ error: "Internal Server Error" });
       } else {
@@ -485,30 +483,14 @@ export const view_uploads_download_all: Controller = async (
       return res.status(404).json({ error: "Request not found" });
     }
 
-    for (const document_id of document_ids) {
-      const is_document = await Documents.findOne({
-        where: {
-          document_id,
-          request_id: request.request_id,
-        },
-      });
-
-      if (!is_document) {
-        return res.status(404).json({
-          message: message_constants.DNF + " for " + document_id,
-        });
-      }
+    // Create the directory if it doesn't exist
+    const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
     const zip_file_name = `${confirmation_no}_documents.zip`;
-    const zip_file_path = path.join(
-      __dirname,
-      "..",
-      "..",
-      "public",
-      "uploads",
-      zip_file_name
-    );
+    const zip_file_path = path.join(uploadsDir, zip_file_name);
 
     // Create a zip file
     const output = fs.createWriteStream(zip_file_path);
@@ -528,17 +510,32 @@ export const view_uploads_download_all: Controller = async (
     archive.pipe(output);
 
     // Add files to the zip archive
-    for (const document of document_ids) {
-      const file = await Documents.findOne({
+    for (const document_id of document_ids) {
+      const is_document = await Documents.findOne({
         where: {
-          document_id: document,
+          document_id,
+          request_id: request.request_id,
         },
       });
+
+      if (!is_document) {
+        return res.status(404).json({
+          message: message_constants.DNF + " for " + document_id,
+        });
+      }
+      
+      const file = await Documents.findOne({
+        where: {
+          document_id: document_id,
+        },
+      });
+      
       if (!file) {
         return res.status(404).json({
           message: message_constants.DNF,
         });
       }
+      
       const filePath = file.document_path;
       const filename = path.basename(filePath);
 
@@ -742,6 +739,163 @@ export const view_uploads_send_mail: Controller = async (
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const view_uploads_send_mail_refactored: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { document_ids } = req.body as {
+      document_ids: Array<number>;
+    };
+
+    if (document_ids.length === 0) {
+      return res.status(200).json({ message: "No documents selected" });
+    }
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+      include: [
+        {
+          as: "Documents",
+          model: Documents,
+        },
+        {
+          as: "Patient",
+          model: User,
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    const zip_file_name = `${confirmation_no}_documents.zip`;
+    const zip_file_path = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      "uploads",
+      zip_file_name
+    );
+
+    // Create a zip file
+    const output = fs.createWriteStream(zip_file_path);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    output.on("close", () => {
+      console.log(archive.pointer() + " total bytes");
+      console.log(
+        "archiver has been finalized and the output file descriptor has closed."
+      );
+
+      // Send email with the zip file attached
+      sendEmailWithAttachment(request.Patient.email, zip_file_path, zip_file_name)
+        .then(() => {
+          // Log successful email sending
+          return Logs.create({
+            type_of_log: "Email",
+            action: "For Sending downloads",
+            role_name: "Admin",
+            email: request.Patient.email,
+            sent: "Yes",
+            confirmation_no: confirmation_no,
+          });
+        })
+        .then(() => {
+          // Delete the zip file after sending email
+          fs.unlinkSync(zip_file_path);
+          console.log(`Removed ${zip_file_name} after sending email.`);
+          return res.status(200).json({
+            message: "Email sent successfully with the requested documents.",
+          });
+        })
+        .catch((error) => {
+          console.error("Error sending email:", error);
+          return res.status(500).json({ error: "Error sending email" });
+        });
+    });
+
+    archive.on("error", (err: any) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+
+    // Add files to the zip archive
+    for (const document_id of document_ids) {
+      const file = await Documents.findOne({
+        where: {
+          document_id: document_id,
+        },
+      });
+      if (!file) {
+        return res.status(404).json({
+          message: message_constants.DNF,
+        });
+      }
+      const filePath = file.document_path;
+      const filename = path.basename(filePath);
+
+      // Check for file existence before adding to the archive
+      if (fs.existsSync(filePath)) {
+        archive.append(fs.createReadStream(filePath), { name: filename });
+        console.log(`Added ${filename} to the zip archive.`);
+      } else {
+        console.error(`File not found: ${filePath}`);
+      }
+    }
+
+    // Finalize the zip archive
+    await archive.finalize();
+  } catch (error) {
+    console.error("Error downloading documents:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+// Function to send email with attachment
+async function sendEmailWithAttachment(email: string, filePath: string, fileName: string) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false,
+    debug: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: "vohraatta@gmail.com",
+    to: email,
+    subject: "Requested Documents",
+    text: "Please find the requested documents attached.",
+    attachments: [
+      {
+        filename: fileName,
+        path: filePath,
+      },
+    ],
+  });
+
+  if (!info) {
+    throw new Error("Error sending email");
+  }
+}
 
 /**
  * @description These functions handles viewing and sending orders for a request.

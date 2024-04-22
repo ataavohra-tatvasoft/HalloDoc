@@ -14,7 +14,6 @@ import Access from "../../db/models/access";
 import JSZip from "jszip";
 import { FormattedResponse } from "../../interfaces/common_interface";
 
-
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
   req: Request,
@@ -493,8 +492,7 @@ export const export_all: Controller = async (
   try {
     const { search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
-
-    }; ;
+    };
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
@@ -594,6 +592,7 @@ export const export_all: Controller = async (
                     where: {
                       type_of_user: "physician",
                     },
+                    required: false, // Make physician association optional
                   },
                 ]
               : []),

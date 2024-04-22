@@ -616,6 +616,7 @@ export const requests_by_request_state_refactored: Controller = async (
                   where: {
                     type_of_user: "physician",
                   },
+                  required: false, // Make physician association optional
                 },
               ]
             : []),
