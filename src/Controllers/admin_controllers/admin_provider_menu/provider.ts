@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../../db/models/user";
 import RequestModel from "../../../db/models/request";
-import Notes from "../../../db/models/notes";
-import Order from "../../../db/models/order";
 import {
   Controller,
   FormattedResponse,
@@ -220,7 +218,9 @@ export const contact_provider: Controller = async (
       await client.messages.create({
         body: `Message from admin: ${message}`,
         from: process.env.TWILIO_MOBILE_NO,
-        to: "+" + mobile_no,
+        // to: "+" + mobile_no,
+        to: "+918401736963",
+
       });
 
       const SMS_log = await Logs.create({
@@ -304,7 +304,9 @@ export const contact_provider: Controller = async (
       await client.messages.create({
         body: `Message from admin: ${message}`,
         from: process.env.TWILIO_MOBILE_NO,
-        to: "+" + mobile_no,
+        // to: "+" + mobile_no,
+        to: "+918401736963",
+
       });
 
       const SMS_log = await Logs.create({
@@ -606,40 +608,52 @@ export const delete_provider_account: Controller = async (
       if (!profile) {
         return res.status(404).json({ error: message_constants.PNF });
       }
-      const related_requests = await RequestModel.findAll({
-        where: { physician_id: user_id },
-      });
+      // const related_requests = await RequestModel.findAll({
+      //   where: { physician_id: user_id },
+      // });
 
-      if (related_requests.length > 0) {
-        const related_documents = await Documents.destroy({
-          where: {
-            request_id: related_requests.map((request) => request.request_id),
-          },
+      // if (related_requests.length > 0) {
+      //   const related_documents = await Documents.destroy({
+      //     where: {
+      //       request_id: related_requests.map((request) => request.request_id),
+      //     },
+      //   });
+      //   if (!related_documents && related_documents != 0) {
+      //     return res.status(400).json({ error: message_constants.EWDD });
+      //   }
+      //   const related_orders = await Order.destroy({
+      //     where: {
+      //       request_id: related_requests.map((request) => request.request_id),
+      //     },
+      //   });
+
+      //   if (!related_orders && related_orders != 0) {
+      //     return res.status(400).json({ error: message_constants.EWDO });
+      //   }
+
+      //   const related_notes = await Notes.destroy({
+      //     where: {
+      //       request_id: related_requests.map((request) => request.request_id),
+      //     },
+      //   });
+
+      //   if (!related_notes && related_notes != 0) {
+      //     return res.status(400).json({ error: message_constants.EWDN });
+      //   }
+
+      const update_status = await RequestModel.update(
+        {
+          physician_id: null,
+          request_state: "new",
+          request_status: "unassgined",
+        },
+        { where: { physician_id: user_id } }
+      );
+
+      if (!update_status) {
+        return res.status(500).json({
+          message: message_constants.EWU,
         });
-        if (!related_documents && related_documents != 0) {
-          return res.status(400).json({ error: message_constants.EWDD });
-        }
-        const related_orders = await Order.destroy({
-          where: {
-            request_id: related_requests.map((request) => request.request_id),
-          },
-        });
-
-        if (!related_orders && related_orders != 0) {
-          return res.status(400).json({ error: message_constants.EWDO });
-        }
-
-        const related_notes = await Notes.destroy({
-          where: {
-            request_id: related_requests.map((request) => request.request_id),
-          },
-        });
-
-        if (!related_notes && related_notes != 0) {
-          return res.status(400).json({ error: message_constants.EWDN });
-        }
-
-        await RequestModel.destroy({ where: { physician_id: user_id } });
       }
 
       const delete_region_data = await UserRegionMapping.destroy({
@@ -648,7 +662,7 @@ export const delete_provider_account: Controller = async (
         },
       });
 
-      if (!delete_region_data) {
+      if (!delete_region_data && delete_region_data != 0) {
         return res.status(404).json({ error: message_constants.EWD });
       }
 

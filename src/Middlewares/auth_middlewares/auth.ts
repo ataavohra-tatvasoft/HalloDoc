@@ -23,7 +23,7 @@ export const authmiddleware = async (
     ) as VerifiedToken;
 
     // console.log(token, " ", verified_token);
-    console.log(verified_token);
+    // console.log(verified_token);
     
     const validUser = await User.findOne({
       where: {

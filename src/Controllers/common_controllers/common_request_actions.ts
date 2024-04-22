@@ -966,7 +966,8 @@ export const send_agreement: Controller = async (
       .create({
         body: `Click the link to review agreement. Link :- ${reset_url}`,
         from: process.env.TWILIO_MOBILE_NO,
-        to: "+" + mobile_no,
+        // to: "+" + mobile_no,
+        to: "+918401736963",
       })
       .then((message) => console.log(message.sid))
       .catch((error) => console.error(error));

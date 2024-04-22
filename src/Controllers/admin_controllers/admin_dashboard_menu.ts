@@ -537,14 +537,6 @@ export const requests_by_request_state_refactored: Controller = async (
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
-    const request_state = [
-      "new",
-      "pending",
-      "active",
-      "conclude",
-      "toclose",
-      "unpaid",
-    ];
     const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
@@ -730,19 +722,20 @@ export const requests_by_request_state_refactored: Controller = async (
           ...(state !== "new"
             ? {
                 physician_data: {
-                  user_id: request?.Physician.user_id,
+                  user_id: request?.Physician.user_id || null,
                   name:
                     request?.Physician.firstname +
-                    " " +
-                    request?.Physician.lastname,
-                  DOB: request?.Physician.dob?.toISOString().split("T")[0],
-                  mobile_no: request?.Physician.mobile_no,
+                      " " +
+                      request?.Physician.lastname || null,
+                  DOB:
+                    request?.Physician.dob?.toISOString().split("T")[0] || null,
+                  mobile_no: request?.Physician.mobile_no || null,
                   address:
                     request?.Physician.address_1 +
-                    " " +
-                    request?.Physician.address_2 +
-                    " " +
-                    request?.Patient.state,
+                      " " +
+                      request?.Physician.address_2 +
+                      " " +
+                      request?.Patient.state || null,
                 },
               }
             : {}),
@@ -764,7 +757,6 @@ export const requests_by_request_state_refactored: Controller = async (
         formatted_response.data.push(formatted_request);
       }
 
-      console.log(count);
       return res.status(200).json({
         ...formatted_response,
         total_pages: Math.ceil(count / limit),
@@ -1742,7 +1734,9 @@ export const request_support: Controller = async (
           .create({
             body: `Message from admin to physicians . Link :- ${support_message}`,
             from: process.env.TWILIO_MOBILE_NO,
-            to: "+" + user.mobile_no,
+            // to: "+" + user.mobile_no,
+            to: "+918401736963",
+
           })
           .then((message) => console.log(message.sid))
           .catch((error) => console.error(error));
@@ -1850,7 +1844,9 @@ export const admin_send_link: Controller = async (
         .create({
           body: `Link for creating request for patient. Link :- ${create_request_link}`,
           from: process.env.TWILIO_MOBILE_NO,
-          to: "+" + mobile_no,
+          // to: "+" + mobile_no,
+          to: "+918401736963",
+
         })
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));

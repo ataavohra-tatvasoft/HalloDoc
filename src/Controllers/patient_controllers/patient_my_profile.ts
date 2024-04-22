@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../db/models/user";
-import Region from "../../db/models/region";
 import {
   Controller,
   FormattedResponse,
@@ -10,8 +9,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
-import UserRegionMapping from "../../db/models/user-region_mapping";
-import Role from "../../db/models/role";
+
 
 /** Configs */
 dotenv.config({ path: `.env` });
