@@ -98,11 +98,16 @@ export const send_agreement_validation = {
     email: Joi.string().email().required(),
   }),
 };
-export const update_agreement_validation = {
+export const update_agreement_agree_validation = {
   params: Joi.object({
     confirmation_no: Joi.string().required(),
   }),
-  body: Joi.object({
-    agreement_status: Joi.string().valid("accepted", "rejected").required(),
-  }),
+};
+export const update_agreement_cancel_validation = {
+  params: {
+    confirmation_no: Joi.string().required(),
+  },
+  body: {
+    cancel_confirmation: Joi.string().required(),
+  },
 };

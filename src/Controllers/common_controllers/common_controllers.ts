@@ -13,9 +13,7 @@ import Notes from "../../db/models/notes";
 import Access from "../../db/models/access";
 import JSZip from "jszip";
 import { FormattedResponse } from "../../interfaces/common_interface";
-import path from "path";
-import fs from "fs";
-import { string } from "joi";
+
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (

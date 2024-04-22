@@ -80,6 +80,7 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 8,
@@ -104,6 +105,7 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 10,
@@ -116,6 +118,7 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 11,
@@ -128,6 +131,7 @@ module.exports = {
           requested_by: "family/friend",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 12,
@@ -140,6 +144,7 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 13,
@@ -164,6 +169,7 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 15,
@@ -176,6 +182,7 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 16,
@@ -188,6 +195,7 @@ module.exports = {
           requested_by: "concierge",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 17,
@@ -200,6 +208,7 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 18,
@@ -224,6 +233,7 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 20,
@@ -236,6 +246,7 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 21,
@@ -248,6 +259,7 @@ module.exports = {
           requestor_id: "3",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 22,
@@ -260,6 +272,7 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 23,
@@ -284,6 +297,7 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 25,
@@ -296,6 +310,7 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 26,
@@ -308,6 +323,7 @@ module.exports = {
           requestor_id: "4",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 27,
@@ -320,6 +336,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 28,
@@ -344,6 +361,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 30,
@@ -356,6 +374,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 31,
@@ -368,6 +387,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 32,
@@ -380,6 +400,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 33,
@@ -404,6 +425,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 35,
@@ -416,6 +438,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 36,
@@ -428,6 +451,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 37,
@@ -506,6 +530,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 44,
@@ -518,6 +543,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 45,
@@ -530,6 +556,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 46,
@@ -542,6 +569,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
         {
           request_id: 47,
@@ -554,6 +582,7 @@ module.exports = {
           requested_by: "patient",
           requested_date: date_of_request,
           date_of_service: date_of_service,
+          agreement_status: "accepted",
         },
       ],
       {}

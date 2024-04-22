@@ -1720,16 +1720,51 @@ export const request_support: Controller = async (
 ) => {
   try {
     const { support_message } = req.body;
-    await User.update(
-      {
-        support_message,
+    const users = await User.findAll({
+      where: {
+        on_call_status: "un-scheduled",
+        type_of_user: "physician",
       },
-      {
-        where: {
-          type_of_user: "physician",
-        },
+    });
+    if (!users) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
+
+    for (const user of users) {
+      if (user.mobile_no) {
+        const account_sid = process.env.TWILIO_ACCOUNT_SID;
+        const auth_token = process.env.TWILIO_AUTH_TOKEN;
+        const client = twilio(account_sid, auth_token);
+
+        client.messages
+          .create({
+            body: `Message from admin to physicians . Link :- ${support_message}`,
+            from: process.env.TWILIO_MOBILE_NO,
+            to: "+" + user.mobile_no,
+          })
+          .then((message) => console.log(message.sid))
+          .catch((error) => console.error(error));
+
+        const SMS_log = await Logs.create({
+          type_of_log: "SMS",
+          // recipient: user.firstname + " " + user.lastname,
+          recipient: user.firstname + " " + user.lastname,
+          action: "For Sending Request Link",
+          role_name: "Admin",
+          // mobile_no: user.mobile_no,
+          mobile_no: user.mobile_no,
+          sent: "Yes",
+        });
+        if (!SMS_log) {
+          return res.status(500).json({
+            message: message_constants.EWCL,
+          });
+        }
       }
-    );
+    }
+
     return res.status(200).json({
       status: true,
       message: message_constants.Success,

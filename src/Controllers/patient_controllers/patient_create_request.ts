@@ -45,7 +45,7 @@ export const create_request_by_patient: Controller = async (
   try {
     // console.log(req);
     const file = req.file;
-    console.log(file);
+    // console.log(file);
     const {
       body: {
         symptoms,
@@ -63,8 +63,8 @@ export const create_request_by_patient: Controller = async (
       },
     } = req;
 
-    console.log(req.body);
-    console.log(email, password);
+    // console.log(req.body);
+    // console.log(email, password);
 
     const hashed_password = await bcrypt.hash(password, 10);
 
@@ -91,12 +91,13 @@ export const create_request_by_patient: Controller = async (
       where: {
         type_of_user: "patient",
         email,
+        
       },
     });
 
     let patient_data;
 
-    // console.log("error is here");
+    console.log(is_patient);
 
     if (is_patient) {
       const update_status = await User.update(

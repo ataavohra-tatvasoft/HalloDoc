@@ -238,17 +238,11 @@ export default class User extends Model<
   signature_photo: string;
 
   @Column({
-    type: DataType.ENUM("yes", "no"),
+    type: DataType.ENUM("scheduled", "un-scheduled","busy"),
     allowNull: true,
     defaultValue: null,
   })
   on_call_status: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  support_message: string;
 
   @HasMany(() => Shifts, { foreignKey: "user_id" })
   Shifts: Shifts[];

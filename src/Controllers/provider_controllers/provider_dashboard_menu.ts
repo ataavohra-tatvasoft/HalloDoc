@@ -17,7 +17,6 @@ import EncounterForm from "../../db/models/encounter_form";
 import fs from "fs";
 import pdfkit from "pdfkit";
 import path from "path";
-import { unlink } from "node:fs";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -914,23 +913,23 @@ export const conclude_state_download_encounter_form: Controller = async (
     const generate_encounter_form_PDF = async (encounter_form: any) => {
       const doc = new pdfkit();
       const form_name = `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`;
-      // const form_path = path.join(
-      //   __dirname,
-      //   "../",
-      //   "../",
-      //   "public",
-      //   "uploads",
-      //   form_name
-      // );
+      const form_path = path.join(
+        __dirname,
+        "../",
+        "../",
+        "public",
+        "uploads",
+        form_name
+      );
 
       // Create a writable stream using fs.createWriteStream
-      const writable_stream = fs.createWriteStream(form_name);
+      const writable_stream = fs.createWriteStream(form_path);
       let chunks: Uint8Array[] = [];
 
       doc.pipe(writable_stream);
       doc.on("end", async () => {
         try {
-          await fs.promises.writeFile(form_name, Buffer.concat(chunks));
+          await fs.promises.writeFile(form_path, Buffer.concat(chunks));
           console.log("PDF file created successfully!");
         } catch (err) {
           console.error("Error writing encounter form PDF:", err);
@@ -1037,15 +1036,11 @@ export const conclude_state_download_encounter_form: Controller = async (
     if (encounter_form) {
       if (encounter_form.is_finalize == "true") {
         console.log(req.params);
+        const form_name = `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`;
+
         await generate_encounter_form_PDF(encounter_form);
         return res.download(
-          `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`,
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: message_constants.EWDo });
-            }
-          }
+          path.join(__dirname, "../", "../", "public", "uploads", form_name)
         );
       } else {
         return res.status(500).json({
@@ -1161,7 +1156,6 @@ export const conclude_state_encounter_form: Controller = async (
           },
         }
       );
-
       if (!update) {
         return res.status(404).json({
           message: message_constants.EWU,
@@ -1265,6 +1259,24 @@ export const conclude_state_encounter_form_finalize: Controller = async (
         message: message_constants.FoNF,
       });
     }
+
+    const request_update = await RequestModel.update(
+      {
+        final_report: encounter_form.form_id,
+      },
+      {
+        where: {
+          confirmation_no,
+        },
+      }
+    );
+
+    if (!request_update) {
+      return res.status(500).json({
+        message: message_constants.EWU,
+      });
+    }
+
     return res.status(200).json({
       message: message_constants.Success,
     });

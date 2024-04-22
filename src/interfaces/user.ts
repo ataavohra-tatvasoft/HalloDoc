@@ -4,7 +4,7 @@ export interface UserAttributes {
   username: string | null;
   email: string | null;
   password?: string | null; // Optional
-  type_of_user:string;
+  type_of_user: string;
 
   // Common fields for all user types
   firstname: string | null;
@@ -50,7 +50,6 @@ export interface UserAttributes {
   profile_picture?: string | null;
   signature_photo: string | null;
   on_call_status?: string | null;
-  support_message?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -92,7 +91,6 @@ export interface UserCreationAttributes
     | "profile_picture"
     | "signature_photo"
     | "on_call_status"
-    | "support_message"
     | "createdAt"
     | "updatedAt"
   > {}

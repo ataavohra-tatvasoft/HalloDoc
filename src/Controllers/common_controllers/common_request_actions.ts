@@ -9,7 +9,6 @@ import {
   FormattedResponse,
 } from "../../interfaces/common_interface";
 import nodemailer from "nodemailer";
-import * as crypto from "crypto";
 import { Op } from "sequelize";
 import Documents from "../../db/models/documents";
 import dotenv from "dotenv";
@@ -18,6 +17,7 @@ import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
 import archiver from "archiver";
+import twilio from "twilio";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -725,7 +725,7 @@ export const view_uploads_send_mail: Controller = async (
       role_name: "Admin",
       email: request.Patient.email,
       sent: "Yes",
-      confirmation_no: confirmation_no
+      confirmation_no: confirmation_no,
     });
 
     if (!email_log) {
@@ -890,7 +890,6 @@ export const send_agreement: Controller = async (
         errormessage: message_constants.UA,
       });
     }
-    console.log(user);
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
@@ -904,6 +903,7 @@ export const send_agreement: Controller = async (
           ],
         },
       },
+
       include: {
         as: "Patient",
         model: User,
@@ -912,39 +912,30 @@ export const send_agreement: Controller = async (
           type_of_user: "patient",
         },
       },
+
+      /** Above include is temporarily commented out */
     });
     if (!request) {
       return res.status(400).json({
         message: message_constants.RNF,
       });
     }
-    // const resetToken = uuid();
-    const resetToken = crypto.createHash("sha256").update(email).digest("hex");
 
-    const resetUrl = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
+    // const reset_url = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
+    const reset_url = `front-end url`;
+
     const mail_content = `
             <html>
-            <form action = "${resetUrl}" method="POST"> 
-            <p>Tell us that you accept the agreement or not:</p>
+  
+            <p>Click below button to re-view agreement </p>
             <br>
             <br>
-            <p>Your token is: </p>
-            <p>${resetToken} </p>
+            <button> <a href="${reset_url}"> agreement </a> </button>
             <br>
             <br>
-            <label for="agreement_status">Agreement_Status:</label>
-            <br>
-            <select id="agreement_status" name= "agreement_status">
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
-            </select>
-            <br>
-            <br>
-            <button type = "submit">Submit Response</button>
-            </form>
+            
             </html>
           `;
-
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
@@ -967,6 +958,32 @@ export const send_agreement: Controller = async (
       });
     }
 
+    const account_sid = process.env.TWILIO_ACCOUNT_SID;
+    const auth_token = process.env.TWILIO_AUTH_TOKEN;
+    const client = twilio(account_sid, auth_token);
+
+    client.messages
+      .create({
+        body: `Click the link to review agreement. Link :- ${reset_url}`,
+        from: process.env.TWILIO_MOBILE_NO,
+        to: "+" + mobile_no,
+      })
+      .then((message) => console.log(message.sid))
+      .catch((error) => console.error(error));
+
+    const SMS_log = await Logs.create({
+      type_of_log: "SMS",
+      recipient: user.firstname + " " + user.lastname,
+      action: "For Sending Request Link",
+      mobile_no: mobile_no,
+      sent: "Yes",
+    });
+    if (!SMS_log) {
+      return res.status(500).json({
+        message: message_constants.EWCL,
+      });
+    }
+
     const email_log = await Logs.create({
       type_of_log: "Email",
       recipient: user.firstname + " " + user.lastname,
@@ -974,8 +991,7 @@ export const send_agreement: Controller = async (
       role_name: "Admin",
       email: user.email,
       sent: "Yes",
-      confirmation_no: confirmation_no
-      
+      confirmation_no: confirmation_no,
     });
 
     if (!email_log) {
@@ -986,7 +1002,7 @@ export const send_agreement: Controller = async (
 
     return res.status(200).json({
       confirmation_no: confirmation_no,
-      message: message_constants.ASE,
+      message: message_constants.ASEM,
     });
   } catch (error) {
     console.error(error);
@@ -996,14 +1012,13 @@ export const send_agreement: Controller = async (
     });
   }
 };
-export const update_agreement: Controller = async (
+export const update_agreement_agree: Controller = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const { agreement_status } = req.body;
     const request = await RequestModel.findOne({
       where: {
         confirmation_no,
@@ -1013,7 +1028,7 @@ export const update_agreement: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
     const update_status = await RequestModel.update(
-      { agreement_status },
+      { agreement_status: "accepted" },
       {
         where: {
           confirmation_no,
@@ -1033,5 +1048,82 @@ export const update_agreement: Controller = async (
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });
+  }
+};
+export const update_agreement_cancel: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { cancel_confirmation } = req.body;
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+      },
+    });
+    if (!request) {
+      return res.status(404).json({ error: message_constants.RNF });
+    }
+    const update_status = await RequestModel.update(
+      { agreement_status: "rejected" },
+      {
+        where: {
+          confirmation_no,
+        },
+      }
+    );
+    if (!update_status) {
+      res.status(200).json({
+        status: true,
+        message: message_constants.EWU,
+      });
+    }
+
+    const note = await Notes.findOne({
+      where: {
+        request_id: request.request_id,
+        type_of_note: "patient_cancellation_notes",
+      },
+    });
+
+    if (note) {
+      const update_note = await Notes.update(
+        {
+          description: cancel_confirmation,
+        },
+        {
+          where: {
+            request_id: request.request_id,
+            type_of_note: "patient_cancellation_notes",
+          },
+        }
+      );
+      if (!update_note) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      const create_note = await Notes.create({
+        request_id: request.request_id,
+        type_of_note: "patient_cancellation_notes",
+        description: cancel_confirmation,
+      });
+      if (!create_note) {
+        return res.status(500).json({
+          message: message_constants.EWC,
+        });
+      }
+    }
+    return res.status(200).json({
+      status: true,
+      confirmation_no: confirmation_no,
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };

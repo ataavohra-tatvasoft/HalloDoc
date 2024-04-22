@@ -173,13 +173,9 @@ module.exports = {
         allowNull: true,
       },
       on_call_status: {
-        type: Sequelize.ENUM("yes", "no"),
+        type: Sequelize.ENUM("scheduled", "un-scheduled", "busy"),
         allowNull: true,
         defaultValue: null,
-      },
-      support_message: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,

@@ -142,8 +142,8 @@ export default class Request extends Model<
 
   @Column({
     type: DataType.ENUM("pending", "accepted", "rejected"),
-    defaultValue: null,
-    allowNull: true,
+    defaultValue: "pending",
+    allowNull: false,
   })
   agreement_status: string;
 
@@ -160,10 +160,10 @@ export default class Request extends Model<
   assign_req_description: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
     allowNull: true,
   })
-  final_report: string;
+  final_report: number;
 
   @BelongsTo(() => User, {
     as: "Physician",

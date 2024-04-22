@@ -106,8 +106,8 @@ module.exports = {
       },
       agreement_status: {
         type: Sequelize.ENUM("pending", "accepted", "rejected"),
-        defaultValue: null,
-        allowNull: true,
+        defaultValue: "pending",
+        allowNull: false,
       },
       notes_symptoms: {
         type: Sequelize.STRING,
@@ -118,7 +118,7 @@ module.exports = {
         allowNull: true,
       },
       final_report: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       createdAt: {

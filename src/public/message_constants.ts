@@ -79,7 +79,7 @@ const message_constants = {
   IEM: "Invalid email address and mobile number",
   RPLSE: "Reset password link sent to your email",
   CRLS: "Create request link sent successfully",
-  ASE: "Agreement sent to your email",
+  ASEM: "Agreement sent to your email and mobile number",
   ADBSA: "Address does not belong to service area",
   AV: "Address Verified !!!",
   AD: "Access Denied",

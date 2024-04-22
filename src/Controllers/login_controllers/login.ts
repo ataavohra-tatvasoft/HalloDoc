@@ -87,6 +87,7 @@ export const login: Controller = async (
     return res.status(200).json({
       status: true,
       message: message_constants.OK,
+      user_id: user.user_id,
       user: user.firstname + " " + user.lastname,
       type_of_user: user.type_of_user,
       jwt_token,

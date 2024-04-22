@@ -19,7 +19,7 @@ export interface RequestAttributes {
   agreement_status: string;
   notes_symptoms: string | null;
   assign_req_description: string;
-  final_report: string;
+  final_report: number;
   createdAt: Date;
   updatedAt: Date;
 }
