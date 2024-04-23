@@ -38,11 +38,13 @@ export const access_accountaccess: Controller = async (
       status: true,
       data: [],
     };
-    const { count, rows: roles } = await Role.findAndCountAll({
+    const { count: total_count, rows: roles } = await Role.findAndCountAll({
       attributes: ["role_id", "role_name", "account_type"],
       limit,
       offset,
     });
+
+    console.log(total_count);
 
     if (!roles) {
       return res.status(404).json({ error: message_constants.AcNF });
@@ -62,9 +64,9 @@ export const access_accountaccess: Controller = async (
 
     return res.status(200).json({
       ...formatted_response,
-      total_pages: Math.ceil(count / limit),
+      total_pages: Math.ceil(total_count / limit),
       current_page: page_number,
-      total_count: count,
+      total_count: total_count,
     });
   } catch (error) {
     res.status(500).json({ error: message_constants.ISE });

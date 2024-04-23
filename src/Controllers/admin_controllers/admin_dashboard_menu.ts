@@ -586,16 +586,6 @@ export const requests_by_request_state_refactored: Controller = async (
           {
             as: "Patient",
             model: User,
-            attributes: [
-              "user_id",
-              "type_of_user",
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "address_1",
-              "state",
-            ],
             where: where_clause_patient,
           },
           ...(state !== "new"
@@ -603,16 +593,6 @@ export const requests_by_request_state_refactored: Controller = async (
                 {
                   as: "Physician",
                   model: User,
-                  attributes: [
-                    "user_id",
-                    "type_of_user",
-                    "firstname",
-                    "lastname",
-                    "dob",
-                    "mobile_no",
-                    "address_1",
-                    "address_2",
-                  ],
                   where: {
                     type_of_user: "physician",
                   },
@@ -622,11 +602,9 @@ export const requests_by_request_state_refactored: Controller = async (
             : []),
           {
             model: Requestor,
-            attributes: ["user_id", "first_name", "last_name"],
           },
           {
             model: Notes,
-            attributes: ["note_id", "type_of_note", "description"],
           },
         ],
         limit,
@@ -653,16 +631,6 @@ export const requests_by_request_state_refactored: Controller = async (
           {
             as: "Patient",
             model: User,
-            attributes: [
-              "user_id",
-              "type_of_user",
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "address_1",
-              "state",
-            ],
             where: where_clause_patient,
           },
           ...(state !== "new"
@@ -670,19 +638,10 @@ export const requests_by_request_state_refactored: Controller = async (
                 {
                   as: "Physician",
                   model: User,
-                  attributes: [
-                    "user_id",
-                    "type_of_user",
-                    "firstname",
-                    "lastname",
-                    "dob",
-                    "mobile_no",
-                    "address_1",
-                    "address_2",
-                  ],
                   where: {
                     type_of_user: "physician",
                   },
+                  required: false,
                 },
               ]
             : []),
@@ -708,50 +667,54 @@ export const requests_by_request_state_refactored: Controller = async (
               }
             : {}),
           patient_data: {
-            user_id: request.Patient.user_id,
-            name: request.Patient.firstname + " " + request.Patient.lastname,
-            DOB: request.Patient.dob?.toISOString().split("T")[0],
-            mobile_no: request.Patient.mobile_no,
+            user_id: request?.Patient?.user_id || null,
+            name:
+              request?.Patient?.firstname ||
+              null + " " + request?.Patient?.lastname ||
+              null,
+            DOB: request?.Patient?.dob?.toISOString().split("T")[0],
+            mobile_no: request?.Patient?.mobile_no || null,
             address:
-              request.Patient.address_1 +
-              " " +
-              request.Patient.address_2 +
-              " " +
-              request.Patient.state,
-            ...(state === "toclose" ? { region: request.Patient.state } : {}),
+              request?.Patient?.address_1 ||
+              null + " " + request?.Patient?.address_2 + " " ||
+              null + request?.Patient?.state ||
+              null,
+            ...(state === "toclose"
+              ? { region: request?.Patient?.state || null }
+              : {}),
           },
           ...(state !== "new"
             ? {
                 physician_data: {
-                  user_id: request?.Physician.user_id || null,
+                  user_id: request?.Physician?.user_id || null,
                   name:
-                    request?.Physician.firstname +
-                      " " +
-                      request?.Physician.lastname || null,
+                    request?.Physician?.firstname ||
+                    null + " " + request?.Physician?.lastname ||
+                    null,
                   DOB:
-                    request?.Physician.dob?.toISOString().split("T")[0] || null,
-                  mobile_no: request?.Physician.mobile_no || null,
+                    request?.Physician?.dob?.toISOString().split("T")[0] ||
+                    null,
+                  mobile_no: request?.Physician?.mobile_no || null,
                   address:
-                    request?.Physician.address_1 +
-                      " " +
-                      request?.Physician.address_2 +
-                      " " +
-                      request?.Patient.state || null,
+                    request?.Physician?.address_1 ||
+                    null + " " + request?.Physician?.address_2 ||
+                    null + " " + request?.Physician?.state ||
+                    null,
                 },
               }
             : {}),
           requestor_data: {
-            user_id: request.Requestor?.user_id || null,
+            user_id: request?.Requestor?.user_id || null,
             first_name:
-              request.Requestor?.first_name ||
-              null + " " + request.Requestor?.last_name ||
+              request?.Requestor?.first_name ||
+              null + " " + request?.Requestor?.last_name ||
               null,
-            last_name: request.Requestor?.last_name || null,
+            last_name: request?.Requestor?.last_name || null,
           },
-          notes: request.Notes?.map((note) => ({
-            note_id: note.note_id,
-            type_of_note: note.type_of_note,
-            description: note.description,
+          notes: request?.Notes?.map((note) => ({
+            note_id: note?.note_id || null,
+            type_of_note: note?.type_of_note || null,
+            description: note?.description || null,
           })),
         };
         i++;
@@ -1737,7 +1700,6 @@ export const request_support: Controller = async (
             from: process.env.TWILIO_MOBILE_NO,
             // to: "+" + user.mobile_no,
             to: "+918401736963",
-
           })
           .then((message) => console.log(message.sid))
           .catch((error) => console.error(error));
@@ -1807,7 +1769,7 @@ export const admin_send_link: Controller = async (
       `;
 
       const info = await transporter.sendMail({
-        from: "vohraatta@gmail.com",
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Create Request Link",
         html: mail_content,
@@ -1847,7 +1809,6 @@ export const admin_send_link: Controller = async (
           from: process.env.TWILIO_MOBILE_NO,
           // to: "+" + mobile_no,
           to: "+918401736963",
-
         })
         .then((message) => console.log(message.sid))
         .catch((error) => console.error(error));

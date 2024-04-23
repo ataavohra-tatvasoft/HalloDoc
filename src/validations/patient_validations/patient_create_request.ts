@@ -19,7 +19,13 @@ export const create_request_by_patient_validation = {
     state: Joi.string().alphanum().optional(),
     zip: Joi.string().allow(""),
     room: Joi.string().allow(""),
-    password: Joi.string().min(6).optional(),
+    password: Joi.string()
+      .min(5)
+      .optional()
+      .pattern(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/
+      ),
+    confirm_password: Joi.ref("password"),
   }),
   // file: Joi.object({
   //   fieldname: Joi.string().optional(),
@@ -70,7 +76,7 @@ export const create_request_by_concierge_validation = {
     email: Joi.string().email().optional(),
     mobile_no: Joi.string().allow(""),
     room: Joi.string().allow(""),
-    state: Joi.string().allow("")
+    state: Joi.string().allow(""),
   }),
 };
 

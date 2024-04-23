@@ -160,8 +160,6 @@ export const provider_request_to_admin_refactored: Controller = async (
       },
     });
 
-    console.log("Transporter-->", transporter);
-
     for (const admin of admins) {
       try {
         const info = await transporter.sendMail({
@@ -189,7 +187,6 @@ export const provider_request_to_admin_refactored: Controller = async (
         }
       } catch (error) {
         console.error("Error sending email:", error);
-        // Continue to the next admin even if there's an error sending email
       }
     }
 

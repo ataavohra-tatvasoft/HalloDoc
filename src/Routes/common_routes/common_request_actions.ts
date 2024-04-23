@@ -15,6 +15,7 @@ import {
   view_uploads_send_mail,
   update_agreement_agree,
   update_agreement_cancel,
+  view_uploads_send_mail_refactored,
 } from "../../controllers";
 import { professions_for_send_orders } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
@@ -94,7 +95,8 @@ router.post(
   "/dashboard/requests/:confirmation_no/actions/viewuploads/sendmail",
   authmiddleware,
   celebrate(view_uploads_send_mail_validation),
-  view_uploads_send_mail
+  // view_uploads_send_mail,
+  view_uploads_send_mail_refactored
 );
 
 /**

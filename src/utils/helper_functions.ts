@@ -50,7 +50,7 @@ export const upload = multer({
 export const update_region_mapping = async (
   user_id: number,
   region_name: string,
-  value: boolean  
+  value: boolean
 ) => {
   const region = await Region.findOne({
     where: { region_name },
@@ -85,3 +85,37 @@ export const update_region_mapping = async (
     }
   }
 };
+// Function to send email with attachment
+export async function send_email_with_attachment(
+  email: string,
+  file_path: string,
+  filename: string
+) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false,
+    debug: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: "vohraatta@gmail.com",
+    to: email,
+    subject: "Requested Documents",
+    text: "Please find the requested documents attached.",
+    attachments: [
+      {
+        filename: filename,
+        path: file_path,
+      },
+    ],
+  });
+
+  if (!info) {
+    throw new Error("Error sending email");
+  }
+}

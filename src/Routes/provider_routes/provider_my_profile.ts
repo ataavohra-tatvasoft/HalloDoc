@@ -4,10 +4,15 @@ import {
   provider_profile_view,
   provider_provider_profile_upload,
   provider_request_to_admin,
+  provider_request_to_admin_refactored,
 } from "../../controllers";
 import { celebrate, Joi } from "celebrate";
 import { authmiddleware } from "../../middlewares";
-import { provider_profile_reset_password_validation, provider_provider_profile_upload_validation, provider_request_to_admin_validation } from "../../validations";
+import {
+  provider_profile_reset_password_validation,
+  provider_provider_profile_upload_validation,
+  provider_request_to_admin_validation,
+} from "../../validations";
 import { upload } from "../../utils";
 
 const router: Router = express.Router();
@@ -23,7 +28,7 @@ router.get(
 router.put(
   "/myprofile/provider_profile/resetpassword",
   authmiddleware,
-    celebrate(provider_profile_reset_password_validation),
+  celebrate(provider_profile_reset_password_validation),
   provider_profile_reset_password
 );
 
@@ -31,15 +36,16 @@ router.put(
   "/myprofile/provider_profile/profile_upload",
   authmiddleware,
   upload.any(),
-    // celebrate(provider_provider_profile_upload_validation),
+  // celebrate(provider_provider_profile_upload_validation),
   provider_provider_profile_upload
 );
 
 router.put(
   "/myprofile/provider_profile/request_to_admin",
   authmiddleware,
-    celebrate(provider_request_to_admin_validation),
-  provider_request_to_admin
+  celebrate(provider_request_to_admin_validation),
+  // provider_request_to_admin,
+  provider_request_to_admin_refactored
 );
 
 export default router;

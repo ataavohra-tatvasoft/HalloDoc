@@ -13,7 +13,7 @@ export const provider_create_shift_validation = {
     shift_date: Joi.date().iso().required(),
     start: Joi.string().required(),
     end: Joi.string().required(),
-    repeat_days: Joi.string().optional(),
+    repeat_days: Joi.string().optional().allow(""),
     repeat_end: Joi.number().optional(),
   }),
 };

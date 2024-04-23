@@ -7,6 +7,8 @@ import { Op } from "sequelize";
 import Requestor from "../../db/models/requestor";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
+import { hasSubscribers } from "diagnostics_channel";
+import { hasUncaughtExceptionCaptureCallback } from "process";
 
 export const is_patient_registered: Controller = async (
   req: Request,
@@ -25,10 +27,12 @@ export const is_patient_registered: Controller = async (
 
     if (is_patient) {
       return res.status(200).json({
+        status: true,
         message: message_constants.RP,
       });
     } else {
       return res.status(200).json({
+        status: false,
         message: message_constants.PNR,
       });
     }
@@ -63,10 +67,12 @@ export const create_request_by_patient: Controller = async (
       },
     } = req;
 
-    // console.log(req.body);
+    console.log(req.body);
     // console.log(email, password);
-
-    const hashed_password = await bcrypt.hash(password, 10);
+    let hashed_password;
+    if (password) {
+      hashed_password = await bcrypt.hash(password, 10);
+    }
 
     const generate_confirmation_number = (
       state: string,
@@ -91,7 +97,6 @@ export const create_request_by_patient: Controller = async (
       where: {
         type_of_user: "patient",
         email,
-        
       },
     });
 
@@ -138,7 +143,7 @@ export const create_request_by_patient: Controller = async (
         state,
         zip: Number(zip),
         address_1: room,
-        password: hashed_password,
+        ...(password && { password: hashed_password }),
       });
 
       if (!patient_data) {

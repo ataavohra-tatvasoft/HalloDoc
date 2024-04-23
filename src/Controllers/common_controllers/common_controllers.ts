@@ -526,26 +526,21 @@ export const export_all: Controller = async (
           status: true,
           data: [],
         };
-        const { count, rows: requests } = await RequestModel.findAndCountAll({
+        const { rows: requests } = await RequestModel.findAndCountAll({
           where: {
             request_state: state,
-            ...(state == "toclose"
-              ? {
-                  request_status: {
-                    [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
-                  },
-                }
-              : {
-                  request_status: {
-                    [Op.notIn]: [
+            request_status: {
+              [Op.notIn]:
+                state === "toclose"
+                  ? ["cancelled by provider", "blocked", "clear"]
+                  : [
                       "cancelled by admin",
                       "cancelled by provider",
                       "blocked",
                       "clear",
                     ],
-                  },
-                }),
-            ...(requestor ? { requested_by: requestor } : {}),
+            },
+            ...(requestor && { requested_by: requestor }),
           },
           attributes: [
             "request_id",
@@ -562,16 +557,6 @@ export const export_all: Controller = async (
             {
               as: "Patient",
               model: User,
-              attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "state",
-              ],
               where: where_clause_patient,
             },
             ...(state !== "new"
@@ -579,16 +564,6 @@ export const export_all: Controller = async (
                   {
                     as: "Physician",
                     model: User,
-                    attributes: [
-                      "user_id",
-                      "type_of_user",
-                      "firstname",
-                      "lastname",
-                      "dob",
-                      "mobile_no",
-                      "address_1",
-                      "address_2",
-                    ],
                     where: {
                       type_of_user: "physician",
                     },
@@ -598,22 +573,21 @@ export const export_all: Controller = async (
               : []),
             {
               model: Requestor,
-              attributes: ["user_id", "first_name", "last_name"],
             },
             {
               model: Notes,
-              attributes: ["note_id", "type_of_note", "description"],
             },
           ],
           limit,
           offset,
         });
-
+        var i = offset + 1;
         for (const request of requests) {
-          const formatted_request: any = {
+          const formatted_request = {
+            sr_no: i,
             request_id: request.request_id,
             request_state: request.request_state,
-            confirmationNo: request.confirmation_no,
+            confirmation_no: request.confirmation_no,
             requestor: request.requested_by,
             requested_date: request.requested_date?.toISOString().split("T")[0],
             ...(state !== "new"
@@ -624,51 +598,57 @@ export const export_all: Controller = async (
                 }
               : {}),
             patient_data: {
-              user_id: request.Patient.user_id,
-              name: request.Patient.firstname + " " + request.Patient.lastname,
-              DOB: request.Patient.dob?.toISOString().split("T")[0],
-              mobile_no: request.Patient.mobile_no,
+              user_id: request?.Patient?.user_id || null,
+              name:
+                request?.Patient?.firstname ||
+                null + " " + request?.Patient?.lastname ||
+                null,
+              DOB: request?.Patient?.dob?.toISOString().split("T")[0],
+              mobile_no: request?.Patient?.mobile_no || null,
               address:
-                request.Patient.address_1 +
-                " " +
-                request.Patient.address_2 +
-                " " +
-                request.Patient.state,
-              ...(state === "toclose" ? { region: request.Patient.state } : {}),
+                request?.Patient?.address_1 ||
+                null + " " + request?.Patient?.address_2 + " " ||
+                null + request?.Patient?.state ||
+                null,
+              ...(state === "toclose"
+                ? { region: request?.Patient?.state || null }
+                : {}),
             },
             ...(state !== "new"
               ? {
                   physician_data: {
-                    user_id: request.Physician.user_id,
+                    user_id: request?.Physician?.user_id || null,
                     name:
-                      request.Physician.firstname +
-                      " " +
-                      request.Physician.lastname,
-                    DOB: request.Physician.dob?.toISOString().split("T")[0],
-                    mobile_no: request.Physician.mobile_no,
+                      request?.Physician?.firstname ||
+                      null + " " + request?.Physician?.lastname ||
+                      null,
+                    DOB:
+                      request?.Physician?.dob?.toISOString().split("T")[0] ||
+                      null,
+                    mobile_no: request?.Physician?.mobile_no || null,
                     address:
-                      request.Physician.address_1 +
-                      " " +
-                      request.Physician.address_2 +
-                      " " +
-                      request.Patient.state,
+                      request?.Physician?.address_1 ||
+                      null + " " + request?.Physician?.address_2 ||
+                      null + " " + request?.Physician?.state ||
+                      null,
                   },
                 }
               : {}),
             requestor_data: {
-              user_id: request.Requestor?.user_id || null,
+              user_id: request?.Requestor?.user_id || null,
               first_name:
-                request.Requestor?.first_name ||
-                null + " " + request.Requestor?.last_name ||
+                request?.Requestor?.first_name ||
+                null + " " + request?.Requestor?.last_name ||
                 null,
-              last_name: request.Requestor?.last_name || null,
+              last_name: request?.Requestor?.last_name || null,
             },
-            notes: request.Notes?.map((note) => ({
-              note_id: note.note_id,
-              type_of_note: note.type_of_note,
-              description: note.description,
+            notes: request?.Notes?.map((note) => ({
+              note_id: note?.note_id || null,
+              type_of_note: note?.type_of_note || null,
+              description: note?.description || null,
             })),
           };
+          i++;
           formatted_response.data.push(formatted_request);
         }
 
