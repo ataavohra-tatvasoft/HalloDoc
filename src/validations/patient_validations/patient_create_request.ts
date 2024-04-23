@@ -74,9 +74,9 @@ export const create_request_by_concierge_validation = {
     lastname: Joi.string().optional(),
     date_of_birth: Joi.string().optional(),
     email: Joi.string().email().optional(),
-    mobile_no: Joi.string().allow(""),
-    room: Joi.string().allow(""),
-    state: Joi.string().allow(""),
+    mobile_no: Joi.string().optional().allow(""),
+    room: Joi.string().optional().allow(""),
+    state: Joi.string().optional().allow(""),
   }),
 };
 
