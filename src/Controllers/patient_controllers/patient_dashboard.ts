@@ -59,7 +59,7 @@ export const medical_history: Controller = async (
         sr_no: i,
         request_id: request.request_id,
         confirmation_no: request.confirmation_no,
-        created_date: request.createdAt?.toISOString().split("T")[0],
+        created_date: request?.createdAt.toISOString().split("T")[0],
         request_state: request.request_state,
         request_status: request.request_status,
         documents: documents.map((document) => ({
@@ -164,4 +164,3 @@ export const request_action_document: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
-

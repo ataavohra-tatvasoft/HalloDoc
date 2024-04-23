@@ -20,7 +20,9 @@ module.exports = {
           city: "City 1",
           state: "Virginia",
           zip: 994512,
-        }
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       {}
     );

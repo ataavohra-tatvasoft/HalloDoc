@@ -54,6 +54,25 @@ export default class Request extends Model<
   request_state: string;
 
   @Column({
+    type: DataType.ENUM(
+      "unassigned",
+      "assigned",
+      "accepted",
+      "md_on_route",
+      "md_on_site",
+      "closed",
+      "conclude",
+      "blocked",
+      "clear",
+      "cancelled by admin",
+      "cancelled by provider"
+    ),
+    defaultValue: "unassigned",
+    allowNull: false,
+  })
+  request_status: string;
+
+  @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
@@ -116,23 +135,28 @@ export default class Request extends Model<
   closed_date: Date;
 
   @Column({
-    type: DataType.ENUM(
-      "unassigned",
-      "assigned",
-      "accepted",
-      "md_on_route",
-      "md_on_site",
-      "closed",
-      "conclude",
-      "blocked",
-      "clear",
-      "cancelled by admin",
-      "cancelled by provider"
-    ),
-    defaultValue: "unassigned",
-    allowNull: false,
+    type: DataType.STRING,
+    allowNull: true,
   })
-  request_status: string;
+  street: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  city: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  state: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  zip: number;
 
   @Column({
     type: DataType.STRING,
@@ -196,6 +220,7 @@ export default class Request extends Model<
 
   @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })
   Documents: Documents[];
+  
   // @HasMany(() => User)
   // Patient: User[];
 

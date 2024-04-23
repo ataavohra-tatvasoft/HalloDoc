@@ -77,7 +77,6 @@ export const provider_request_to_admin: Controller = async (
     console.log("Transporter-->", transporter);
 
     for (const admin of admins) {
-
       const info = await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: admin.email,
@@ -90,7 +89,7 @@ export const provider_request_to_admin: Controller = async (
           message: message_constants.EWSM,
         });
       }
-      
+
       const email_log = await Logs.create({
         type_of_log: "Email",
         recipient: admin.firstname + " " + admin.lastname,
@@ -259,7 +258,7 @@ export const provider_profile_view: Controller = async (
     const formattedRequest = {
       admin_user_id: profile.user_id,
       provider_account_information: {
-        username: "dummy",
+        username: profile.username,
       },
       physician_information: {
         firstname: profile.firstname,

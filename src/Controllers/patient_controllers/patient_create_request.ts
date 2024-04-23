@@ -179,6 +179,10 @@ export const create_request_by_patient: Controller = async (
       requested_date: new Date(),
       confirmation_no,
       notes_symptoms: symptoms,
+      street,
+      city,
+      state,
+      zip,
     });
 
     if (!request_data) {
@@ -403,6 +407,10 @@ export const create_request_by_family_friend: Controller = async (
       confirmation_no,
       notes_symptoms: symptoms,
       relation_with_patient: your_relation_with_patient,
+      street,
+      city,
+      state,
+      zip,
     });
 
     if (!request_data) {
@@ -632,6 +640,10 @@ export const create_request_by_concierge: Controller = async (
       requested_date: new Date(),
       confirmation_no,
       notes_symptoms: symptoms,
+      street: your_street,
+      city: your_city,
+      state: your_state,
+      zip: your_zip,
     });
 
     if (!request_data) {
@@ -825,6 +837,10 @@ export const create_request_by_business: Controller = async (
       requested_date: new Date(),
       confirmation_no,
       notes_symptoms: symptoms,
+      street,
+      city,
+      state,
+      zip,
     });
 
     if (!request_data) {

@@ -220,7 +220,6 @@ export const contact_provider: Controller = async (
         from: process.env.TWILIO_MOBILE_NO,
         // to: "+" + mobile_no,
         to: "+918401736963",
-
       });
 
       const SMS_log = await Logs.create({
@@ -306,7 +305,6 @@ export const contact_provider: Controller = async (
         from: process.env.TWILIO_MOBILE_NO,
         // to: "+" + mobile_no,
         to: "+918401736963",
-
       });
 
       const SMS_log = await Logs.create({

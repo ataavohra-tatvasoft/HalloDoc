@@ -26,6 +26,24 @@ module.exports = {
         ),
         allowNull: false,
       },
+      request_status: {
+        type: Sequelize.ENUM(
+          "unassigned",
+          "assigned",
+          "accepted",
+          "md_on_route",
+          "md_on_site",
+          "closed",
+          "conclude",
+          "blocked",
+          "clear",
+          "cancelled by admin",
+          "cancelled by provider"
+        ),
+        defaultValue: "unassigned",
+
+        allowNull: false,
+      },
       patient_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -82,24 +100,27 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      request_status: {
-        type: Sequelize.ENUM(
-          "unassigned",
-          "assigned",
-          "accepted",
-          "md_on_route",
-          "md_on_site",
-          "closed",
-          "conclude",
-          "blocked",
-          "clear",
-          "cancelled by admin",
-          "cancelled by provider"
-        ),
-        defaultValue: "unassigned",
 
-        allowNull: false,
+      street: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
+
+      city: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+
+      state: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+
+      zip: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+
       block_reason: {
         type: Sequelize.STRING,
         allowNull: true,

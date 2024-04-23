@@ -227,7 +227,6 @@ export const export_single: Controller = async (
           { lastname: { [Op.like]: `%${search}%` } },
         ],
       }),
-      ...(region && { state: region }),
     };
 
     const handle_request_state = async (additional_attributes?: any) => {
@@ -238,6 +237,7 @@ export const export_single: Controller = async (
       const { count, rows: requests } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
+          ...(region && { state: region }),
           ...(state == "toclose"
             ? {
                 request_status: {
@@ -265,6 +265,10 @@ export const export_single: Controller = async (
           "date_of_service",
           "physician_id",
           "patient_id",
+          "street",
+          "city",
+          "state",
+          "zip",
           ...(additional_attributes || []),
         ],
         include: [
@@ -339,11 +343,7 @@ export const export_single: Controller = async (
             DOB: request.Patient.dob?.toISOString().split("T")[0],
             mobile_no: request.Patient.mobile_no,
             address:
-              request.Patient.address_1 +
-              " " +
-              request.Patient.address_2 +
-              " " +
-              request.Patient.state,
+              request?.street + " " + request?.city + " " + request?.state,
             ...(state === "toclose" ? { region: request.Patient.state } : {}),
           },
           ...(state !== "new"
@@ -506,7 +506,6 @@ export const export_all: Controller = async (
           { lastname: { [Op.like]: `%${search}%` } },
         ],
       }),
-      ...(region && { state: region }),
     };
 
     const states = [
@@ -529,6 +528,7 @@ export const export_all: Controller = async (
         const { rows: requests } = await RequestModel.findAndCountAll({
           where: {
             request_state: state,
+            ...(region && { state: region }),
             request_status: {
               [Op.notIn]:
                 state === "toclose"
@@ -551,6 +551,10 @@ export const export_all: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
+            "street",
+            "city",
+            "state",
+            "zip",
             ...(additional_attributes || []),
           ],
           include: [
@@ -606,10 +610,7 @@ export const export_all: Controller = async (
               DOB: request?.Patient?.dob?.toISOString().split("T")[0],
               mobile_no: request?.Patient?.mobile_no || null,
               address:
-                request?.Patient?.address_1 ||
-                null + " " + request?.Patient?.address_2 + " " ||
-                null + request?.Patient?.state ||
-                null,
+                request?.street + " " + request?.city + " " + request?.state,
               ...(state === "toclose"
                 ? { region: request?.Patient?.state || null }
                 : {}),

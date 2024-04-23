@@ -211,6 +211,10 @@ export const admin_create_request: Controller = async (
       requested_by: "admin",
       requested_date: new Date(),
       confirmation_no,
+      street,
+      city,
+      state,
+      zip,
     });
 
     if (!request_data) {
@@ -334,6 +338,10 @@ export const manage_requests_by_State: Controller = async (
           "date_of_service",
           "physician_id",
           "patient_id",
+          "street",
+          "city",
+          "state",
+          "zip",
           ...(additionalAttributes || []),
         ],
         include: [
@@ -408,7 +416,10 @@ export const manage_requests_by_State: Controller = async (
             DOB: request.Patient.dob.toISOString().split("T")[0],
             mobile_no: request.Patient.mobile_no,
             address:
-              request.Patient.address_1 + " " + request.Patient.address_2,
+              request?.street ||
+              null + " " + request?.city ||
+              null + " " + request?.state ||
+              null,
             ...(state === "toclose" ? { region: request.Patient.state } : {}),
           },
           ...(state !== "new"
@@ -545,7 +556,6 @@ export const requests_by_request_state_refactored: Controller = async (
           { lastname: { [Op.like]: `%${search}%` } },
         ],
       }),
-      ...(region && { state: region }),
     };
 
     const handle_request_state = async (
@@ -558,6 +568,7 @@ export const requests_by_request_state_refactored: Controller = async (
       const { rows: requests } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
+          ...(region && { state: region }),
           request_status: {
             [Op.notIn]:
               state === "toclose"
@@ -580,6 +591,10 @@ export const requests_by_request_state_refactored: Controller = async (
           "date_of_service",
           "physician_id",
           "patient_id",
+          "street",
+          "city",
+          "state",
+          "zip",
           ...(additionalAttributes || []),
         ],
         include: [
@@ -614,6 +629,7 @@ export const requests_by_request_state_refactored: Controller = async (
       const { count } = await RequestModel.findAndCountAll({
         where: {
           request_state: state,
+          ...(region && { state: region }),
           request_status: {
             [Op.notIn]:
               state === "toclose"
@@ -669,16 +685,11 @@ export const requests_by_request_state_refactored: Controller = async (
           patient_data: {
             user_id: request?.Patient?.user_id || null,
             name:
-              request?.Patient?.firstname ||
-              null + " " + request?.Patient?.lastname ||
-              null,
+              request?.Patient?.firstname + " " + request?.Patient?.lastname,
             DOB: request?.Patient?.dob?.toISOString().split("T")[0],
             mobile_no: request?.Patient?.mobile_no || null,
             address:
-              request?.Patient?.address_1 ||
-              null + " " + request?.Patient?.address_2 + " " ||
-              null + request?.Patient?.state ||
-              null,
+              request?.street + " " + request?.city + " " + request?.state,
             ...(state === "toclose"
               ? { region: request?.Patient?.state || null }
               : {}),

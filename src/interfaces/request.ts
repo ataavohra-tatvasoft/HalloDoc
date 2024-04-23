@@ -5,6 +5,7 @@ export interface RequestAttributes {
   request_id: number;
   confirmation_no: string;
   request_state: string;
+  request_status: string;
   patient_id: number;
   physician_id: number | null;
   requested_by: string;
@@ -14,7 +15,10 @@ export interface RequestAttributes {
   concluded_date: Date;
   date_of_service: Date;
   closed_date: Date;
-  request_status: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: number;
   block_reason: string | null;
   agreement_status: string;
   notes_symptoms: string | null;
@@ -28,6 +32,7 @@ export interface RequestCreationAttributes
     RequestAttributes,
     | "request_id"
     | "confirmation_no"
+    | "request_status"
     | "patient_id"
     | "physician_id"
     | "relation_with_patient"
@@ -35,7 +40,10 @@ export interface RequestCreationAttributes
     | "concluded_date"
     | "date_of_service"
     | "closed_date"
-    | "request_status"
+    | "street"
+    | "city"
+    | "state"
+    | "zip"
     | "block_reason"
     | "agreement_status"
     | "notes_symptoms"

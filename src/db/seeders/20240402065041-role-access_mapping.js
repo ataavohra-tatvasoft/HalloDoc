@@ -6,14 +6,54 @@ module.exports = {
     await queryInterface.bulkInsert(
       "role-access-mapping",
       [
-        { role_id: 1, access_id: 36 },
-        { role_id: 2, access_id: 55 },
-        { role_id: 3, access_id: 35 },
-        { role_id: 4, access_id: 57 },
-        { role_id: 5, access_id: 40 },
-        { role_id: 6, access_id: 58 },
-        { role_id: 7, access_id: 56 },
-        { role_id: 8, access_id: 61 },
+        {
+          role_id: 1,
+          access_id: 36,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 2,
+          access_id: 55,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 3,
+          access_id: 35,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 4,
+          access_id: 57,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 5,
+          access_id: 40,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 6,
+          access_id: 58,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 7,
+          access_id: 56,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          role_id: 8,
+          access_id: 61,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       {}
     );

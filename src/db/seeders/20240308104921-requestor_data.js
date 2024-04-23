@@ -15,6 +15,7 @@ module.exports = {
           mobile_number: 919201152758,
           house_name: "House 1",
           city: "City 1",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Maryland",
         },
         {
@@ -25,6 +26,7 @@ module.exports = {
           mobile_number: 918201152758,
           house_name: "House 2",
           city: "City 2",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Virginia",
         },
         {
@@ -35,6 +37,7 @@ module.exports = {
           mobile_number: 917201152758,
           house_name: "House 3",
           city: "City 3",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Maryland",
         },
         {
@@ -45,6 +48,7 @@ module.exports = {
           mobile_number: 916201152758,
           house_name: "House 4",
           city: "City 4",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Virgnia",
         },
         {
@@ -55,6 +59,7 @@ module.exports = {
           mobile_number: 915201152758,
           house_name: "House 5",
           city: "City 5",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Maryland",
         },
         {
@@ -65,6 +70,7 @@ module.exports = {
           mobile_number: 914201152758,
           house_name: "House 6",
           city: "City 6",
+          createdAt:  new Date(),updatedAt:  new Date(),
           state: "Virginia",
         },
       ],

@@ -65,6 +65,10 @@ export const requests_by_request_state: Controller = async (
               "requested_by",
               "requested_date",
               "patient_id",
+              "street",
+              "city",
+              "state",
+              "zip",
             ],
             include: [
               {
@@ -110,7 +114,10 @@ export const requests_by_request_state: Controller = async (
               DOB: request.Patient.dob.toISOString().split("T")[0],
               mobile_no: request.Patient.mobile_no,
               address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
+                request?.street ||
+                null + " " + request?.city ||
+                null + " " + request?.state ||
+                null,
             },
             requestor_data: {
               user_id: request.Requestor?.user_id || null,
@@ -165,6 +172,10 @@ export const requests_by_request_state: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
+            "street",
+            "city",
+            "state",
+            "zip",
           ],
           include: [
             {
@@ -230,7 +241,10 @@ export const requests_by_request_state: Controller = async (
               DOB: request.Patient.dob.toISOString().split("T")[0],
               mobile_no: request.Patient.mobile_no,
               address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
+                request?.street ||
+                null + " " + request?.city ||
+                null + " " + request?.state ||
+                null,
             },
             physician_data: {
               user_id: request.Physician.user_id,
@@ -293,6 +307,10 @@ export const requests_by_request_state: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
+            "street",
+            "city",
+            "state",
+            "zip",
           ],
           include: [
             {
@@ -350,7 +368,10 @@ export const requests_by_request_state: Controller = async (
               DOB: request.Patient.dob.toISOString().split("T")[0],
               mobile_no: request.Patient.mobile_no,
               address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
+                request?.street ||
+                null + " " + request?.city ||
+                null + " " + request?.state ||
+                null,
             },
             physician_data: {
               user_id: request.Physician.user_id,
@@ -395,6 +416,10 @@ export const requests_by_request_state: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
+            "street",
+            "city",
+            "state",
+            "zip",
           ],
           include: [
             {
@@ -454,7 +479,10 @@ export const requests_by_request_state: Controller = async (
               name: request.Patient.firstname + " " + request.Patient.lastname,
               DOB: request.Patient.dob.toISOString().split("T")[0],
               address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
+                request?.street ||
+                null + " " + request?.city ||
+                null + " " + request?.state ||
+                null,
               region: request.Patient.state,
             },
             physician_data: {
@@ -510,6 +538,10 @@ export const requests_by_request_state: Controller = async (
             "date_of_service",
             "physician_id",
             "patient_id",
+            "street",
+            "city",
+            "state",
+            "zip",
           ],
           include: [
             {
@@ -562,7 +594,10 @@ export const requests_by_request_state: Controller = async (
               name: request.Patient.firstname + " " + request.Patient.lastname,
               mobile_no: request.Patient.mobile_no,
               address:
-                request.Patient.address_1 + " " + request.Patient.address_2,
+                request?.street ||
+                null + " " + request?.city ||
+                null + " " + request?.state ||
+                null,
             },
             physician_data: {
               user_id: request.Physician.user_id,
@@ -922,7 +957,8 @@ export const admin_profile_admin_info_edit: Controller = async (
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
-};` `
+};
+` `;
 export const admin_profile_mailing_billling_info_edit: Controller = async (
   req: Request,
   res: Response,

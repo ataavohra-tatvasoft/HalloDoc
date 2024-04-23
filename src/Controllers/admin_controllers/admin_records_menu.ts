@@ -111,6 +111,10 @@ export const patient_records: Controller = async (
         "concluded_date",
         "request_status",
         "final_report",
+        "street",
+        "city",
+        "state",
+        "zip",
       ],
       include: [
         {
@@ -371,68 +375,71 @@ export const search_records: Controller = async (
       // ... potentially add other WhereOptions properties
     };
 
-    const { rows: requests } =
-      await RequestModel.findAndCountAll({
-        attributes: [
-          "request_id",
-          "confirmation_no",
-          "requested_by",
-          "date_of_service",
-          "closed_date",
-          "request_state",
-          "request_status",
-        ],
-        where: where_clause,
-        include: [
-          {
-            model: User,
-            as: "Patient",
-            attributes: [
-              "user_id",
-              "firstname",
-              "lastname",
-              "email",
-              "mobile_no",
-              "address_1",
-              "address_2",
-              "zip",
-            ],
-            where: {
-              ...(patient_name && {
-                [Op.or]: [
-                  { firstname: { [Op.like]: `%${patient_name}%` } },
-                  { lastname: { [Op.like]: `%${patient_name}%` } },
-                ],
-              }),
-              ...(email && {
-                email: { [Op.like]: `%${email}%` },
-              }),
-              ...(phone_no && {
-                mobile_no: { [Op.like]: `%${phone_no}%` },
-              }),
-            },
+    const { rows: requests } = await RequestModel.findAndCountAll({
+      attributes: [
+        "request_id",
+        "confirmation_no",
+        "requested_by",
+        "date_of_service",
+        "closed_date",
+        "request_state",
+        "request_status",
+        "street",
+        "city",
+        "state",
+        "zip",
+      ],
+      where: where_clause,
+      include: [
+        {
+          model: User,
+          as: "Patient",
+          attributes: [
+            "user_id",
+            "firstname",
+            "lastname",
+            "email",
+            "mobile_no",
+            "address_1",
+            "address_2",
+            "zip",
+          ],
+          where: {
+            ...(patient_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${patient_name}%` } },
+                { lastname: { [Op.like]: `%${patient_name}%` } },
+              ],
+            }),
+            ...(email && {
+              email: { [Op.like]: `%${email}%` },
+            }),
+            ...(phone_no && {
+              mobile_no: { [Op.like]: `%${phone_no}%` },
+            }),
           },
-          {
-            model: User,
-            as: "Physician",
-            attributes: ["user_id", "firstname", "lastname"],
-            where: {
-              ...(provider_name && {
-                [Op.or]: [
-                  { firstname: { [Op.like]: `%${provider_name}%` } },
-                  { lastname: { [Op.like]: `%${provider_name}%` } },
-                ],
-              }),
-            },
+        },
+        {
+          model: User,
+          as: "Physician",
+          attributes: ["user_id", "firstname", "lastname"],
+          where: {
+            ...(provider_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${provider_name}%` } },
+                { lastname: { [Op.like]: `%${provider_name}%` } },
+              ],
+            }),
           },
-          {
-            model: Notes,
-            attributes: ["note_id", "type_of_note", "description"],
-          },
-        ],
-        limit,
-        offset,
-      });
+        },
+        {
+          model: Notes,
+          attributes: ["note_id", "type_of_note", "description"],
+        },
+      ],
+      limit,
+      offset,
+    });
 
     if (!requests) {
       return res.status(404).json({
@@ -440,8 +447,7 @@ export const search_records: Controller = async (
       });
     }
 
-    const { count: total_count } =
-    await RequestModel.findAndCountAll({
+    const { count: total_count } = await RequestModel.findAndCountAll({
       where: where_clause,
       include: [
         {
@@ -694,6 +700,10 @@ export const cancel_and_block_history: Controller = async (
           "confirmation_no",
           "patient_id",
           "physician_id",
+          "street",
+          "city",
+          "state",
+          "zip",
           "createdAt",
           "updatedAt",
         ],

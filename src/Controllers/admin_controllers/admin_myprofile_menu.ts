@@ -49,7 +49,7 @@ export const admin_profile_view: Controller = async (
       },
       attributes: [
         "user_id",
-        // "username",
+        "username",
         "role_id",
         "status",
         "firstname",
@@ -95,7 +95,7 @@ export const admin_profile_view: Controller = async (
     const formattedRequest = {
       admin_user_id: profile.user_id,
       admin_account_information: {
-        username: "dummy",
+        username: profile.username,
         status: profile.status,
         role: is_role.role_name,
       },

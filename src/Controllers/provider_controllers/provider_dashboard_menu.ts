@@ -81,7 +81,7 @@ export const requests_by_request_state_provider: Controller = async (
     ) as VerifiedToken;
     const provider_id = verified_token.user_id;
 
-    const { state, search, requestor, page, page_size } = req.query as {
+    const { state, search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
     };
     const page_number = Number(page) || 1;
@@ -122,6 +122,7 @@ export const requests_by_request_state_provider: Controller = async (
         where: {
           request_state: state,
           physician_id: user.user_id,
+          ...(region && { state: region }),
           ...(requestor ? { requested_by: requestor } : {}),
         },
         attributes: [
@@ -132,6 +133,10 @@ export const requests_by_request_state_provider: Controller = async (
           "request_status",
           "physician_id",
           "patient_id",
+          "street",
+          "city",
+          "state",
+          "zip",
           ...(additionalAttributes || []),
         ],
         include: [
@@ -179,11 +184,7 @@ export const requests_by_request_state_provider: Controller = async (
             name: request.Patient.firstname + " " + request.Patient.lastname,
             mobile_no: request.Patient.mobile_no,
             address:
-              request.Patient.address_1 +
-              " " +
-              request.Patient.address_2 +
-              " " +
-              request.Patient.state,
+              request?.street + " " + request?.city + " " + request?.state,
             ...(state == "active"
               ? {
                   status: request.Patient.status,
