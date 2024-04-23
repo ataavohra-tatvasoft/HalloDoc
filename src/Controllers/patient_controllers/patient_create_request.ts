@@ -474,7 +474,6 @@ export const create_request_by_concierge: Controller = async (
       firstname,
       lastname,
       date_of_birth,
-      state,
       email,
       mobile_no,
       room,
@@ -519,7 +518,6 @@ export const create_request_by_concierge: Controller = async (
           mobile_no,
           dob: new Date(date_of_birth),
           address_1: room,
-          state,
         },
         {
           where: {
@@ -541,7 +539,6 @@ export const create_request_by_concierge: Controller = async (
         lastname,
         mobile_no,
         email,
-        state,
         dob: new Date(date_of_birth),
         address_1: room,
       });
@@ -566,7 +563,7 @@ export const create_request_by_concierge: Controller = async (
     console.log(todays_requests_count);
 
     const confirmation_no = generate_confirmation_number(
-      patient_data.state,
+      your_state,
       firstname,
       lastname,
       todays_requests_count
