@@ -75,6 +75,9 @@ export const view_case_for_request: Controller = async (
         {
           model: Notes,
           attributes: ["request_id", "note_id", "description", "type_of_note"],
+          where: {
+            type_of_note: "patient_notes",
+          },
           required: false,
         },
       ],
@@ -119,7 +122,8 @@ export const view_case_for_request: Controller = async (
       ...formatted_response,
     });
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
