@@ -2,14 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import {
   Controller,
   FormattedResponse,
-  FormattedResponse_2,
 } from "../../interfaces/common_interface";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import dotenv from "dotenv";
 import Shifts from "../../db/models/shifts";
 import { DATE, Op } from "sequelize";
-import Role from "../../db/models/role";
 import { VerifiedToken } from "../../interfaces/common_interface";
 import jwt from "jsonwebtoken";
 

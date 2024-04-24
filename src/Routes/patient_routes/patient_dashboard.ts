@@ -5,7 +5,6 @@ import {
   medical_history_validation,
   request_action_document_validation,
 } from "../../validations/index";
-import { upload } from "../../utils";
 const router: Router = express.Router();
 
 router.get(

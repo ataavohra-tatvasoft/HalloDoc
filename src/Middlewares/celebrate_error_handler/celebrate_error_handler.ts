@@ -1,4 +1,3 @@
-import { errors } from "celebrate";
 import { NextFunction, Request, Response } from "express";
 const celebrate = require("celebrate");
 // import { ValidationError } from "joi";

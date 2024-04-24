@@ -6,7 +6,6 @@ import Notes from "../../db/models/notes";
 import {
   Controller,
   FormattedResponse,
-  VerifiedToken,
 } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";

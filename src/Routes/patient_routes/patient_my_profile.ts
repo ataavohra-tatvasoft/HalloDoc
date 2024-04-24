@@ -9,7 +9,6 @@ import {
   create_patient_account_validation,
   patient_profile_edit_validation,
 } from "../../validations/index";
-import { upload } from "../../utils";
 const router: Router = express.Router();
 
 router.get("/my_profile/user_profile_view", patient_profile_view);
