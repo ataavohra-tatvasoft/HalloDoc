@@ -1052,7 +1052,7 @@ export const send_agreement: Controller = async (
     }
 
     // const reset_url = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
-    const reset_url = `front-end url`;
+    const reset_url = `http://localhost:3000/agreement`;
 
     const mail_content = `
             <html>
@@ -1198,7 +1198,11 @@ export const update_agreement_cancel: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
     const update_status = await RequestModel.update(
-      { agreement_status: "rejected" },
+      {
+        agreement_status: "rejected",
+        request_state: "toclose",
+        request_status: "closed",
+      },
       {
         where: {
           confirmation_no,
