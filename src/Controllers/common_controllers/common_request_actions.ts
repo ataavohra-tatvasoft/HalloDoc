@@ -70,13 +70,12 @@ export const view_case_for_request: Controller = async (
           where: {
             type_of_user: "patient",
           },
+          required: false,
         },
         {
           model: Notes,
           attributes: ["request_id", "note_id", "description", "type_of_note"],
-          where: {
-            type_of_note: "patient_notes",
-          },
+          required: false,
         },
       ],
     });
