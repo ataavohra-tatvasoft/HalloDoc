@@ -14,7 +14,10 @@ import dotenv from "dotenv";
 import message_constants from "../../../public/message_constants";
 import Region from "../../../db/models/region";
 import UserRegionMapping from "../../../db/models/user-region_mapping";
-import { update_region_mapping } from "../../../utils/helper_functions";
+import {
+  update_region_mapping,
+  update_document,
+} from "../../../utils/helper_functions";
 import Role from "../../../db/models/role";
 import { WhereOptions } from "sequelize";
 import { UserAttributes } from "../../../interfaces/user";
@@ -506,10 +509,6 @@ export const save_user_information: Controller = async (
       medical_licence,
       NPI_no,
       synchronization_email,
-      district_of_columbia,
-      new_york,
-      virginia,
-      maryland,
       address_1,
       address_2,
       city,
@@ -520,6 +519,10 @@ export const save_user_information: Controller = async (
       business_website,
       admin_notes,
     } = req.body;
+
+    const { region_ids } = req.body as {
+      region_ids: Array<number>;
+    };
 
     const user = await User.findOne({ where: { user_id } });
 
@@ -547,10 +550,6 @@ export const save_user_information: Controller = async (
       medical_licence,
       NPI_no,
       synchronization_email,
-      district_of_columbia,
-      new_york,
-      virginia,
-      maryland,
       address_1,
       address_2,
       city,
@@ -570,17 +569,7 @@ export const save_user_information: Controller = async (
       return res.status(500).json({ error: message_constants.ISE });
     }
 
-    // Update region mappings
-    const regions_to_update = [
-      { name: "District of Columbia", value: district_of_columbia },
-      { name: "New York", value: new_york },
-      { name: "Virginia", value: virginia },
-      { name: "Maryland", value: maryland },
-    ];
-
-    for (const region_data of regions_to_update) {
-      await update_region_mapping(user_id, region_data.name, region_data.value);
-    }
+    await update_region_mapping(user.user_id, region_ids, req, res, next);
 
     return res.status(200).json({ message: message_constants.US });
   } catch (error) {
@@ -889,10 +878,6 @@ export const create_provider_account_refactored: Controller = async (
         medical_licence,
         NPI_no,
         synchronization_email,
-        district_of_columbia,
-        new_york,
-        virginia,
-        maryland,
         address_1,
         address_2,
         city,
@@ -905,6 +890,10 @@ export const create_provider_account_refactored: Controller = async (
       },
       files,
     } = req;
+
+    const { region_ids } = req.body as {
+      region_ids: Array<number>;
+    };
 
     const hashed_password: string = await bcrypt.hash(password, 10);
     const uploaded_files: any = files || {};
@@ -997,14 +986,7 @@ export const create_provider_account_refactored: Controller = async (
       return res.status(500).json({ message: message_constants.EWCA });
     }
 
-    await update_region_mapping(
-      user.user_id,
-      "District of Columbia",
-      district_of_columbia
-    );
-    await update_region_mapping(user.user_id, "New York", new_york);
-    await update_region_mapping(user.user_id, "Virginia", virginia);
-    await update_region_mapping(user.user_id, "Maryland", maryland);
+    await update_region_mapping(user.user_id, region_ids, req, res, next);
 
     const update_document = async (
       user_id: number,
@@ -1063,10 +1045,6 @@ export const common_save_provider_account: Controller = async (
         medical_licence,
         NPI_no,
         synchronization_email,
-        district_of_columbia,
-        new_york,
-        virginia,
-        maryland,
         address_1,
         address_2,
         city,
@@ -1079,6 +1057,11 @@ export const common_save_provider_account: Controller = async (
       },
       files,
     } = req;
+    const { region_ids } = req.body as {
+      region_ids: Array<number>;
+    };
+    const hashed_password: string = await bcrypt.hash(password, 10);
+    const uploaded_files: any = files || {};
 
     const is_user = await User.findOne({
       where: { user_id, type_of_user: "physician" },
@@ -1087,9 +1070,6 @@ export const common_save_provider_account: Controller = async (
     if (!is_user) {
       return res.status(404).json({ message: message_constants.UNF });
     }
-
-    const hashed_password: string = await bcrypt.hash(password, 10);
-    const uploaded_files: any = files || {};
 
     const get_file_path = (files: any, fieldname: string) => {
       if (!files || typeof files !== "object") {
@@ -1137,6 +1117,7 @@ export const common_save_provider_account: Controller = async (
         message: message_constants.RoNF,
       });
     }
+
     const user_update = await User.update(
       {
         type_of_user: "physician",
@@ -1174,36 +1155,7 @@ export const common_save_provider_account: Controller = async (
       return res.status(500).json({ message: message_constants.EWU });
     }
 
-    await update_region_mapping(
-      is_user.user_id,
-      "District of Columbia",
-      district_of_columbia
-    );
-
-    // console.log(typeof(new_york));
-
-    await update_region_mapping(is_user.user_id, "New York", new_york);
-    await update_region_mapping(is_user.user_id, "Virginia", virginia);
-    await update_region_mapping(is_user.user_id, "Maryland", maryland);
-
-    const update_document = async (
-      user_id: number,
-      document_name: string,
-      document_path: string
-    ) => {
-      if (!document_path) return;
-      const document_status = await Documents.findOne({
-        where: { user_id, document_name },
-      });
-      if (!document_status) {
-        await Documents.create({ user_id, document_name, document_path });
-      } else {
-        await Documents.update(
-          { document_path },
-          { where: { user_id, document_name } }
-        );
-      }
-    };
+    await update_region_mapping(is_user.user_id, region_ids, req, res, next);
 
     await update_document(
       is_user.user_id,
@@ -1223,6 +1175,7 @@ export const common_save_provider_account: Controller = async (
     );
 
     return res.status(200).json({ message: message_constants.Success });
+    
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });

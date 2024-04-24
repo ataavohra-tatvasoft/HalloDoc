@@ -199,7 +199,6 @@ export const admin_profile_edit: Controller = async (
       lastname,
       email,
       mobile_no,
-      region_ids,
       address_1,
       address_2,
       city,
@@ -208,7 +207,11 @@ export const admin_profile_edit: Controller = async (
       billing_mobile_no,
     } = req.body;
 
-    console.log(req.body);
+    const { region_ids } = req.body as {
+      region_ids: Array<number>;
+    };
+
+    // console.log(req.body);
 
     const admin_profile = await User.findOne({
       where: {
@@ -219,6 +222,13 @@ export const admin_profile_edit: Controller = async (
     if (!admin_profile) {
       return res.status(404).json({ error: message_constants.ANF });
     }
+
+    const delete_where = {
+      user_id: admin_profile.user_id,
+      region_id: {
+        [Op.notIn]: region_ids,
+      },
+    };
 
     const update_profile_status = await User.update(
       {
@@ -295,37 +305,16 @@ export const admin_profile_edit: Controller = async (
           });
         }
       }
+    }
 
-      console.log("Here_1");
+    const deleted_mappings = await UserRegionMapping.destroy({
+      where: delete_where,
+    });
 
-      const delete_ids = await UserRegionMapping.findAll({
-        where: {
-          [Op.and]: {
-            user_id: admin_profile.user_id,
-            region_id: {
-              [Op.ne]: region_data?.region_id,
-            },
-          },
-        },
-      });
-
-      console.log(delete_ids);
-      for (const delete_id of delete_ids) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: admin_profile.user_id,
-            region_id: {
-              [Op.ne]: delete_id.region_id,
-            },
-          },
-        });
-
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
+    if (deleted_mappings === 0) {
+      console.log("No region mappings deleted");
+    } else {
+      console.log(`${deleted_mappings} region mappings deleted`);
     }
 
     return res.status(200).json({ status: message_constants.US });

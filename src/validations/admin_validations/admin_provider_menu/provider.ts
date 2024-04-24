@@ -98,13 +98,16 @@ export const save_user_information_validation = {
     admin_notes: Joi.string().allow(null, ""),
 
     // Region selections
-    district_of_columbia: Joi.boolean().allow(null),
+    // district_of_columbia: Joi.boolean().allow(null),
 
-    new_york: Joi.boolean().allow(null),
+    // new_york: Joi.boolean().allow(null),
 
-    virginia: Joi.boolean().allow(null),
+    // virginia: Joi.boolean().allow(null),
 
-    maryland: Joi.boolean().allow(null),
+    // maryland: Joi.boolean().allow(null),
+    region_ids: Joi.array()
+      .items(Joi.number().integer().positive().required())
+      .optional(),
   }),
 };
 
@@ -202,10 +205,9 @@ export const create_provider_account_refactored_validation = {
       .optional(),
     medical_licence: Joi.string().allow(null, ""),
     NPI_no: Joi.string().allow(null, ""),
-    district_of_columbia: Joi.boolean().allow(null),
-    new_york: Joi.boolean().allow(null),
-    virginia: Joi.boolean().allow(null),
-    maryland: Joi.boolean().allow(null),
+    region_ids: Joi.array()
+      .items(Joi.number().integer().positive().required())
+      .optional(),
     address_1: Joi.string().trim().allow(null, ""),
     address_2: Joi.string().trim().allow(null, ""),
     city: Joi.string().trim().allow(null, ""),
@@ -244,11 +246,10 @@ export const common_save_provider_account_validation = {
       .optional(),
     medical_licence: Joi.string().allow(null, ""),
     NPI_no: Joi.string().allow(null, ""),
-    synchronization_email:Joi.string().allow(null, ""),
-    district_of_columbia: Joi.boolean().allow(null),
-    new_york: Joi.boolean().allow(null),
-    virginia: Joi.boolean().allow(null),
-    maryland: Joi.boolean().allow(null),
+    synchronization_email: Joi.string().allow(null, ""),
+    region_ids: Joi.array()
+      .items(Joi.number().integer().positive().required())
+      .optional(),
     address_1: Joi.string().trim().allow(null, ""),
     address_2: Joi.string().trim().allow(null, ""),
     city: Joi.string().trim().allow(null, ""),

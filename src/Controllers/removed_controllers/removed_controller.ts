@@ -15,6 +15,7 @@ import message_constants from "../../public/message_constants";
 import UserRegionMapping from "../../db/models/user-region_mapping";
 import Role from "../../db/models/role";
 import Region from "../../db/models/region";
+import { update_region_mapping } from "../../utils";
 
 /**Old API for request */
 export const requests_by_request_state: Controller = async (
@@ -1076,13 +1077,11 @@ export const save_physician_information: Controller = async (
         medical_licence,
         NPI_no,
         synchronization_email,
-        district_of_columbia,
-        new_york,
-        virginia,
-        maryland,
       },
     } = req;
-
+    const { region_ids } = req.body as {
+      region_ids: Array<number>;
+    };
     const user = await User.findOne({
       where: {
         user_id,
@@ -1112,286 +1111,12 @@ export const save_physician_information: Controller = async (
         message: message_constants.US,
       });
     }
-    if (district_of_columbia == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "District of Columbia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: user.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "District of Columbia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (new_york == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "New York",
-        },
-        attributes: ["region_id"],
-      });
 
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: user.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "New York",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (virginia == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Virginia",
-        },
-        attributes: ["region_id"],
-      });
+    await update_region_mapping(user.user_id, region_ids, req, res, next);
 
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: user.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Virginia",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
-    if (maryland == true) {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Maryland",
-        },
-        attributes: ["region_id"],
-      });
-
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-          {
-            where: {
-              user_id: user.user_id,
-              region_id: region?.region_id,
-            },
-          }
-        );
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        });
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    } else {
-      const region = await Region.findOne({
-        where: {
-          region_name: "Maryland",
-        },
-        attributes: ["region_id"],
-      });
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: user.user_id,
-          region_id: region?.region_id,
-        },
-      });
-      if (is_exist) {
-        const delete_mapping = await UserRegionMapping.destroy({
-          where: {
-            user_id: user.user_id,
-            region_id: region?.region_id,
-          },
-        });
-        if (!delete_mapping) {
-          return res.status(500).json({
-            message: message_constants.EWD,
-          });
-        }
-      }
-    }
+    return res.status(200).json({ message: message_constants.Success });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: message_constants.ISE });
   }
 };

@@ -2,6 +2,7 @@ import { Joi } from "celebrate";
 
 export const patient_profile_edit_validation = {
   body: Joi.object({
+    type: Joi.string().min(2).max(50).optional(),
     firstname: Joi.string().min(2).max(50).optional(),
     lastname: Joi.string().min(2).max(50).optional(),
     date_of_birth: Joi.date().optional(),

@@ -51,7 +51,7 @@ export const save_account_information_validation = {
 };
 export const save_physician_information_validation = {
   body: Joi.object({
-    user_id: Joi.string().required(),
+    user_id: Joi.number().required(),
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
     email: Joi.string().email().required(),
@@ -62,10 +62,9 @@ export const save_physician_information_validation = {
     medical_licence: Joi.string().allow(""),
     NPI_no: Joi.string().allow(""),
     synchronization_email: Joi.string().email().allow(""),
-    district_of_columbia: Joi.string().optional(),
-    new_york: Joi.string().optional(),
-    virginia: Joi.string().optional(),
-    maryland: Joi.string().optional(),
+    region_ids: Joi.array()
+      .items(Joi.number().integer().positive().required())
+      .optional(),
   }),
 };
 export const save_mailing_billing_info_validation = {

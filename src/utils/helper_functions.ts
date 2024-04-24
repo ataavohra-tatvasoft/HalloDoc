@@ -3,6 +3,10 @@ import nodemailer from "nodemailer";
 import path from "path";
 import Region from "../db/models/region";
 import UserRegionMapping from "../db/models/user-region_mapping";
+import message_constants from "../public/message_constants";
+import { Op } from "sequelize";
+import { Request, Response, NextFunction } from "express";
+import Documents from "../db/models/documents";
 
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -49,40 +53,75 @@ export const upload = multer({
 
 export const update_region_mapping = async (
   user_id: number,
-  region_name: string,
-  value: boolean
+  region_ids: Array<number>,
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-  const region = await Region.findOne({
-    where: { region_name },
-    attributes: ["region_id"],
-  });
+  const delete_where = {
+    user_id: user_id,
+    region_id: {
+      [Op.notIn]: region_ids,
+    },
+  };
 
-  if (!region) {
-    return;
+  for (const region of region_ids) {
+    const region_data = await Region.findOne({
+      where: {
+        region_id: region,
+      },
+    });
+
+    if (!region_data) {
+      return console.log("message:", message_constants.RegNF);
+    }
+
+    const is_exist = await UserRegionMapping.findOne({
+      where: {
+        user_id: user_id,
+        region_id: region_data.region_id,
+      },
+    });
+
+    if (is_exist) {
+      const mapping = await UserRegionMapping.update(
+        {
+          user_id: user_id,
+          region_id: region_data?.region_id,
+        },
+        {
+          where: {
+            user_id: user_id,
+            region_id: region_data?.region_id,
+          },
+        }
+      );
+
+      if (!mapping) {
+        return res.status(500).json({
+          message: message_constants.EWU,
+        });
+      }
+    } else {
+      const mapping = await UserRegionMapping.create({
+        user_id: user_id,
+        region_id: region_data?.region_id,
+      });
+
+      if (!mapping) {
+        return console.log("message:", message_constants.EWC);
+      }
+    }
   }
 
-  const is_exist = await UserRegionMapping.findOne({
-    where: { user_id, region_id: region.region_id },
+  const deleted_mappings = await UserRegionMapping.destroy({
+    where: delete_where,
   });
 
-  if (+value) {
-    if (is_exist) {
-      console.log("update");
-      await UserRegionMapping.update(
-        { user_id, region_id: region.region_id },
-        { where: { user_id, region_id: region.region_id } }
-      );
-    } else {
-      console.log("create");
-      await UserRegionMapping.create({ user_id, region_id: region.region_id });
-    }
+  if (deleted_mappings === 0) {
+    return console.log("No region mappings deleted");
   } else {
-    if (is_exist) {
-      console.log("delete");
-      await UserRegionMapping.destroy({
-        where: { user_id, region_id: region.region_id },
-      });
-    }
+    return console.log(`${deleted_mappings} region mappings deleted`);
   }
 };
 // Function to send email with attachment
@@ -119,3 +158,22 @@ export async function send_email_with_attachment(
     throw new Error("Error sending email");
   }
 }
+
+export const update_document = async (
+  user_id: number,
+  document_name: string,
+  document_path: string
+) => {
+  if (!document_path) return;
+  const document_status = await Documents.findOne({
+    where: { user_id, document_name },
+  });
+  if (!document_status) {
+    await Documents.create({ user_id, document_name, document_path });
+  } else {
+    await Documents.update(
+      { document_path },
+      { where: { user_id, document_name } }
+    );
+  }
+};

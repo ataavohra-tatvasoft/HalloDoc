@@ -10,7 +10,6 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 
-
 /** Configs */
 dotenv.config({ path: `.env` });
 
@@ -58,6 +57,7 @@ export const patient_profile_view: Controller = async (
         date_of_birth: profile.dob.toISOString().split("T")[0],
       },
       contact_information: {
+        type: "mobile",
         mobile_no: profile.mobile_no,
         email: profile.email,
       },
@@ -102,6 +102,7 @@ export const patient_profile_edit: Controller = async (
     console.log(verified_token);
     const patient_id = verified_token.user_id;
     const {
+      type,
       firstname,
       lastname,
       date_of_birth,
@@ -112,6 +113,8 @@ export const patient_profile_edit: Controller = async (
       state,
       zip,
     } = req.body;
+
+    console.log(type);
 
     const patient_profile = await User.findOne({
       where: {

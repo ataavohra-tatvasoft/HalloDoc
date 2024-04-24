@@ -33,6 +33,7 @@ const message_constants = {
   ONF: "Order not found",
   BNF: "Business not found",
   NDF: "Documents not found",
+  RegNF:"Region not found",
   LNF: "Logs not found",
   RoNF: "Role not found",
   ReNF: "Requestor not found",
