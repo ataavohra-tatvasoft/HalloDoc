@@ -260,7 +260,7 @@ export const admin_profile_edit: Controller = async (
       const is_exist = await UserRegionMapping.findOne({
         where: {
           user_id: admin_profile.user_id,
-          region_id: region_data?.region_id,
+          region_id: region_data.region_id,
         },
       });
 
@@ -296,25 +296,26 @@ export const admin_profile_edit: Controller = async (
         }
       }
 
-      console.log(is_exist);
+      console.log("Here_1");
 
-      const is_exist_ = await UserRegionMapping.findOne({
+      const delete_ids = await UserRegionMapping.findAll({
         where: {
-          user_id: admin_profile.user_id,
-          region_id: {
-            [Op.ne]: region_data?.region_id,
+          [Op.and]: {
+            user_id: admin_profile.user_id,
+            region_id: {
+              [Op.ne]: region_data?.region_id,
+            },
           },
         },
       });
 
-      console.log(is_exist_);
-
-      if (is_exist_) {
+      console.log(delete_ids);
+      for (const delete_id of delete_ids) {
         const delete_mapping = await UserRegionMapping.destroy({
           where: {
             user_id: admin_profile.user_id,
             region_id: {
-              [Op.ne]: region_data?.region_id,
+              [Op.ne]: delete_id.region_id,
             },
           },
         });

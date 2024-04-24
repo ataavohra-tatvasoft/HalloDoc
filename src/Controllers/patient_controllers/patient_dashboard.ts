@@ -58,7 +58,7 @@ export const medical_history: Controller = async (
       const formatted_request = {
         sr_no: i,
         request_id: request.request_id,
-        confirmationNo: request.confirmation_no,
+        confirmation_no: request.confirmation_no,
         created_date: request?.createdAt.toISOString().split("T")[0],
         request_state: request.request_state,
         request_status: request.request_status,
@@ -144,7 +144,7 @@ export const request_action_document: Controller = async (
 
     const formatted_request = {
       patient_name: patient.firstname + " " + patient.lastname,
-      confirmation_no: request.confirmation_no,
+      confirmationNo: request.confirmation_no,
       documents: documents.map((document) => ({
         document_id: document?.document_id || null,
         uploader: document?.uploader || null,
