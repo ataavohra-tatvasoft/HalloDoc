@@ -5,6 +5,7 @@ import {
   Controller,
   FormattedResponse,
   VerifiedToken,
+  File,
 } from "../../interfaces/common_interface";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -114,6 +115,7 @@ export const provider_request_to_admin: Controller = async (
     return res.status(500).json({ error: message_constants.ISE });
   }
 };
+
 export const provider_request_to_admin_refactored: Controller = async (
   req: Request,
   res: Response,
@@ -221,7 +223,7 @@ export const provider_profile_view: Controller = async (
       status: true,
       data: [],
     };
-    console.log(verified_token);
+    // console.log(verified_token);
     const provider_id = verified_token.user_id;
     const profile = await User.findOne({
       where: {
@@ -286,7 +288,7 @@ export const provider_profile_view: Controller = async (
       },
       documents: {
         documents: documents.map((document) => ({
-          documents_id: document.id,
+          documents_id: document.document_id,
           document_name: document.document_name,
           document_path: document.document_path,
         })),
@@ -421,6 +423,122 @@ export const provider_provider_profile_upload: Controller = async (
     return res.status(200).json({ status: message_constants.US });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+/**On Boarding upload and delete */
+
+export const provider_myprofile_onboarding_upload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+
+    // console.log(verified_token);
+
+    const provider_id = verified_token.user_id;
+    const user = await User.findOne({
+      where: {
+        user_id: provider_id,
+        type_of_user: "physician",
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
+
+    const uploaded_files: File[] | { [fieldname: string]: File[] } =
+      req.files || [];
+
+    const provider_agreement_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find(
+            (file: File) => file.fieldname === "provider_agreement"
+          )?.path
+        : uploaded_files["provider_agreement"]?.[0].path;
+
+    const HIPAA_path =
+      uploaded_files instanceof Array
+        ? uploaded_files.find((file: File) => file.fieldname === "HIPAA")?.path
+        : uploaded_files["HIPAA"]?.[0].path;
+
+    const update_document = async (
+      document_name: string,
+      document_path: string
+    ) => {
+      const document_status = await Documents.findOne({
+        where: {
+          user_id: provider_id,
+          document_name: document_name,
+        },
+      });
+
+      if (!document_status) {
+        await Documents.create({
+          user_id: provider_id,
+          document_name: document_name,
+          document_path: document_path,
+        });
+      } else {
+        await Documents.update(
+          { document_path: document_path },
+          {
+            where: {
+              user_id: provider_id,
+              document_name: document_name,
+            },
+          }
+        );
+      }
+    };
+
+    if (provider_agreement_path) {
+      await update_document(
+        "independent_contractor_agreement",
+        provider_agreement_path
+      );
+    }
+
+    if (HIPAA_path) {
+      await update_document("HIPAA", HIPAA_path);
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const provider_myprofile_onboarding_delete = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { document_id } = req.params;
+    const delete_status = await Documents.destroy({
+      where: {
+        document_id,
+      },
+    });
+    if (delete_status == 0) {
+      return res.status(200).json({ message: message_constants.DNF });
+    }
+    return res.status(200).json({ message: message_constants.DS });
+  } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
   }
 };

@@ -1,5 +1,7 @@
 import express, { Router } from "express";
 import {
+  provider_myprofile_onboarding_delete,
+  provider_myprofile_onboarding_upload,
   provider_profile_reset_password,
   provider_profile_view,
   provider_provider_profile_upload,
@@ -9,6 +11,8 @@ import {
 import { celebrate, Joi } from "celebrate";
 import { authmiddleware } from "../../middlewares";
 import {
+  provider_myprofile_onboarding_delete_validation,
+  provider_myprofile_onboarding_upload_validation,
   provider_profile_reset_password_validation,
   provider_provider_profile_upload_validation,
   provider_request_to_admin_validation,
@@ -46,6 +50,21 @@ router.put(
   celebrate(provider_request_to_admin_validation),
   // provider_request_to_admin,
   provider_request_to_admin_refactored
+);
+
+router.put(
+  "/myprofile/onboarding/upload",
+  authmiddleware,
+  upload.any(),
+  // celebrate(provider_myprofile_onboarding_upload_validation),
+  provider_myprofile_onboarding_upload
+);
+
+router.delete(
+  "/myprofile/onboarding/:document_id/delete",
+  authmiddleware,
+  // celebrate(provider_myprofile_onboarding_delete_validation),
+  provider_myprofile_onboarding_delete
 );
 
 export default router;

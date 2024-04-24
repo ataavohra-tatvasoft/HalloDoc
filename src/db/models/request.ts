@@ -92,7 +92,7 @@ export default class Request extends Model<
       "vip",
       "admin",
       "patient",
-      "provider"
+      "physician"
     ),
     allowNull: false,
   })

@@ -32,10 +32,13 @@ export const admin_profile_edit_validation = {
       .pattern(/^\d{11,13}$/)
       .optional(),
 
-    district_of_columbia: Joi.boolean().allow(null).optional(),
-    new_york: Joi.boolean().allow(null).optional(),
-    virginia: Joi.boolean().allow(null).optional(),
-    maryland: Joi.boolean().allow(null).optional(),
+    // district_of_columbia: Joi.boolean().allow(null).optional(),
+    // new_york: Joi.boolean().allow(null).optional(),
+    // virginia: Joi.boolean().allow(null).optional(),
+    // maryland: Joi.boolean().allow(null).optional(),
+
+    region_ids: Joi.array()
+      .items(Joi.number().integer().positive().required())
+      .optional(),
   }),
 };
-

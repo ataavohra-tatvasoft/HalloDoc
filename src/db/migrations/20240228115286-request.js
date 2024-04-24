@@ -72,7 +72,7 @@ module.exports = {
           "vip",
           "admin",
           "patient",
-          "provider"
+          "physician"
         ),
         allowNull: false,
       },

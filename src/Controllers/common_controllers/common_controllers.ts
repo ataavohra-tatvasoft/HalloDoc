@@ -130,6 +130,7 @@ export const regions: Controller = async (
     }
 
     formatted_response.data = regions.map((each) => ({
+      region_id: each.region_id,
       region_name: each.region_name,
     }));
 

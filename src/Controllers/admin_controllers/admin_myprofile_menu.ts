@@ -12,6 +12,7 @@ import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
 import UserRegionMapping from "../../db/models/user-region_mapping";
 import Role from "../../db/models/role";
+import { Op, where } from "sequelize";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -78,8 +79,8 @@ export const admin_profile_view: Controller = async (
       return res.status(404).json({ error: message_constants.PNF });
     }
 
-    console.log(profile.role_id);
-    console.log(profile.mobile_no);
+    // console.log(profile.role_id);
+    // console.log(profile.mobile_no);
 
     const is_role = await Role.findOne({
       where: {
@@ -198,10 +199,7 @@ export const admin_profile_edit: Controller = async (
       lastname,
       email,
       mobile_no,
-      district_of_columbia,
-      new_york,
-      virginia,
-      maryland,
+      region_ids,
       address_1,
       address_2,
       city,
@@ -209,6 +207,8 @@ export const admin_profile_edit: Controller = async (
       zip,
       billing_mobile_no,
     } = req.body;
+
+    console.log(req.body);
 
     const admin_profile = await User.findOne({
       where: {
@@ -244,85 +244,85 @@ export const admin_profile_edit: Controller = async (
       return res.status(500).json({ status: message_constants.EWU });
     }
 
-    if (district_of_columbia || new_york || virginia || maryland) {
-      const regions = [
-        { name: "District of Columbia", value: district_of_columbia },
-        { name: "New York", value: new_york },
-        { name: "Virginia", value: virginia },
-        { name: "Maryland", value: maryland },
-      ];
+    for (const region of region_ids) {
+      const region_data = await Region.findOne({
+        where: {
+          region_id: region,
+        },
+      });
 
-      for (const region of regions) {
-        const { name, value } = region;
+      if (!region_data) {
+        return res.status(404).json({
+          message: message_constants.ReNF,
+        });
+      }
 
-        const region_data = await Region.findOne({
-          where: {
-            region_name: name,
+      const is_exist = await UserRegionMapping.findOne({
+        where: {
+          user_id: admin_profile.user_id,
+          region_id: region_data?.region_id,
+        },
+      });
+
+      if (is_exist) {
+        const mapping = await UserRegionMapping.update(
+          {
+            user_id: admin_profile.user_id,
+            region_id: region_data?.region_id,
           },
-          attributes: ["region_id"],
+          {
+            where: {
+              user_id: admin_profile.user_id,
+              region_id: region_data?.region_id,
+            },
+          }
+        );
+
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWU,
+          });
+        }
+      } else {
+        const mapping = await UserRegionMapping.create({
+          user_id: admin_profile.user_id,
+          region_id: region_data?.region_id,
         });
 
-        if (value) {
-          const is_exist = await UserRegionMapping.findOne({
-            where: {
-              user_id: admin_profile.user_id,
-              region_id: region_data?.region_id,
-            },
+        if (!mapping) {
+          return res.status(500).json({
+            message: message_constants.EWC,
           });
+        }
+      }
 
-          if (is_exist) {
-            const mapping = await UserRegionMapping.update(
-              {
-                user_id: admin_profile.user_id,
-                region_id: region_data?.region_id,
-              },
-              {
-                where: {
-                  user_id: admin_profile.user_id,
-                  region_id: region_data?.region_id,
-                },
-              }
-            );
+      console.log(is_exist);
 
-            if (!mapping) {
-              return res.status(500).json({
-                message: message_constants.EWU,
-              });
-            }
-          } else {
-            const mapping = await UserRegionMapping.create({
-              user_id: admin_profile.user_id,
-              region_id: region_data?.region_id,
-            });
+      const is_exist_ = await UserRegionMapping.findOne({
+        where: {
+          user_id: admin_profile.user_id,
+          region_id: {
+            [Op.ne]: region_data?.region_id,
+          },
+        },
+      });
 
-            if (!mapping) {
-              return res.status(500).json({
-                message: message_constants.EWC,
-              });
-            }
-          }
-        } else {
-          const is_exist = await UserRegionMapping.findOne({
-            where: {
-              user_id: admin_profile.user_id,
-              region_id: region_data?.region_id,
+      console.log(is_exist_);
+
+      if (is_exist_) {
+        const delete_mapping = await UserRegionMapping.destroy({
+          where: {
+            user_id: admin_profile.user_id,
+            region_id: {
+              [Op.ne]: region_data?.region_id,
             },
+          },
+        });
+
+        if (!delete_mapping) {
+          return res.status(500).json({
+            message: message_constants.EWD,
           });
-
-          if (is_exist) {
-            const delete_mapping = await UserRegionMapping.destroy({
-              where: {
-                user_id: admin_profile.user_id,
-                region_id: region_data?.region_id,
-              },
-            });
-
-            if (!delete_mapping) {
-              return res.status(500).json({
-                message: message_constants.EWD,
-              });
-            }
-          }
         }
       }
     }

@@ -18,6 +18,8 @@ import path from "path";
 import fs from "fs";
 import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
+import jwt from "jsonwebtoken";
+import { VerifiedToken } from "../../interfaces/common_interface";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -97,6 +99,15 @@ export const admin_create_request: Controller = async (
   next: NextFunction
 ) => {
   try {
+    const { authorization } = req.headers as { authorization: string };
+
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+    const type_of_user = verified_token.type_of_user;
+
     const generate_confirmation_number = (
       state: string,
       firstname: string,
@@ -208,7 +219,7 @@ export const admin_create_request: Controller = async (
     const request_data = await RequestModel.create({
       request_state: "new",
       patient_id: patient_data.user_id,
-      requested_by: "admin",
+      requested_by: type_of_user,
       requested_date: new Date(),
       confirmation_no,
       street,
@@ -548,6 +559,8 @@ export const requests_by_request_state_refactored: Controller = async (
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
     const offset = (page_number - 1) * limit;
+    // const first_name = search.split(" ")[0];
+    // const last_name = search.split(" ")[1];
     const where_clause_patient = {
       type_of_user: "patient",
       ...(search && {
@@ -699,9 +712,9 @@ export const requests_by_request_state_refactored: Controller = async (
                 physician_data: {
                   user_id: request?.Physician?.user_id || null,
                   name:
-                    request?.Physician?.firstname ||
-                    null + " " + request?.Physician?.lastname ||
-                    null,
+                    request?.Physician?.firstname +
+                    " " +
+                    request?.Physician?.lastname,
                   DOB:
                     request?.Physician?.dob?.toISOString().split("T")[0] ||
                     null,
