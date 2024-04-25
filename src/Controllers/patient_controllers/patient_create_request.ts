@@ -7,8 +7,7 @@ import { Op } from "sequelize";
 import Requestor from "../../db/models/requestor";
 import Documents from "../../db/models/documents";
 import bcrypt from "bcrypt";
-import { hasSubscribers } from "diagnostics_channel";
-import { hasUncaughtExceptionCaptureCallback } from "process";
+import { generate_confirmation_number } from "../../utils/helper_functions";
 
 export const is_patient_registered: Controller = async (
   req: Request,
@@ -73,25 +72,6 @@ export const create_request_by_patient: Controller = async (
     if (password) {
       hashed_password = await bcrypt.hash(password, 10);
     }
-
-    const generate_confirmation_number = (
-      state: string,
-      firstname: string,
-      lastname: string,
-      todays_requests_count: number
-    ): string => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
-        0,
-        2
-      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-        4,
-        "0"
-      )}`;
-    };
 
     const is_patient = await User.findOne({
       where: {
@@ -259,25 +239,6 @@ export const create_request_by_family_friend: Controller = async (
       zip,
       room,
     } = req.body;
-
-    const generate_confirmation_number = (
-      state: string,
-      firstname: string,
-      lastname: string,
-      todays_requests_count: number
-    ): string => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
-        0,
-        2
-      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-        4,
-        "0"
-      )}`;
-    };
 
     const is_patient = await User.findOne({
       where: {
@@ -489,26 +450,6 @@ export const create_request_by_concierge: Controller = async (
 
     console.log(req.body);
 
-    const generate_confirmation_number = (
-      state: string,
-      firstname: string,
-      lastname: string,
-      todays_requests_count: number
-    ): string => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      console.log(state);
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
-        0,
-        2
-      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-        4,
-        "0"
-      )}`;
-    };
-
     const is_patient = await User.findOne({
       where: {
         type_of_user: "patient",
@@ -687,25 +628,6 @@ export const create_request_by_business: Controller = async (
       zip,
       room,
     } = req.body;
-
-    const generate_confirmation_number = (
-      state: string,
-      firstname: string,
-      lastname: string,
-      todays_requests_count: number
-    ): string => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
-        0,
-        2
-      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-        4,
-        "0"
-      )}`;
-    };
 
     const is_patient = await User.findOne({
       where: {

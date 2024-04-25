@@ -46,3 +46,5 @@ app.use(errors());
 
 app.listen(process.env.PORT);
 console.log("Application Started!!!");
+
+// "dev": "npx tsc & nodemon build/app.js"

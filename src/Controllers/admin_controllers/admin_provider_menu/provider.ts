@@ -17,6 +17,7 @@ import UserRegionMapping from "../../../db/models/user-region_mapping";
 import {
   update_region_mapping,
   update_document,
+  transporter,
 } from "../../../utils/helper_functions";
 import Role from "../../../db/models/role";
 import { WhereOptions } from "sequelize";
@@ -188,6 +189,7 @@ export const contact_provider: Controller = async (
           pass: process.env.EMAIL_PASS,
         },
       });
+      
       const info = await transporter.sendMail({
         from: "vohraatta@gmail.com",
         to: user.email,
@@ -569,7 +571,9 @@ export const save_user_information: Controller = async (
       return res.status(500).json({ error: message_constants.ISE });
     }
 
-    await update_region_mapping(user.user_id, region_ids, req, res, next);
+    if (region_ids) {
+      await update_region_mapping(user.user_id, region_ids, req, res, next);
+    }
 
     return res.status(200).json({ message: message_constants.US });
   } catch (error) {
@@ -986,7 +990,10 @@ export const create_provider_account_refactored: Controller = async (
       return res.status(500).json({ message: message_constants.EWCA });
     }
 
-    await update_region_mapping(user.user_id, region_ids, req, res, next);
+    if (region_ids) {
+      await update_region_mapping(user.user_id, region_ids, req, res, next);
+    }
+
 
     const update_document = async (
       user_id: number,
@@ -1155,7 +1162,10 @@ export const common_save_provider_account: Controller = async (
       return res.status(500).json({ message: message_constants.EWU });
     }
 
-    await update_region_mapping(is_user.user_id, region_ids, req, res, next);
+    if (region_ids) {
+      await update_region_mapping(is_user.user_id, region_ids, req, res, next);
+    }
+
 
     await update_document(
       is_user.user_id,
@@ -1175,7 +1185,6 @@ export const common_save_provider_account: Controller = async (
     );
 
     return res.status(200).json({ message: message_constants.Success });
-    
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: message_constants.ISE });

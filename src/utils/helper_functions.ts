@@ -20,7 +20,7 @@ export const transporter = nodemailer.createTransport({
 });
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "..", "..", "..") + "\\src\\public\\uploads"); // Adjust as needed
+    cb(null, path.join(__dirname, "..", "..") + "\\src\\public\\uploads"); // Adjust as needed
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-";
@@ -176,4 +176,23 @@ export const update_document = async (
       { where: { user_id, document_name } }
     );
   }
+};
+
+export const generate_confirmation_number = (
+  state: string,
+  firstname: string,
+  lastname: string,
+  todays_requests_count: number
+): string => {
+  const today = new Date();
+  const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
+  const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+  return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
+    0,
+    2
+  )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
+    4,
+    "0"
+  )}`;
 };

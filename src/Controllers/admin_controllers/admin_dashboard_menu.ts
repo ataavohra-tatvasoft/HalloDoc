@@ -20,6 +20,7 @@ import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
 import jwt from "jsonwebtoken";
 import { VerifiedToken } from "../../interfaces/common_interface";
+import { generate_confirmation_number, transporter } from "../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -107,25 +108,6 @@ export const admin_create_request: Controller = async (
       process.env.JWT_SECRET_KEY as string
     ) as VerifiedToken;
     const type_of_user = verified_token.type_of_user;
-
-    const generate_confirmation_number = (
-      state: string,
-      firstname: string,
-      lastname: string,
-      todays_requests_count: number
-    ): string => {
-      const today = new Date();
-      const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-      const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
-      return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
-        0,
-        2
-      )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-        4,
-        "0"
-      )}`;
-    };
 
     const {
       body: {

@@ -460,6 +460,12 @@ export const view_uploads_download_all: Controller = async (
       document_ids: Array<number>;
     };
 
+    if (!document_ids) {
+      return res.status(404).json({
+        message: message_constants.KSD,
+      });
+    }
+
     if (document_ids.length === 0) {
       return res.status(200).json({ message: "No documents selected" });
     }

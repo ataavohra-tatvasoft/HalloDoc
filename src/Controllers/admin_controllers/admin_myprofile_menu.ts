@@ -13,6 +13,7 @@ import message_constants from "../../public/message_constants";
 import UserRegionMapping from "../../db/models/user-region_mapping";
 import Role from "../../db/models/role";
 import { Op, where } from "sequelize";
+import { update_region_mapping } from "../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -254,67 +255,8 @@ export const admin_profile_edit: Controller = async (
       return res.status(500).json({ status: message_constants.EWU });
     }
 
-    for (const region of region_ids) {
-      const region_data = await Region.findOne({
-        where: {
-          region_id: region,
-        },
-      });
-
-      if (!region_data) {
-        return res.status(404).json({
-          message: message_constants.ReNF,
-        });
-      }
-
-      const is_exist = await UserRegionMapping.findOne({
-        where: {
-          user_id: admin_profile.user_id,
-          region_id: region_data.region_id,
-        },
-      });
-
-      if (is_exist) {
-        const mapping = await UserRegionMapping.update(
-          {
-            user_id: admin_profile.user_id,
-            region_id: region_data?.region_id,
-          },
-          {
-            where: {
-              user_id: admin_profile.user_id,
-              region_id: region_data?.region_id,
-            },
-          }
-        );
-
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWU,
-          });
-        }
-      } else {
-        const mapping = await UserRegionMapping.create({
-          user_id: admin_profile.user_id,
-          region_id: region_data?.region_id,
-        });
-
-        if (!mapping) {
-          return res.status(500).json({
-            message: message_constants.EWC,
-          });
-        }
-      }
-    }
-
-    const deleted_mappings = await UserRegionMapping.destroy({
-      where: delete_where,
-    });
-
-    if (deleted_mappings === 0) {
-      console.log("No region mappings deleted");
-    } else {
-      console.log(`${deleted_mappings} region mappings deleted`);
+    if (region_ids) {
+      await update_region_mapping(user_id, region_ids, req, res, next);
     }
 
     return res.status(200).json({ status: message_constants.US });
