@@ -313,16 +313,18 @@ export const export_single: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${state}_${new Date()
-      .toISOString()
-      .split("T")}.xlsx`;
+    const current_date = new Date().toISOString().split("T")[0];
+    const filename = `requests_${state}_${current_date}`;
 
     // Set the response headers for file download
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}.xlsx"`
+    );
 
     // Write the work_book to the response
     await work_book.xlsx.write(res);
@@ -410,7 +412,8 @@ export const export_all: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${new Date().toISOString().split("T")}.zip`;
+    const current_date = new Date().toISOString().split("T")[0];
+    const filename = `requests_${current_date}`;
 
     // Set the response headers for file download
     res.setHeader(
@@ -430,7 +433,6 @@ export const export_all: Controller = async (
     } else {
       return res.status(500).json({ message: message_constants.ISE });
     }
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });
@@ -542,16 +544,18 @@ export const export_single_physician: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${state}_${new Date()
-      .toISOString()
-      .split("T")}.xlsx`;
+    const current_date = new Date().toISOString().split("T")[0];
+    const filename = `physicians_requests_${state}_${current_date}`;
 
     // Set the response headers for file download
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}.xlsx"`
+    );
 
     // Write the work_book to the response
     await work_book.xlsx.write(res);
@@ -678,7 +682,8 @@ export const export_all_physician: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${new Date().toISOString().split("T")}.zip`;
+    const current_date = new Date().toISOString().split("T")[0];
+    const filename = `physicians_requests_${current_date}.zip`;
 
     // Set the response headers for file download
     res.setHeader(
@@ -687,7 +692,7 @@ export const export_all_physician: Controller = async (
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${filename}.zip`
+      `attachment; filename="${filename}.zip"`
     );
 
     // Write the ZIP file to the response

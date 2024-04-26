@@ -368,6 +368,8 @@ export const view_uploads_actions_download: Controller = async (
       );
     }
 
+    const file_extension = file_path.split(".").pop();
+
     // Check for file existence and send error if not found
     if (!fs.existsSync(file_path)) {
       return res.status(404).json({ error: "File not found" });
@@ -377,7 +379,9 @@ export const view_uploads_actions_download: Controller = async (
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${path.basename(file_path)}"`
+      `attachment; filename="${path.basename(
+        `${confirmation_no}_doc.id_${document_id}.${file_extension}`
+      )}"`
     );
 
     // Initiate file download with `res.sendFile`
@@ -548,7 +552,10 @@ export const view_uploads_download_all: Controller = async (
       }
 
       const file_path = file.document_path;
-      const filename = path.basename(file_path);
+      const file_extension = file_path.split(".").pop();
+      const filename = path.basename(
+        `${confirmation_no}_doc.id_${document_id}.${file_extension}`
+      );
 
       // Check for file existence before adding to the archive
       if (fs.existsSync(file_path)) {
@@ -699,9 +706,13 @@ export const view_uploads_send_mail_refactored: Controller = async (
           message: message_constants.DNF,
         });
       }
+  
       const file_path = file.document_path;
-      const filename = path.basename(file_path);
-
+      const file_extension = file_path.split(".").pop();
+      const filename = path.basename(
+        `${confirmation_no}_doc.id_${document_id}.${file_extension}`
+      );
+      
       // Check for file existence before adding to the archive
       if (fs.existsSync(file_path)) {
         archive.append(fs.createReadStream(file_path), { name: filename });
