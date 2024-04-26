@@ -10,9 +10,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import message_constants from "../../public/message_constants";
-import UserRegionMapping from "../../db/models/user-region_mapping";
 import Role from "../../db/models/role";
-import { Op, where } from "sequelize";
 import { update_region_mapping } from "../../utils/helper_functions";
 
 /** Configs */
@@ -223,13 +221,6 @@ export const admin_profile_edit: Controller = async (
     if (!admin_profile) {
       return res.status(404).json({ error: message_constants.ANF });
     }
-
-    const delete_where = {
-      user_id: admin_profile.user_id,
-      region_id: {
-        [Op.notIn]: region_ids,
-      },
-    };
 
     const update_profile_status = await User.update(
       {
