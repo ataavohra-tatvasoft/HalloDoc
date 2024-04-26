@@ -1,18 +1,20 @@
 import Region from "../../db/models/region";
 import Profession from "../../db/models/profession";
 import { Request, Response, NextFunction } from "express";
-import { Controller } from "../../interfaces/common_interface";
+import { Controller, VerifiedToken } from "../../interfaces/common_interface";
 import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import RequestModel from "../../db/models/request";
 import Role from "../../db/models/role";
 import ExcelJS from "exceljs";
-import { Op } from "sequelize";
-import Requestor from "../../db/models/requestor";
-import Notes from "../../db/models/notes";
 import Access from "../../db/models/access";
 import JSZip from "jszip";
 import { FormattedResponse } from "../../interfaces/common_interface";
+import {
+  handle_request_state_exports,
+  handle_request_state_physician_exports,
+} from "../../utils/helper_functions";
+import jwt from "jsonwebtoken";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -216,197 +218,52 @@ export const export_single: Controller = async (
     const { state, search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
     };
-    const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
-    const offset = (page_number - 1) * limit;
-
-    const where_clause_patient = {
-      type_of_user: "patient",
-      ...(search && {
-        [Op.or]: [
-          { firstname: { [Op.like]: `%${search}%` } },
-          { lastname: { [Op.like]: `%${search}%` } },
-        ],
-      }),
-    };
-
-    const handle_request_state = async (additional_attributes?: any) => {
-      const formatted_response: FormattedResponse<any> = {
-        status: true,
-        data: [],
-      };
-      const { count, rows: requests } = await RequestModel.findAndCountAll({
-        where: {
-          request_state: state,
-          ...(region && { state: region }),
-          ...(state == "toclose"
-            ? {
-                request_status: {
-                  [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
-                },
-              }
-            : {
-                request_status: {
-                  [Op.notIn]: [
-                    "cancelled by admin",
-                    "cancelled by provider",
-                    "blocked",
-                    "clear",
-                  ],
-                },
-              }),
-          ...(requestor ? { requested_by: requestor } : {}),
-        },
-        attributes: [
-          "request_id",
-          "request_state",
-          "confirmation_no",
-          "requested_by",
-          "requested_date",
-          "date_of_service",
-          "physician_id",
-          "patient_id",
-          "street",
-          "city",
-          "state",
-          "zip",
-          ...(additional_attributes || []),
-        ],
-        include: [
-          {
-            as: "Patient",
-            model: User,
-            attributes: [
-              "user_id",
-              "type_of_user",
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "address_1",
-              "state",
-            ],
-            where: where_clause_patient,
-          },
-          ...(state !== "new"
-            ? [
-                {
-                  as: "Physician",
-                  model: User,
-                  attributes: [
-                    "user_id",
-                    "type_of_user",
-                    "firstname",
-                    "lastname",
-                    "dob",
-                    "mobile_no",
-                    "address_1",
-                    "address_2",
-                  ],
-                  where: {
-                    type_of_user: "physician",
-                  },
-                },
-              ]
-            : []),
-          {
-            model: Requestor,
-            attributes: ["user_id", "first_name", "last_name"],
-          },
-          {
-            model: Notes,
-            attributes: ["note_id", "type_of_note", "description"],
-          },
-        ],
-        limit,
-        offset,
-      });
-
-      var i = offset + 1;
-      for (const request of requests) {
-        const formatted_request = {
-          sr_no: i,
-          request_id: request.request_id,
-          request_state: request.request_state,
-          confirmationNo: request.confirmation_no,
-          requestor: request.requested_by,
-          requested_date: request.requested_date?.toISOString().split("T")[0],
-          ...(state !== "new"
-            ? {
-                date_of_service: request.date_of_service
-                  ?.toISOString()
-                  .split("T")[0],
-              }
-            : {}),
-          patient_data: {
-            user_id: request.Patient.user_id,
-            name: request.Patient.firstname + " " + request.Patient.lastname,
-            DOB: request.Patient.dob?.toISOString().split("T")[0],
-            mobile_no: request.Patient.mobile_no,
-            address:
-              request?.street + " " + request?.city + " " + request?.state,
-            ...(state === "toclose" ? { region: request.Patient.state } : {}),
-          },
-          ...(state !== "new"
-            ? {
-                physician_data: {
-                  user_id: request.Physician.user_id,
-                  name:
-                    request.Physician.firstname +
-                    " " +
-                    request.Physician.lastname,
-                  DOB: request.Physician.dob?.toISOString().split("T")[0],
-                  mobile_no: request.Physician.mobile_no,
-                  address:
-                    request.Physician.address_1 +
-                    " " +
-                    request.Physician.address_2 +
-                    " " +
-                    request.Patient.state,
-                },
-              }
-            : {}),
-          requestor_data: {
-            user_id: request.Requestor?.user_id || null,
-            first_name:
-              request.Requestor?.first_name ||
-              null + " " + request.Requestor?.last_name ||
-              null,
-            last_name: request.Requestor?.last_name || null,
-          },
-          notes: request.Notes?.map((note) => ({
-            note_id: note.note_id,
-            type_of_note: note.type_of_note,
-            description: note.description,
-          })),
-        };
-        i++;
-        formatted_response.data.push(formatted_request);
-      }
-
-      return formatted_response;
-    };
 
     let formatted_response = null;
 
     switch (state) {
       case "new":
-        formatted_response = await handle_request_state();
+        formatted_response = await handle_request_state_exports(
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
         break;
       case "pending":
       case "active":
       case "conclude":
-        formatted_response = await handle_request_state();
+        formatted_response = await handle_request_state_exports(
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
         break;
       case "toclose":
-        formatted_response = await handle_request_state();
+        formatted_response = await handle_request_state_exports(
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
         break;
       case "unpaid":
-        formatted_response = await handle_request_state([
-          "date_of_service",
-          "physician_id",
-          "patient_id",
-        ]);
+        formatted_response = await handle_request_state_exports(
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size,
+          ["date_of_service", "physician_id", "patient_id"]
+        );
         break;
       default:
         return res.status(500).json({ message: message_constants.IS });
@@ -440,16 +297,6 @@ export const export_single: Controller = async (
     // Add headers to the worksheet
     worksheet.addRow(headers);
 
-    // // Define a spaced style with increased bottom padding
-    // const spacedStyle = {
-    //   font: { size: 11 },
-    //   alignment: { vertical: "center" },
-    //   border: { bottom: { style: "thin" } },
-    // };
-
-    // // Add the style to the workbook
-    // work_book.addStyles(spacedStyle);
-
     // Add data to the worksheet
     for (const request of formatted_response.data) {
       const rowData = [
@@ -466,7 +313,9 @@ export const export_single: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${state}_${new Date().toISOString()}.xlsx`;
+    const filename = `requests_${state}_${new Date()
+      .toISOString()
+      .split("T")}.xlsx`;
 
     // Set the response headers for file download
     res.setHeader(
@@ -494,20 +343,7 @@ export const export_all: Controller = async (
     const { search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
     };
-    const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
-    const offset = (page_number - 1) * limit;
     const zip = new JSZip();
-
-    const where_clause_patient = {
-      type_of_user: "patient",
-      ...(search && {
-        [Op.or]: [
-          { firstname: { [Op.like]: `%${search}%` } },
-          { lastname: { [Op.like]: `%${search}%` } },
-        ],
-      }),
-    };
 
     const states = [
       "new",
@@ -521,142 +357,14 @@ export const export_all: Controller = async (
     const work_book = new ExcelJS.Workbook();
 
     for (const state of states) {
-      const handle_request_state = async (additional_attributes?: any) => {
-        const formatted_response: FormattedResponse<any> = {
-          status: true,
-          data: [],
-        };
-        const { rows: requests } = await RequestModel.findAndCountAll({
-          where: {
-            request_state: state,
-            ...(region && { state: region }),
-            request_status: {
-              [Op.notIn]:
-                state === "toclose"
-                  ? ["cancelled by provider", "blocked", "clear"]
-                  : [
-                      "cancelled by admin",
-                      "cancelled by provider",
-                      "blocked",
-                      "clear",
-                    ],
-            },
-            ...(requestor && { requested_by: requestor }),
-          },
-          attributes: [
-            "request_id",
-            "request_state",
-            "confirmation_no",
-            "requested_by",
-            "requested_date",
-            "date_of_service",
-            "physician_id",
-            "patient_id",
-            "street",
-            "city",
-            "state",
-            "zip",
-            ...(additional_attributes || []),
-          ],
-          include: [
-            {
-              as: "Patient",
-              model: User,
-              where: where_clause_patient,
-            },
-            ...(state !== "new"
-              ? [
-                  {
-                    as: "Physician",
-                    model: User,
-                    where: {
-                      type_of_user: "physician",
-                    },
-                    required: false, // Make physician association optional
-                  },
-                ]
-              : []),
-            {
-              model: Requestor,
-            },
-            {
-              model: Notes,
-            },
-          ],
-          limit,
-          offset,
-        });
-        var i = offset + 1;
-        for (const request of requests) {
-          const formatted_request = {
-            sr_no: i,
-            request_id: request.request_id,
-            request_state: request.request_state,
-            confirmation_no: request.confirmation_no,
-            requestor: request.requested_by,
-            requested_date: request.requested_date?.toISOString().split("T")[0],
-            ...(state !== "new"
-              ? {
-                  date_of_service: request.date_of_service
-                    ?.toISOString()
-                    .split("T")[0],
-                }
-              : {}),
-            patient_data: {
-              user_id: request?.Patient?.user_id || null,
-              name:
-                request?.Patient?.firstname ||
-                null + " " + request?.Patient?.lastname ||
-                null,
-              DOB: request?.Patient?.dob?.toISOString().split("T")[0],
-              mobile_no: request?.Patient?.mobile_no || null,
-              address:
-                request?.street + " " + request?.city + " " + request?.state,
-              ...(state === "toclose"
-                ? { region: request?.Patient?.state || null }
-                : {}),
-            },
-            ...(state !== "new"
-              ? {
-                  physician_data: {
-                    user_id: request?.Physician?.user_id || null,
-                    name:
-                      request?.Physician?.firstname ||
-                      null + " " + request?.Physician?.lastname ||
-                      null,
-                    DOB:
-                      request?.Physician?.dob?.toISOString().split("T")[0] ||
-                      null,
-                    mobile_no: request?.Physician?.mobile_no || null,
-                    address:
-                      request?.Physician?.address_1 ||
-                      null + " " + request?.Physician?.address_2 ||
-                      null + " " + request?.Physician?.state ||
-                      null,
-                  },
-                }
-              : {}),
-            requestor_data: {
-              user_id: request?.Requestor?.user_id || null,
-              first_name:
-                request?.Requestor?.first_name ||
-                null + " " + request?.Requestor?.last_name ||
-                null,
-              last_name: request?.Requestor?.last_name || null,
-            },
-            notes: request?.Notes?.map((note) => ({
-              note_id: note?.note_id || null,
-              type_of_note: note?.type_of_note || null,
-              description: note?.description || null,
-            })),
-          };
-          i++;
-          formatted_response.data.push(formatted_request);
-        }
-
-        return formatted_response;
-      };
-      const formatted_response = await handle_request_state();
+      const formatted_response = await handle_request_state_exports(
+        state,
+        search,
+        region,
+        requestor,
+        page,
+        page_size
+      );
 
       // Create a new worksheet for each state
       const worksheet = work_book.addWorksheet(state);
@@ -702,7 +410,7 @@ export const export_all: Controller = async (
     }
 
     // Generate a unique filename for the Excel file
-    const filename = `requests_${new Date().toISOString()}.zip`;
+    const filename = `requests_${new Date().toISOString().split("T")}.zip`;
 
     // Set the response headers for file download
     res.setHeader(
@@ -714,8 +422,6 @@ export const export_all: Controller = async (
       `attachment; filename=${filename}.zip`
     );
 
-    // res.attachment(filename);
-
     // Write the ZIP file to the response
     const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
     if (zip_archive) {
@@ -725,13 +431,273 @@ export const export_all: Controller = async (
       return res.status(500).json({ message: message_constants.ISE });
     }
 
-    // // Alternate Way
-    // await zip
-    //   .generateAsync({ type: "nodebuffer" })
-    //   .then((content) => res.end(content))
-    //   .catch((error) => console.error(error));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
 
-    // return res.end();
+export const export_single_physician: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+
+    const user = await User.findOne({
+      where: {
+        user_id: verified_token.user_id,
+        type_of_user: "physician",
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: message_constants.PNF,
+      });
+    }
+    const user_id = user.user_id;
+    const { state, search, region, requestor, page, page_size } = req.query as {
+      [key: string]: string;
+    };
+
+    let formatted_response = null;
+
+    switch (state) {
+      case "new":
+      case "pending":
+      case "conclude":
+        formatted_response = await handle_request_state_physician_exports(
+          user_id,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
+        break;
+      case "active":
+        formatted_response = await handle_request_state_physician_exports(
+          user_id,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
+        break;
+      default:
+        return res.status(500).json({ message: message_constants.IS });
+    }
+
+    // Create a new Excel work_book and worksheet
+    const work_book = new ExcelJS.Workbook();
+    const worksheet = work_book.addWorksheet("Requests");
+
+    const column_widths = [15, 25, 20, 25, 20, 25, 40]; // Adjust widths as needed
+    worksheet.getColumn(1).width = column_widths[0];
+    worksheet.getColumn(2).width = column_widths[1];
+    worksheet.getColumn(3).width = column_widths[2];
+    worksheet.getColumn(4).width = column_widths[3];
+    worksheet.getColumn(5).width = column_widths[4];
+    worksheet.getColumn(6).width = column_widths[5];
+    worksheet.getColumn(7).width = column_widths[6];
+
+    // Define headers for the Excel sheet
+    const headers = [
+      "SR No",
+      "Request ID",
+      "Request State",
+      "Confirmation No",
+      "Patient Name",
+      "Phone Number",
+      "Address",
+      // Add more headers as needed
+    ];
+
+    // Add headers to the worksheet
+    worksheet.addRow(headers);
+
+    // Add data to the worksheet
+    for (const request of formatted_response.data) {
+      const rowData = [
+        request.sr_no,
+        request.request_id,
+        request.request_state,
+        request.confirmation_no,
+        request.patient_data.name,
+        request.patient_data.mobile_no,
+        request.patient_data.address,
+        // Add more data fields as needed
+      ];
+      worksheet.addRow(rowData);
+    }
+
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${state}_${new Date()
+      .toISOString()
+      .split("T")}.xlsx`;
+
+    // Set the response headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+
+    // Write the work_book to the response
+    await work_book.xlsx.write(res);
+
+    return res.end();
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const export_all_physician: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+
+    const user = await User.findOne({
+      where: {
+        user_id: verified_token.user_id,
+        type_of_user: "physician",
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: message_constants.PNF,
+      });
+    }
+    const user_id = user.user_id;
+    const { search, region, requestor, page, page_size } = req.query as {
+      [key: string]: string;
+    };
+
+    let formatted_response = null;
+    const zip = new JSZip();
+
+    const states = ["new", "pending", "active", "conclude"];
+
+    const work_book = new ExcelJS.Workbook();
+
+    for (const state of states) {
+      console.log(state);
+      switch (state) {
+        case "new":
+        case "pending":
+        case "conclude":
+          formatted_response = await handle_request_state_physician_exports(
+            user_id,
+            state,
+            search,
+            region,
+            requestor,
+            page,
+            page_size
+          );
+          break;
+        case "active":
+          formatted_response = await handle_request_state_physician_exports(
+            user_id,
+            state,
+            search,
+            region,
+            requestor,
+            page,
+            page_size
+          );
+          break;
+        default:
+          return res.status(500).json({ message: message_constants.IS });
+      }
+
+      const worksheet = work_book.addWorksheet(state);
+
+      const column_widths = [15, 25, 20, 25, 20, 25, 40]; // Adjust widths as needed
+      worksheet.getColumn(1).width = column_widths[0];
+      worksheet.getColumn(2).width = column_widths[1];
+      worksheet.getColumn(3).width = column_widths[2];
+      worksheet.getColumn(4).width = column_widths[3];
+      worksheet.getColumn(5).width = column_widths[4];
+      worksheet.getColumn(6).width = column_widths[5];
+      worksheet.getColumn(7).width = column_widths[6];
+
+      // Define headers for the Excel sheet
+      const headers = [
+        "SR No",
+        "Request ID",
+        "Request State",
+        "Confirmation No",
+        "Patient Name",
+        "Phone Number",
+        "Address",
+      ];
+
+      // Add headers to the worksheet
+      worksheet.addRow(headers);
+
+      // Add data to the worksheet
+      for (const request of formatted_response.data) {
+        const rowData = [
+          request.sr_no,
+          request.request_id,
+          request.request_state,
+          request.confirmation_no,
+          request.patient_data.name,
+          request.patient_data.mobile_no,
+          request.patient_data.address,
+        ];
+        worksheet.addRow(rowData);
+      }
+
+      // Create a buffer containing the Excel workbook data
+      const excelBuffer = await work_book.xlsx.writeBuffer();
+
+      // Add the workbook data to the ZIP file with a descriptive filename
+      zip.file(`${state}.xlsx`, excelBuffer);
+    }
+
+    // Generate a unique filename for the Excel file
+    const filename = `requests_${new Date().toISOString().split("T")}.zip`;
+
+    // Set the response headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${filename}.zip`
+    );
+
+    // Write the ZIP file to the response
+    const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
+    if (zip_archive) {
+      // console.log(res);
+      return res.end(zip_archive);
+    } else {
+      return res.status(500).json({ message: message_constants.ISE });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });

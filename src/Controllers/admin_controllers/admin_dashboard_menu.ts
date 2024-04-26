@@ -20,7 +20,10 @@ import message_constants from "../../public/message_constants";
 import Logs from "../../db/models/log";
 import jwt from "jsonwebtoken";
 import { VerifiedToken } from "../../interfaces/common_interface";
-import { generate_confirmation_number, transporter } from "../../utils/helper_functions";
+import {
+  generate_confirmation_number,
+  handle_request_state,
+} from "../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -538,218 +541,54 @@ export const requests_by_request_state_refactored: Controller = async (
     const { state, search, region, requestor, page, page_size } = req.query as {
       [key: string]: string;
     };
-    const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
-    const offset = (page_number - 1) * limit;
+
     // const first_name = search.split(" ")[0];
     // const last_name = search.split(" ")[1];
-    const where_clause_patient = {
-      type_of_user: "patient",
-      ...(search && {
-        [Op.or]: [
-          { firstname: { [Op.like]: `%${search}%` } },
-          { lastname: { [Op.like]: `%${search}%` } },
-        ],
-      }),
-    };
-
-    const handle_request_state = async (
-      additionalAttributes?: Array<string>
-    ) => {
-      const formatted_response: FormattedResponse<any> = {
-        status: true,
-        data: [],
-      };
-      const { rows: requests } = await RequestModel.findAndCountAll({
-        where: {
-          request_state: state,
-          ...(region && { state: region }),
-          request_status: {
-            [Op.notIn]:
-              state === "toclose"
-                ? ["cancelled by provider", "blocked", "clear"]
-                : [
-                    "cancelled by admin",
-                    "cancelled by provider",
-                    "blocked",
-                    "clear",
-                  ],
-          },
-          ...(requestor && { requested_by: requestor }),
-        },
-        attributes: [
-          "request_id",
-          "request_state",
-          "confirmation_no",
-          "requested_by",
-          "requested_date",
-          "date_of_service",
-          "physician_id",
-          "patient_id",
-          "street",
-          "city",
-          "state",
-          "zip",
-          ...(additionalAttributes || []),
-        ],
-        include: [
-          {
-            as: "Patient",
-            model: User,
-            where: where_clause_patient,
-          },
-          ...(state !== "new"
-            ? [
-                {
-                  as: "Physician",
-                  model: User,
-                  where: {
-                    type_of_user: "physician",
-                  },
-                  required: false, // Make physician association optional
-                },
-              ]
-            : []),
-          {
-            model: Requestor,
-          },
-          {
-            model: Notes,
-          },
-        ],
-        limit,
-        offset,
-      });
-
-      const { count } = await RequestModel.findAndCountAll({
-        where: {
-          request_state: state,
-          ...(region && { state: region }),
-          request_status: {
-            [Op.notIn]:
-              state === "toclose"
-                ? ["cancelled by provider", "blocked", "clear"]
-                : [
-                    "cancelled by admin",
-                    "cancelled by provider",
-                    "blocked",
-                    "clear",
-                  ],
-          },
-          ...(requestor && { requested_by: requestor }),
-        },
-        include: [
-          {
-            as: "Patient",
-            model: User,
-            where: where_clause_patient,
-          },
-          ...(state !== "new"
-            ? [
-                {
-                  as: "Physician",
-                  model: User,
-                  where: {
-                    type_of_user: "physician",
-                  },
-                  required: false,
-                },
-              ]
-            : []),
-        ],
-        limit,
-        offset,
-      });
-
-      var i = offset + 1;
-      for (const request of requests) {
-        const formatted_request = {
-          sr_no: i,
-          request_id: request.request_id,
-          request_state: request.request_state,
-          confirmation_no: request.confirmation_no,
-          requestor: request.requested_by,
-          requested_date: request.requested_date?.toISOString().split("T")[0],
-          ...(state !== "new"
-            ? {
-                date_of_service: request.date_of_service
-                  ?.toISOString()
-                  .split("T")[0],
-              }
-            : {}),
-          patient_data: {
-            user_id: request?.Patient?.user_id || null,
-            name:
-              request?.Patient?.firstname + " " + request?.Patient?.lastname,
-            DOB: request?.Patient?.dob?.toISOString().split("T")[0],
-            mobile_no: request?.Patient?.mobile_no || null,
-            address:
-              request?.street + " " + request?.city + " " + request?.state,
-            ...(state === "toclose"
-              ? { region: request?.Patient?.state || null }
-              : {}),
-          },
-          ...(state !== "new"
-            ? {
-                physician_data: {
-                  user_id: request?.Physician?.user_id || null,
-                  name:
-                    request?.Physician?.firstname +
-                    " " +
-                    request?.Physician?.lastname,
-                  DOB:
-                    request?.Physician?.dob?.toISOString().split("T")[0] ||
-                    null,
-                  mobile_no: request?.Physician?.mobile_no || null,
-                  address:
-                    request?.Physician?.address_1 ||
-                    null + " " + request?.Physician?.address_2 ||
-                    null + " " + request?.Physician?.state ||
-                    null,
-                },
-              }
-            : {}),
-          requestor_data: {
-            user_id: request?.Requestor?.user_id || null,
-            first_name:
-              request?.Requestor?.first_name ||
-              null + " " + request?.Requestor?.last_name ||
-              null,
-            last_name: request?.Requestor?.last_name || null,
-          },
-          notes: request?.Notes?.map((note) => ({
-            note_id: note?.note_id || null,
-            type_of_note: note?.type_of_note || null,
-            description: note?.description || null,
-          })),
-        };
-        i++;
-        formatted_response.data.push(formatted_request);
-      }
-
-      return res.status(200).json({
-        ...formatted_response,
-        total_pages: Math.ceil(count / limit),
-        current_page: page_number,
-        total_count: count,
-      });
-    };
 
     switch (state) {
       case "new":
-        return await handle_request_state();
+        return await handle_request_state(
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
       case "pending":
       case "active":
       case "conclude":
-        return await handle_request_state();
+        return await handle_request_state(
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
       case "toclose":
-        return await handle_request_state();
+        return await handle_request_state(
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
       case "unpaid":
-        return await handle_request_state([
-          "date_of_service",
-          "physician_id",
-          "patient_id",
-        ]);
+        return await handle_request_state(
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size,
+          ["date_of_service", "physician_id", "patient_id"]
+        );
       default:
         return res.status(500).json({ message: message_constants.IS });
     }
@@ -1702,7 +1541,7 @@ export const request_support: Controller = async (
 
         client.messages
           .create({
-            body: `Message from admin to physicians . Link :- ${support_message}`,
+            body: `Given below is a message from admin to all unscheduled physicians:- "${support_message}"`,
             from: process.env.TWILIO_MOBILE_NO,
             // to: "+" + user.mobile_no,
             to: "+918401736963",
@@ -1765,11 +1604,9 @@ export const admin_send_link: Controller = async (
 
       const mail_content = `
         <html>
-        <p>Given below is a create request link for patient</p>
+        <p>Click on given below button to create a new request for patient</p>
         </br>
-        </br>
-        </br>
-        <p> ${create_request_link}</p>
+        <button> <a href = ${create_request_link}>create request</a> </button>
         </form>
         </html>
       `;
@@ -1811,7 +1648,7 @@ export const admin_send_link: Controller = async (
 
       client.messages
         .create({
-          body: `Link for creating request for patient. Link :- ${create_request_link}`,
+          body: `Click on given below link to create a new request for patient:- ${create_request_link}`,
           from: process.env.TWILIO_MOBILE_NO,
           // to: "+" + mobile_no,
           to: "+918401736963",

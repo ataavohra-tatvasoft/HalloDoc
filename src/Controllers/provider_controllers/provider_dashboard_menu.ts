@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import RequestModel from "../../db/models/request";
 import User from "../../db/models/user";
-import Requestor from "../../db/models/requestor";
 import Notes from "../../db/models/notes";
 import {
   Controller,
@@ -17,6 +16,7 @@ import EncounterForm from "../../db/models/encounter_form";
 import fs from "fs";
 import pdfkit from "pdfkit";
 import path from "path";
+import { handle_request_state_physician } from "../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -79,147 +79,49 @@ export const requests_by_request_state_provider: Controller = async (
       token,
       process.env.JWT_SECRET_KEY as string
     ) as VerifiedToken;
-    const provider_id = verified_token.user_id;
-
-    const { state, search, region, requestor, page, page_size } = req.query as {
-      [key: string]: string;
-    };
-    const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
-    const offset = (page_number - 1) * limit;
-
-    const where_clause_patient = {
-      type_of_user: "patient",
-      ...(search && {
-        [Op.or]: [
-          { firstname: { [Op.like]: `%${search}%` } },
-          { lastname: { [Op.like]: `%${search}%` } },
-        ],
-      }),
-    };
 
     const user = await User.findOne({
       where: {
-        user_id: provider_id,
+        user_id: verified_token.user_id,
         type_of_user: "physician",
       },
     });
-    console.log(user);
     if (!user) {
       return res.status(404).json({
         message: message_constants.PNF,
       });
     }
+    const user_id = user.user_id;
 
-    const handle_request_state = async (
-      additionalAttributes?: Array<string>
-    ) => {
-      const formatted_response: FormattedResponse<any> = {
-        status: true,
-        data: [],
-      };
-      const { count, rows: requests } = await RequestModel.findAndCountAll({
-        where: {
-          request_state: state,
-          physician_id: user.user_id,
-          ...(region && { state: region }),
-          ...(requestor ? { requested_by: requestor } : {}),
-        },
-        attributes: [
-          "request_id",
-          "request_state",
-          "confirmation_no",
-          "requested_by",
-          "request_status",
-          "physician_id",
-          "patient_id",
-          "street",
-          "city",
-          "state",
-          "zip",
-          ...(additionalAttributes || []),
-        ],
-        include: [
-          {
-            as: "Patient",
-            model: User,
-            attributes: [
-              "user_id",
-              "type_of_user",
-              "firstname",
-              "lastname",
-              "dob",
-              "mobile_no",
-              "address_1",
-              "state",
-            ],
-            where: where_clause_patient,
-          },
-          {
-            model: Requestor,
-            attributes: ["user_id", "first_name", "last_name"],
-          },
-        ],
-        limit,
-        offset,
-      });
-
-      var i = offset + 1;
-      for (const request of requests) {
-        const encounter_form = await EncounterForm.findOne({
-          where: {
-            request_id: request.request_id,
-          },
-        });
-        const formatted_request = {
-          sr_no: i,
-          request_id: request.request_id,
-          request_state: request.request_state,
-          confirmation_no: request.confirmation_no,
-          requestor: request.requested_by,
-          request_status: request.request_status,
-          is_finalized: encounter_form?.is_finalize || false,
-          patient_data: {
-            user_id: request.Patient.user_id,
-            name: request.Patient.firstname + " " + request.Patient.lastname,
-            mobile_no: request.Patient.mobile_no,
-            address:
-              request?.street + " " + request?.city + " " + request?.state,
-            ...(state == "active"
-              ? {
-                  status: request.Patient.status,
-                }
-              : {}),
-          },
-
-          requestor_data: {
-            user_id: request.Requestor?.user_id || null,
-            first_name:
-              request.Requestor?.first_name ||
-              null + " " + request.Requestor?.last_name ||
-              null,
-            last_name: request.Requestor?.last_name || null,
-          },
-        };
-        i++;
-        formatted_response.data.push(formatted_request);
-      }
-
-      return res.status(200).json({
-        ...formatted_response,
-        total_pages: Math.ceil(count / limit),
-        current_page: page_number,
-        total_count: count,
-      });
+    const { state, search, region, requestor, page, page_size } = req.query as {
+      [key: string]: string;
     };
 
     switch (state) {
       case "new":
       case "pending":
       case "conclude":
-        return await handle_request_state();
+        return await handle_request_state_physician(
+          user_id,
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
       case "active":
-        return await handle_request_state();
+        return await handle_request_state_physician(
+          user_id,
+          res,
+          state,
+          search,
+          region,
+          requestor,
+          page,
+          page_size
+        );
       default:
         return res.status(500).json({ message: message_constants.IS });
     }

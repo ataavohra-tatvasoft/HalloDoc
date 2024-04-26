@@ -17,7 +17,6 @@ import UserRegionMapping from "../../../db/models/user-region_mapping";
 import {
   update_region_mapping,
   update_document,
-  transporter,
 } from "../../../utils/helper_functions";
 import Role from "../../../db/models/role";
 import { WhereOptions } from "sequelize";
@@ -157,7 +156,7 @@ export const contact_provider: Controller = async (
         user_id,
         type_of_user: "physician",
       },
-      attributes: ["user_id", "email", "mobile_no"],
+      attributes: ["user_id", "firstname", "lastname", "email", "mobile_no"],
     });
     if (!user) {
       return res.status(400).json({
@@ -205,6 +204,7 @@ export const contact_provider: Controller = async (
 
       const email_log = await Logs.create({
         type_of_log: "Email",
+        recipient: user.firstname + " " + user.lastname,
         action: "For contacting provider",
         role_name: "Admin",
         email: email,
@@ -230,6 +230,7 @@ export const contact_provider: Controller = async (
 
       const SMS_log = await Logs.create({
         type_of_log: "SMS",
+        recipient: user.firstname + " " + user.lastname,
         action: "For contacting provider",
         role_name: "Admin",
         // mobile_no: user.mobile_no,

@@ -8,12 +8,16 @@ import {
   export_single,
   export_all,
   access,
+  export_single_physician,
+  export_all_physician,
 } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
-import { celebrate, Joi } from "celebrate";
+import { celebrate } from "celebrate";
 import {
   actions_validation,
+  export_all_physician_validation,
   export_all_validation,
+  export_single_physician_validation,
   export_single_validation,
   roles_validation,
 } from "../../validations/common_validations/common_validations";
@@ -33,6 +37,18 @@ router.get(
   celebrate(export_all_validation),
   authmiddleware,
   export_all
+);
+router.get(
+  "/commonroute/export_single_physician",
+  celebrate(export_single_physician_validation),
+  authmiddleware,
+  export_single_physician
+);
+router.get(
+  "/commonroute/export_all_physician",
+  celebrate(export_all_physician_validation),
+  authmiddleware,
+  export_all_physician
 );
 router.get(
   "/commonroute/:confirmation_no/actions",

@@ -2,22 +2,18 @@ import multer, { diskStorage } from "multer";
 import nodemailer from "nodemailer";
 import path from "path";
 import Region from "../db/models/region";
+import RequestModel from "../db/models/request";
+import Requestor from "../db/models/requestor";
+import Notes from "../db/models/notes";
 import UserRegionMapping from "../db/models/user-region_mapping";
 import message_constants from "../public/message_constants";
 import { Op } from "sequelize";
 import { Request, Response, NextFunction } from "express";
 import Documents from "../db/models/documents";
+import EncounterForm from "../db/models/encounter_form";
+import { FormattedResponse } from "../interfaces/common_interface";
+import User from "../db/models/user";
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: false,
-  debug: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "..", "..") + "\\src\\public\\uploads"); // Adjust as needed
@@ -28,6 +24,7 @@ export const storage = multer.diskStorage({
     cb(null, uniqueSuffix + ext);
   },
 });
+
 export const upload = multer({
   storage: storage,
   limits: { fileSize: 5000000 },
@@ -125,11 +122,11 @@ export const update_region_mapping = async (
   }
 };
 // Function to send email with attachment
-export async function send_email_with_attachment(
+export const send_email_with_attachment = async (
   email: string,
   file_path: string,
   filename: string
-) {
+) => {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
@@ -157,7 +154,7 @@ export async function send_email_with_attachment(
   if (!info) {
     throw new Error("Error sending email");
   }
-}
+};
 
 export const update_document = async (
   user_id: number,
@@ -195,4 +192,615 @@ export const generate_confirmation_number = (
     4,
     "0"
   )}`;
+};
+
+export const handle_request_state = async (
+  res: Response,
+  state: string,
+  search: string,
+  region: string,
+  requestor: string,
+  page: string,
+  page_size: string,
+  additionalAttributes?: Array<string>
+) => {
+  console.log(state);
+  const page_number = Number(page) || 1;
+  const limit = Number(page_size) || 10;
+  const offset = (page_number - 1) * limit;
+  const formatted_response: FormattedResponse<any> = {
+    status: true,
+    data: [],
+  };
+  const where_clause_patient = {
+    type_of_user: "patient",
+    ...(search && {
+      [Op.or]: [
+        { firstname: { [Op.like]: `%${search}%` } },
+        { lastname: { [Op.like]: `%${search}%` } },
+      ],
+    }),
+  };
+
+  const { rows: requests } = await RequestModel.findAndCountAll({
+    where: {
+      request_state: state,
+      ...(region && { state: region }),
+      request_status: {
+        [Op.notIn]:
+          state === "toclose"
+            ? ["cancelled by provider", "blocked", "clear"]
+            : [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+      },
+      ...(requestor && { requested_by: requestor }),
+    },
+    attributes: [
+      "request_id",
+      "request_state",
+      "confirmation_no",
+      "requested_by",
+      "requested_date",
+      "date_of_service",
+      "physician_id",
+      "patient_id",
+      "street",
+      "city",
+      "state",
+      "zip",
+      ...(additionalAttributes || []),
+    ],
+    include: [
+      {
+        as: "Patient",
+        model: User,
+        where: where_clause_patient,
+      },
+      ...(state !== "new"
+        ? [
+            {
+              as: "Physician",
+              model: User,
+              where: {
+                type_of_user: "physician",
+              },
+              required: false, // Make physician association optional
+            },
+          ]
+        : []),
+      {
+        model: Requestor,
+      },
+      {
+        model: Notes,
+      },
+    ],
+    limit,
+    offset,
+  });
+
+  const { count } = await RequestModel.findAndCountAll({
+    where: {
+      request_state: state,
+      ...(region && { state: region }),
+      request_status: {
+        [Op.notIn]:
+          state === "toclose"
+            ? ["cancelled by provider", "blocked", "clear"]
+            : [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+      },
+      ...(requestor && { requested_by: requestor }),
+    },
+    include: [
+      {
+        as: "Patient",
+        model: User,
+        where: where_clause_patient,
+      },
+      ...(state !== "new"
+        ? [
+            {
+              as: "Physician",
+              model: User,
+              where: {
+                type_of_user: "physician",
+              },
+              required: false,
+            },
+          ]
+        : []),
+    ],
+    limit,
+    offset,
+  });
+
+  var i = offset + 1;
+  for (const request of requests) {
+    const formatted_request = {
+      sr_no: i,
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+      requestor: request.requested_by,
+      requested_date: request.requested_date?.toISOString().split("T")[0],
+      ...(state !== "new"
+        ? {
+            date_of_service: request.date_of_service
+              ?.toISOString()
+              .split("T")[0],
+          }
+        : {}),
+      patient_data: {
+        user_id: request?.Patient?.user_id || null,
+        name: request?.Patient?.firstname + " " + request?.Patient?.lastname,
+        DOB: request?.Patient?.dob?.toISOString().split("T")[0],
+        mobile_no: request?.Patient?.mobile_no || null,
+        address: request?.street + " " + request?.city + " " + request?.state,
+        ...(state === "toclose"
+          ? { region: request?.Patient?.state || null }
+          : {}),
+      },
+      ...(state !== "new"
+        ? {
+            physician_data: {
+              user_id: request?.Physician?.user_id || null,
+              name:
+                request?.Physician?.firstname +
+                " " +
+                request?.Physician?.lastname,
+              DOB: request?.Physician?.dob?.toISOString().split("T")[0] || null,
+              mobile_no: request?.Physician?.mobile_no || null,
+              address:
+                request?.Physician?.address_1 ||
+                null + " " + request?.Physician?.address_2 ||
+                null + " " + request?.Physician?.state ||
+                null,
+            },
+          }
+        : {}),
+      requestor_data: {
+        user_id: request?.Requestor?.user_id || null,
+        first_name:
+          request?.Requestor?.first_name ||
+          null + " " + request?.Requestor?.last_name ||
+          null,
+        last_name: request?.Requestor?.last_name || null,
+      },
+      notes: request?.Notes?.map((note) => ({
+        note_id: note?.note_id || null,
+        type_of_note: note?.type_of_note || null,
+        description: note?.description || null,
+      })),
+    };
+    i++;
+    formatted_response.data.push(formatted_request);
+  }
+
+  return res.status(200).json({
+    ...formatted_response,
+    total_pages: Math.ceil(count / limit),
+    current_page: page_number,
+    total_count: count,
+  });
+};
+
+export const handle_request_state_exports = async (
+  state: string,
+  search: string,
+  region: string,
+  requestor: string,
+  page: string,
+  page_size: string,
+  additional_attributes?: any
+) => {
+  const page_number = Number(page) || 1;
+  const limit = Number(page_size) || 10;
+  const offset = (page_number - 1) * limit;
+  const where_clause_patient = {
+    type_of_user: "patient",
+    ...(search && {
+      [Op.or]: [
+        { firstname: { [Op.like]: `%${search}%` } },
+        { lastname: { [Op.like]: `%${search}%` } },
+      ],
+    }),
+  };
+  const formatted_response: FormattedResponse<any> = {
+    status: true,
+    data: [],
+  };
+  const { count, rows: requests } = await RequestModel.findAndCountAll({
+    where: {
+      request_state: state,
+      ...(region && { state: region }),
+      ...(state == "toclose"
+        ? {
+            request_status: {
+              [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
+            },
+          }
+        : {
+            request_status: {
+              [Op.notIn]: [
+                "cancelled by admin",
+                "cancelled by provider",
+                "blocked",
+                "clear",
+              ],
+            },
+          }),
+      ...(requestor ? { requested_by: requestor } : {}),
+    },
+    attributes: [
+      "request_id",
+      "request_state",
+      "confirmation_no",
+      "requested_by",
+      "requested_date",
+      "date_of_service",
+      "physician_id",
+      "patient_id",
+      "street",
+      "city",
+      "state",
+      "zip",
+      ...(additional_attributes || []),
+    ],
+    include: [
+      {
+        as: "Patient",
+        model: User,
+        attributes: [
+          "user_id",
+          "type_of_user",
+          "firstname",
+          "lastname",
+          "dob",
+          "mobile_no",
+          "address_1",
+          "state",
+        ],
+        where: where_clause_patient,
+      },
+      ...(state !== "new"
+        ? [
+            {
+              as: "Physician",
+              model: User,
+              attributes: [
+                "user_id",
+                "type_of_user",
+                "firstname",
+                "lastname",
+                "dob",
+                "mobile_no",
+                "address_1",
+                "address_2",
+              ],
+              where: {
+                type_of_user: "physician",
+              },
+            },
+          ]
+        : []),
+      {
+        model: Requestor,
+        attributes: ["user_id", "first_name", "last_name"],
+      },
+      {
+        model: Notes,
+        attributes: ["note_id", "type_of_note", "description"],
+      },
+    ],
+    limit,
+    offset,
+  });
+
+  var i = offset + 1;
+  for (const request of requests) {
+    const formatted_request = {
+      sr_no: i,
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmationNo: request.confirmation_no,
+      requestor: request.requested_by,
+      requested_date: request.requested_date?.toISOString().split("T")[0],
+      ...(state !== "new"
+        ? {
+            date_of_service: request.date_of_service
+              ?.toISOString()
+              .split("T")[0],
+          }
+        : {}),
+      patient_data: {
+        user_id: request.Patient.user_id,
+        name: request.Patient.firstname + " " + request.Patient.lastname,
+        DOB: request.Patient.dob?.toISOString().split("T")[0],
+        mobile_no: request.Patient.mobile_no,
+        address: request?.street + " " + request?.city + " " + request?.state,
+        ...(state === "toclose" ? { region: request.Patient.state } : {}),
+      },
+      ...(state !== "new"
+        ? {
+            physician_data: {
+              user_id: request.Physician.user_id,
+              name:
+                request.Physician.firstname + " " + request.Physician.lastname,
+              DOB: request.Physician.dob?.toISOString().split("T")[0],
+              mobile_no: request.Physician.mobile_no,
+              address:
+                request.Physician.address_1 +
+                " " +
+                request.Physician.address_2 +
+                " " +
+                request.Patient.state,
+            },
+          }
+        : {}),
+      requestor_data: {
+        user_id: request.Requestor?.user_id || null,
+        first_name:
+          request.Requestor?.first_name ||
+          null + " " + request.Requestor?.last_name ||
+          null,
+        last_name: request.Requestor?.last_name || null,
+      },
+      notes: request.Notes?.map((note) => ({
+        note_id: note.note_id,
+        type_of_note: note.type_of_note,
+        description: note.description,
+      })),
+    };
+    i++;
+    formatted_response.data.push(formatted_request);
+  }
+
+  return formatted_response;
+};
+
+export const handle_request_state_physician = async (
+  user_id: number,
+  res: Response,
+  state: string,
+  search: string,
+  region: string,
+  requestor: string,
+  page: string,
+  page_size: string,
+  additionalAttributes?: Array<string>
+) => {
+  const page_number = Number(page) || 1;
+  const limit = Number(page_size) || 10;
+  const offset = (page_number - 1) * limit;
+
+  const where_clause_patient = {
+    type_of_user: "patient",
+    ...(search && {
+      [Op.or]: [
+        { firstname: { [Op.like]: `%${search}%` } },
+        { lastname: { [Op.like]: `%${search}%` } },
+      ],
+    }),
+  };
+  const formatted_response: FormattedResponse<any> = {
+    status: true,
+    data: [],
+  };
+  const { count, rows: requests } = await RequestModel.findAndCountAll({
+    where: {
+      request_state: state,
+      physician_id: user_id,
+      ...(region && { state: region }),
+      ...(requestor ? { requested_by: requestor } : {}),
+    },
+    attributes: [
+      "request_id",
+      "request_state",
+      "confirmation_no",
+      "requested_by",
+      "request_status",
+      "physician_id",
+      "patient_id",
+      "street",
+      "city",
+      "state",
+      "zip",
+      ...(additionalAttributes || []),
+    ],
+    include: [
+      {
+        as: "Patient",
+        model: User,
+        attributes: [
+          "user_id",
+          "type_of_user",
+          "firstname",
+          "lastname",
+          "dob",
+          "mobile_no",
+          "address_1",
+          "state",
+        ],
+        where: where_clause_patient,
+      },
+      {
+        model: Requestor,
+        attributes: ["user_id", "first_name", "last_name"],
+      },
+    ],
+    limit,
+    offset,
+  });
+
+  var i = offset + 1;
+  for (const request of requests) {
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    const formatted_request = {
+      sr_no: i,
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+      requestor: request.requested_by,
+      request_status: request.request_status,
+      is_finalized: encounter_form?.is_finalize || false,
+      patient_data: {
+        user_id: request.Patient.user_id,
+        name: request.Patient.firstname + " " + request.Patient.lastname,
+        mobile_no: request.Patient.mobile_no,
+        address: request?.street + " " + request?.city + " " + request?.state,
+        ...(state == "active"
+          ? {
+              status: request.Patient.status,
+            }
+          : {}),
+      },
+
+      requestor_data: {
+        user_id: request.Requestor?.user_id || null,
+        first_name:
+          request.Requestor?.first_name ||
+          null + " " + request.Requestor?.last_name ||
+          null,
+        last_name: request.Requestor?.last_name || null,
+      },
+    };
+    i++;
+    formatted_response.data.push(formatted_request);
+  }
+
+  return res.status(200).json({
+    ...formatted_response,
+    total_pages: Math.ceil(count / limit),
+    current_page: page_number,
+    total_count: count,
+  });
+};
+
+export const handle_request_state_physician_exports = async (
+  user_id: number,
+  state: string,
+  search: string,
+  region: string,
+  requestor: string,
+  page: string,
+  page_size: string,
+  additionalAttributes?: Array<string>
+) => {
+  const page_number = Number(page) || 1;
+  const limit = Number(page_size) || 10;
+  const offset = (page_number - 1) * limit;
+
+  const where_clause_patient = {
+    type_of_user: "patient",
+    ...(search && {
+      [Op.or]: [
+        { firstname: { [Op.like]: `%${search}%` } },
+        { lastname: { [Op.like]: `%${search}%` } },
+      ],
+    }),
+  };
+  const formatted_response: FormattedResponse<any> = {
+    status: true,
+    data: [],
+  };
+  const { count, rows: requests } = await RequestModel.findAndCountAll({
+    where: {
+      request_state: state,
+      physician_id: user_id,
+      ...(region && { state: region }),
+      ...(requestor ? { requested_by: requestor } : {}),
+    },
+    attributes: [
+      "request_id",
+      "request_state",
+      "confirmation_no",
+      "requested_by",
+      "request_status",
+      "physician_id",
+      "patient_id",
+      "street",
+      "city",
+      "state",
+      "zip",
+      ...(additionalAttributes || []),
+    ],
+    include: [
+      {
+        as: "Patient",
+        model: User,
+        attributes: [
+          "user_id",
+          "type_of_user",
+          "firstname",
+          "lastname",
+          "dob",
+          "mobile_no",
+          "address_1",
+          "state",
+        ],
+        where: where_clause_patient,
+      },
+      {
+        model: Requestor,
+        attributes: ["user_id", "first_name", "last_name"],
+      },
+    ],
+    limit,
+    offset,
+  });
+
+  var i = offset + 1;
+  for (const request of requests) {
+    const encounter_form = await EncounterForm.findOne({
+      where: {
+        request_id: request.request_id,
+      },
+    });
+    const formatted_request = {
+      sr_no: i,
+      request_id: request.request_id,
+      request_state: request.request_state,
+      confirmation_no: request.confirmation_no,
+      requestor: request.requested_by,
+      request_status: request.request_status,
+      is_finalized: encounter_form?.is_finalize || false,
+      patient_data: {
+        user_id: request.Patient.user_id,
+        name: request.Patient.firstname + " " + request.Patient.lastname,
+        mobile_no: request.Patient.mobile_no,
+        address: request?.street + " " + request?.city + " " + request?.state,
+        ...(state == "active"
+          ? {
+              status: request.Patient.status,
+            }
+          : {}),
+      },
+
+      requestor_data: {
+        user_id: request.Requestor?.user_id || null,
+        first_name:
+          request.Requestor?.first_name ||
+          null + " " + request.Requestor?.last_name ||
+          null,
+        last_name: request.Requestor?.last_name || null,
+      },
+    };
+    i++;
+    formatted_response.data.push(formatted_request);
+  }
+
+  return formatted_response;
 };

@@ -23,6 +23,28 @@ export const export_all_validation = {
     page_size: Joi.number().integer().positive().optional(),
   }),
 };
+export const export_single_physician_validation = {
+  query: Joi.object({
+    state: Joi.string()
+      .trim()
+      .required()
+      .valid("new", "pending", "active", "conclude"),
+    search: Joi.string().trim().optional().allow(""),
+    region: Joi.string().trim().optional().allow(""),
+    requestor: Joi.string().trim().optional().allow(""),
+    page: Joi.number().integer().positive().optional(),
+    page_size: Joi.number().integer().positive().optional(),
+  }),
+};
+export const export_all_physician_validation = {
+  query: Joi.object({
+    search: Joi.string().trim().optional().allow(""),
+    region: Joi.string().trim().optional().allow(""),
+    requestor: Joi.string().trim().optional().allow(""),
+    page: Joi.number().integer().positive().optional(),
+    page_size: Joi.number().integer().positive().optional(),
+  }),
+};
 
 /**Action's API */
 export const actions_validation = {

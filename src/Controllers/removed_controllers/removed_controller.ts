@@ -15,6 +15,11 @@ import UserRegionMapping from "../../db/models/user-region_mapping";
 import Role from "../../db/models/role";
 import Region from "../../db/models/region";
 import { update_region_mapping } from "../../utils";
+import archiver from "archiver";
+import nodemailer from "nodemailer";
+import path from "path";
+import fs from "fs";
+import Logs from "../../db/models/log";
 
 /**Old API for request */
 export const requests_by_request_state: Controller = async (
@@ -627,6 +632,175 @@ export const requests_by_request_state: Controller = async (
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+/** Admin Request Actions */
+export const view_uploads_send_mail: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { confirmation_no } = req.params;
+    const { document_ids } = req.body as {
+      document_ids: Array<number>;
+    };
+
+    if (document_ids.length === 0) {
+      return res.status(200).json({ message: "No documents selected" });
+    }
+
+    const request = await RequestModel.findOne({
+      where: {
+        confirmation_no,
+        request_status: {
+          [Op.notIn]: [
+            "cancelled by admin",
+            "cancelled by provider",
+            "blocked",
+            "clear",
+          ],
+        },
+      },
+      include: [
+        {
+          as: "Documents",
+          model: Documents,
+        },
+        {
+          as: "Patient",
+          model: User,
+        },
+      ],
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    for (const document_id of document_ids) {
+      const is_document = await Documents.findOne({
+        where: {
+          document_id,
+          request_id: request.request_id,
+        },
+      });
+
+      if (!is_document) {
+        return res.status(404).json({
+          message: message_constants.DNF + " for " + document_id,
+        });
+      }
+    }
+
+    const zip_filename = `${confirmation_no}_documents.zip`;
+    const zip_file_path = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      "uploads",
+      zip_filename
+    );
+
+    // Create a zip file
+    const output = fs.createWriteStream(zip_file_path);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    output.on("close", () => {
+      console.log(archive.pointer() + " total bytes");
+      console.log(
+        "archiver has been finalized and the output file descriptor has closed."
+      );
+    });
+
+    archive.on("error", (err: any) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+
+    // Add files to the zip archive
+    for (const document of document_ids) {
+      const file = await Documents.findOne({
+        where: {
+          document_id: document,
+        },
+      });
+      if (!file) {
+        return res.status(404).json({
+          message: message_constants.DNF,
+        });
+      }
+      const file_path = file.document_path;
+      const filename = path.basename(file_path);
+
+      // Check for file existence before adding to the archive
+      if (fs.existsSync(file_path)) {
+        archive.append(fs.createReadStream(file_path), { name: filename });
+        console.log(`Added ${filename} to the zip archive.`);
+      } else {
+        console.error(`File not found: ${file_path}`);
+      }
+    }
+
+    // Finalize the zip archive
+    await archive.finalize();
+
+    const downloadLink = `http://http://localhost:3000/dashboard/viewupload`;
+
+    const mail_content = `
+        
+      You can download the requested documents from the following link:${downloadLink}
+
+      This link will be valid for 24 hours.
+`;
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
+      debug: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: "vohraatta@gmail.com",
+      to: request.Patient.email,
+      subject: "Downloads",
+      text: mail_content,
+    });
+
+    if (!info) {
+      return res.status(500).json({
+        message: message_constants.EWSL,
+      });
+    }
+    const email_log = await Logs.create({
+      type_of_log: "Email",
+      action: "For Sending downloads",
+      role_name: "Admin",
+      email: request.Patient.email,
+      sent: "Yes",
+      confirmation_no: confirmation_no,
+    });
+
+    if (!email_log) {
+      return res.status(500).json({
+        message: message_constants.EWCL,
+      });
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
+    console.error("Error downloading documents:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

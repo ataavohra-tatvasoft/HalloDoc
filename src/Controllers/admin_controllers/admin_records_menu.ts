@@ -657,7 +657,7 @@ export const logs_history: Controller = async (
         created_date: log.createdAt.toISOString().split("T")[0],
         sent_date: log.createdAt.toISOString().split("T")[0],
         sent: log.sent,
-        sent_tries: log?.sent_tries || "-",
+        sent_tries: log?.sent_tries || "0",
         confirmation_no: log?.confirmation_no || "-",
       };
       i++;
