@@ -5,7 +5,7 @@ import routes from "./src/routes";
 import dotenv from "dotenv";
 import fileUpload from "express-fileupload";
 import { handle_joi_errors } from "./src/middlewares";
-import connectToDatabase from "./src/connections/database";
+import connect_to_database from "./src/connections/database";
 import { errors } from "celebrate";
 
 // import multer from "multer";
@@ -17,7 +17,7 @@ const app: Express = express();
 
 (async () => {
   try {
-    await connectToDatabase();
+    await connect_to_database();
   } catch (error) {
     console.error(error);
   }
