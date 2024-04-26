@@ -166,6 +166,7 @@ export const contact_provider: Controller = async (
       });
     }
     if (email && mobile_no) {
+      console.log("email and mobile");
       const mailContent = `
       <html>
       <p>Given below is a message from admin:</p>
@@ -189,7 +190,7 @@ export const contact_provider: Controller = async (
           pass: process.env.EMAIL_PASS,
         },
       });
-      
+
       const info = await transporter.sendMail({
         from: "vohraatta@gmail.com",
         to: user.email,
@@ -247,6 +248,7 @@ export const contact_provider: Controller = async (
       });
     }
     if (email) {
+      console.log("email");
       const mailContent = `
           <html>
           <p>Given below is a message from admin:</p>
@@ -301,6 +303,7 @@ export const contact_provider: Controller = async (
       });
     }
     if (mobile_no) {
+      console.log("mobile");
       const account_sid = process.env.TWILIO_ACCOUNT_SID;
       const auth_token = process.env.TWILIO_AUTH_TOKEN;
       const client = twilio(account_sid, auth_token);
@@ -994,7 +997,6 @@ export const create_provider_account_refactored: Controller = async (
       await update_region_mapping(user.user_id, region_ids, req, res, next);
     }
 
-
     const update_document = async (
       user_id: number,
       document_name: string,
@@ -1165,7 +1167,6 @@ export const common_save_provider_account: Controller = async (
     if (region_ids) {
       await update_region_mapping(is_user.user_id, region_ids, req, res, next);
     }
-
 
     await update_document(
       is_user.user_id,

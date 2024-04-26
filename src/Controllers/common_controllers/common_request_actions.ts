@@ -1061,15 +1061,15 @@ export const send_agreement: Controller = async (
     }
 
     // const reset_url = `http://localhost:7000/admin/dashboard/requests/${confirmation_no}/actions/updateagreement`;
-    const reset_url = `http://localhost:3000/agreement`;
+    const agreement_url = "http://localhost:3000/agreement  ";
 
     const mail_content = `
-            <html>
+            <html>  
   
             <p>Click below button to re-view agreement </p>
             <br>
             <br>
-            <button> <a href="${reset_url}"> agreement </a> </button>
+            <button> <a href="${agreement_url}"> agreement </a> </button>
             <br>
             <br>
             
@@ -1103,7 +1103,7 @@ export const send_agreement: Controller = async (
 
     client.messages
       .create({
-        body: `Click the link to review agreement. Link :- ${reset_url}`,
+        body: `Click the link to review agreement. Link :- ${agreement_url}`,
         from: process.env.TWILIO_MOBILE_NO,
         // to: "+" + mobile_no,
         to: "+918401736963",

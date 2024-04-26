@@ -709,7 +709,12 @@ export const export_all: Controller = async (
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${filename}.zip`
+    );
+
+    // res.attachment(filename);
 
     // Write the ZIP file to the response
     const zip_archive = await zip.generateAsync({ type: "nodebuffer" });
