@@ -210,10 +210,11 @@ export const requested_shifts: Controller = async (
         "lastname",
         "type_of_user",
         "role_id",
+        // "on_call_status",
       ],
       where: {
         type_of_user: "physician",
-        on_call_status: "yes",
+        // on_call_status: "scheduled",
       },
       include: [
         {

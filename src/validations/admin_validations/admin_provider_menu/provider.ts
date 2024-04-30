@@ -21,11 +21,8 @@ export const stop_notification_validation = {
 
 export const contact_provider_validation = {
   query: Joi.object({
-    email: Joi.string().email().optional(), // Require email if mobile_no is absent
-    mobile_no: Joi.string()
-      .trim()
-      .pattern(/^\d{11,13}$/)
-      .optional(),
+    email: Joi.string().optional(), // Require email if mobile_no is absent
+    mobile_no: Joi.string().optional(),
   }),
 
   body: Joi.object({

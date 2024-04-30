@@ -207,7 +207,7 @@ export const contact_provider: Controller = async (
         recipient: user.firstname + " " + user.lastname,
         action: "For contacting provider",
         role_name: "Admin",
-        email: email,
+        email: user.email,
         sent: "Yes",
       });
 
@@ -234,7 +234,7 @@ export const contact_provider: Controller = async (
         action: "For contacting provider",
         role_name: "Admin",
         // mobile_no: user.mobile_no,
-        mobile_no: BigInt(mobile_no),
+        mobile_no: BigInt(user.mobile_no),
         sent: "Yes",
       });
       if (!SMS_log) {
@@ -289,7 +289,7 @@ export const contact_provider: Controller = async (
         type_of_log: "Email",
         action: "For contacting provider",
         role_name: "Admin",
-        email: email,
+        email: user.email,
         sent: "Yes",
       });
 
@@ -321,7 +321,7 @@ export const contact_provider: Controller = async (
         action: "For contacting provider",
         role_name: "Admin",
         // mobile_no: user.mobile_no,
-        mobile_no: BigInt(mobile_no),
+        mobile_no: BigInt(user.mobile_no),
         sent: "Yes",
       });
       if (!SMS_log) {
