@@ -43,7 +43,7 @@ export const provider_shifts_list: Controller = async (
       ],
       where: {
         type_of_user: "physician",
-        // on_call_status: "yes",
+        // on_call_status: "scheduled",
       },
       include: [
         {
@@ -68,16 +68,6 @@ export const provider_shifts_list: Controller = async (
     });
     var i = offset + 1;
     for (const provider of providers) {
-      const is_role = await Role.findOne({
-        where: {
-          role_id: provider.role_id,
-        },
-      });
-      if (!is_role) {
-        return res.status(500).json({
-          message: message_constants.RoNF,
-        });
-      }
       const formatted_request = {
         sr_no: i,
         user_id: provider.user_id,

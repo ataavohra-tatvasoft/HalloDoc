@@ -275,7 +275,7 @@ export const export_single: Controller = async (
     const work_book = new ExcelJS.Workbook();
     const worksheet = work_book.addWorksheet("Requests");
 
-    const column_widths = [15, 25, 20, 25, 20, 25, 25]; // Adjust widths as needed
+    const column_widths = [15, 25, 20, 25, 20, 25, 25, 25, 20, 25, 50]; // Adjust widths as needed
     worksheet.getColumn(1).width = column_widths[0];
     worksheet.getColumn(2).width = column_widths[1];
     worksheet.getColumn(3).width = column_widths[2];
@@ -283,16 +283,24 @@ export const export_single: Controller = async (
     worksheet.getColumn(5).width = column_widths[4];
     worksheet.getColumn(6).width = column_widths[5];
     worksheet.getColumn(7).width = column_widths[6];
+    worksheet.getColumn(8).width = column_widths[7];
+    worksheet.getColumn(9).width = column_widths[8];
+    worksheet.getColumn(10).width = column_widths[9];
+    worksheet.getColumn(11).width = column_widths[10];
 
     // Define headers for the Excel sheet
     const headers = [
       "SR No",
-      "Request ID",
       "Request State",
       "Confirmation No",
+      "Name",
+      "Date Of Birth",
       "Requestor",
       "Requested Date",
       "Date of Service",
+      "Physician Name",
+      "Phone",
+      "Address",
       // Add more headers as needed
     ];
 
@@ -301,14 +309,21 @@ export const export_single: Controller = async (
 
     // Add data to the worksheet
     for (const request of formatted_response.data) {
+      // console.log(request);
       const rowData = [
         request.sr_no,
-        request.request_id,
         request.request_state,
         request.confirmationNo,
-        request.requestor,
+        request.patient_data.name,
+        request.patient_data.DOB,
+        request.requestor_data.first_name +
+          " " +
+          request.requestor_data.last_name,
         request.requested_date,
         request.date_of_service,
+        request.physician_data.name,
+        request.physician_data.mobile_no,
+        request.physician_data.address,
         // Add more data fields as needed
       ];
       worksheet.addRow(rowData);
@@ -373,7 +388,7 @@ export const export_all: Controller = async (
       // Create a new worksheet for each state
       const worksheet = work_book.addWorksheet(state);
 
-      const column_widths = [15, 25, 20, 25, 20, 25, 25]; // Adjust widths as needed
+      const column_widths = [15, 25, 20, 25, 20, 25, 25, 25, 20, 25, 50]; // Adjust widths as needed
       worksheet.getColumn(1).width = column_widths[0];
       worksheet.getColumn(2).width = column_widths[1];
       worksheet.getColumn(3).width = column_widths[2];
@@ -381,31 +396,51 @@ export const export_all: Controller = async (
       worksheet.getColumn(5).width = column_widths[4];
       worksheet.getColumn(6).width = column_widths[5];
       worksheet.getColumn(7).width = column_widths[6];
+      worksheet.getColumn(8).width = column_widths[7];
+      worksheet.getColumn(9).width = column_widths[8];
+      worksheet.getColumn(10).width = column_widths[9];
+      worksheet.getColumn(11).width = column_widths[10];
 
       // Define headers for the Excel sheet
       const headers = [
-        "Request ID",
+        "SR No",
         "Request State",
         "Confirmation No",
+        "Name",
+        "Date Of Birth",
         "Requestor",
         "Requested Date",
         "Date of Service",
+        "Physician Name",
+        "Phone",
+        "Address",
+        // Add more headers as needed
       ];
 
+      // Add headers to the worksheet
       worksheet.addRow(headers);
 
+      // Add data to the worksheet
       for (const request of formatted_response.data) {
+        console.log(request);
         const rowData = [
-          request.request_id,
-          request.request_state,
-          request.confirmationNo,
-          request.requestor,
-          request.requested_date,
-          request.date_of_service,
+          request?.sr_no,
+          request?.request_state,
+          request?.confirmationNo,
+          request?.patient_data?.name,
+          request?.patient_data?.DOB,
+          request?.requestor_data?.first_name +
+            " " +
+            request?.requestor_data?.last_name,
+          request?.requested_date,
+          request?.date_of_service,
+          request?.physician_data?.name,
+          request?.physician_data?.mobile_no,
+          request?.physician_data?.address,
+          // Add more data fields as needed
         ];
         worksheet.addRow(rowData);
       }
-
       // Create a buffer containing the Excel workbook data
       const excelBuffer = await work_book.xlsx.writeBuffer();
 
