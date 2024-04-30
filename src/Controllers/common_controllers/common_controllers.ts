@@ -6,6 +6,7 @@ import User from "../../db/models/user";
 import message_constants from "../../public/message_constants";
 import RequestModel from "../../db/models/request";
 import Role from "../../db/models/role";
+import Notes from "../../db/models/notes";
 import ExcelJS from "exceljs";
 import Access from "../../db/models/access";
 import JSZip from "jszip";
@@ -15,6 +16,7 @@ import {
   handle_request_state_physician_exports,
 } from "../../utils/helper_functions";
 import jwt from "jsonwebtoken";
+import { Op } from "sequelize";
 
 /** Regions API */
 export const region_with_thirdparty_API: Controller = async (
@@ -703,6 +705,299 @@ export const export_all_physician: Controller = async (
     } else {
       return res.status(500).json({ message: message_constants.ISE });
     }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const export_records: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      request_status,
+      patient_name,
+      request_type,
+      from_date_of_service,
+      to_date_of_service,
+      provider_name,
+      email,
+      phone_no,
+      page,
+      page_size,
+    } = req.query;
+
+    const page_number = Number(page) || 1;
+    const limit = Number(page_size) || 10;
+    const offset = (page_number - 1) * limit;
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      data: [],
+    };
+    const where_clause = {
+      ...(request_type && {
+        request_state: { [Op.like]: `%${request_type}%` },
+      }),
+      ...(from_date_of_service && {
+        date_of_service: { [Op.gte]: from_date_of_service }, // Use Op.gte for greater than or equal
+      }),
+      ...(to_date_of_service && {
+        date_of_service: { [Op.lte]: to_date_of_service }, // Use Op.lte for less than or equal
+      }),
+      ...(request_status && {
+        request_status: { [Op.like]: `%${request_status}%` },
+      }),
+      // ... potentially add other WhereOptions properties
+    };
+
+    const { rows: requests } = await RequestModel.findAndCountAll({
+      attributes: [
+        "request_id",
+        "confirmation_no",
+        "requested_by",
+        "date_of_service",
+        "closed_date",
+        "request_state",
+        "request_status",
+        "street",
+        "city",
+        "state",
+        "zip",
+      ],
+      where: where_clause,
+      include: [
+        {
+          model: User,
+          as: "Patient",
+          attributes: [
+            "user_id",
+            "firstname",
+            "lastname",
+            "email",
+            "mobile_no",
+            "address_1",
+            "address_2",
+            "zip",
+          ],
+          where: {
+            ...(patient_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${patient_name}%` } },
+                { lastname: { [Op.like]: `%${patient_name}%` } },
+              ],
+            }),
+            ...(email && {
+              email: { [Op.like]: `%${email}%` },
+            }),
+            ...(phone_no && {
+              mobile_no: { [Op.like]: `%${phone_no}%` },
+            }),
+          },
+        },
+        {
+          model: User,
+          as: "Physician",
+          attributes: ["user_id", "firstname", "lastname"],
+          where: {
+            ...(provider_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${provider_name}%` } },
+                { lastname: { [Op.like]: `%${provider_name}%` } },
+              ],
+            }),
+          },
+        },
+      ],
+      limit,
+      offset,
+    });
+
+    if (!requests) {
+      return res.status(404).json({
+        message: message_constants.RNF,
+      });
+    }
+
+    const { count: total_count } = await RequestModel.findAndCountAll({
+      where: where_clause,
+      include: [
+        {
+          model: User,
+          as: "Patient",
+          where: {
+            ...(patient_name && {
+              [Op.or]: [
+                { firstname: { [Op.like]: `%${patient_name}%` } },
+                { lastname: { [Op.like]: `%${patient_name}%` } },
+              ],
+            }),
+            ...(email && {
+              email: { [Op.like]: `%${email}%` },
+            }),
+            ...(phone_no && {
+              mobile_no: { [Op.like]: `%${phone_no}%` },
+            }),
+          },
+        },
+      ],
+      limit,
+      offset,
+    });
+
+    if (!total_count) {
+      return res.status(404).json({
+        message: message_constants.EWCounting,
+      });
+    }
+
+    var i: number = offset + 1;
+    for (const request of requests) {
+      const physician_note = await Notes.findOne({
+        where: {
+          request_id: request.request_id,
+          type_of_note: "physician_notes",
+        },
+      });
+      const cancelled_by_provider_note = await Notes.findOne({
+        where: {
+          request_id: request.request_id,
+          type_of_note: "physician_cancellation_notes",
+        },
+      });
+      const admin_note = await Notes.findOne({
+        where: {
+          request_id: request.request_id,
+          type_of_note: "admin_notes",
+        },
+      });
+      const patient_note = await Notes.findOne({
+        where: {
+          request_id: request.request_id,
+          type_of_note: "patient_notes",
+        },
+      });
+      const formatted_request = {
+        sr_no: i,
+        request_id: request.request_id,
+        confirmation_no: request.confirmation_no,
+        patient_name:
+          request.Patient.firstname + " " + request.Patient.lastname,
+        requestor: request.requested_by,
+        date_of_service: request.date_of_service
+          ? request.date_of_service.toISOString().split("T")[0]
+          : null,
+        closed_date: request.closed_date
+          ? request.closed_date.toISOString().split("T")[0]
+          : null,
+        email: request.Patient.email,
+        phone_no: request.Patient.mobile_no,
+        address:
+          request.Patient.address_1 +
+          " " +
+          request.Patient.address_2 +
+          " " +
+          request.Patient.state,
+        zip: request.Patient.zip,
+        request_status: request.request_status,
+        physician:
+          request.Physician.firstname + " " + request.Physician.lastname,
+        physician_note: physician_note?.description || null,
+        cancelled_by_provider_note:
+          cancelled_by_provider_note?.description || null,
+        admin_note: admin_note?.description || null,
+        patient_note: patient_note?.description || null,
+      };
+      i++;
+      formatted_response.data.push(formatted_request);
+    }
+
+    // Create a new Excel work_book and worksheet
+    const work_book = new ExcelJS.Workbook();
+    const worksheet = work_book.addWorksheet("Records");
+
+    const column_widths = [
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+    ]; // Adjust widths as needed
+    worksheet.getColumn(1).width = column_widths[0];
+    worksheet.getColumn(2).width = column_widths[1];
+    worksheet.getColumn(3).width = column_widths[2];
+    worksheet.getColumn(4).width = column_widths[3];
+    worksheet.getColumn(5).width = column_widths[4];
+    worksheet.getColumn(6).width = column_widths[5];
+    worksheet.getColumn(7).width = column_widths[6];
+    worksheet.getColumn(8).width = column_widths[7];
+    worksheet.getColumn(9).width = column_widths[8];
+    worksheet.getColumn(10).width = column_widths[9];
+    worksheet.getColumn(11).width = column_widths[10];
+    worksheet.getColumn(12).width = column_widths[11];
+    worksheet.getColumn(13).width = column_widths[12];
+    worksheet.getColumn(14).width = column_widths[13];
+
+    // Define headers for the Excel sheet
+    const headers = [
+      "Patient Name",
+      "Requestor",
+      "Date of Service",
+      "Close Case Date",
+      "Email",
+      "Phone Number",
+      "Address",
+      "Zip",
+      "Request Status",
+      "Physician",
+      "Physician Note",
+      "Cancelled By Provider Note",
+      "Admin Note",
+      "Patient Note",
+      // Add more headers as needed
+    ];
+
+    // Add headers to the worksheet
+    worksheet.addRow(headers);
+
+    // Add data to the worksheet
+    for (const request of formatted_response.data) {
+      const rowData = [
+        request.patient_name,
+        request.requestor,
+        request.date_of_service,
+        request.closed_date,
+        request.email,
+        request.phone_no,
+        request.address,
+        request.zip,
+        request.request_status,
+        request.physician,
+        request.physician_note,
+        request.cancelled_by_provider_note,
+        request.admin_note,
+        request.patient_note,
+        // Add more data fields as needed
+      ];
+      worksheet.addRow(rowData);
+    }
+
+    // Generate a unique filename for the Excel file
+    const current_date = new Date().toISOString().split("T")[0];
+    const filename = `records_${current_date}`;
+
+    // Set the response headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}.xlsx"`
+    );
+
+    // Write the work_book to the response
+    await work_book.xlsx.write(res);
+
+    return res.end();
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: message_constants.ISE });

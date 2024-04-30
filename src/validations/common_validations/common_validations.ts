@@ -45,6 +45,32 @@ export const export_all_physician_validation = {
     page_size: Joi.number().integer().positive().optional(),
   }),
 };
+export const export_records_validation = {
+  // Query parameters
+  query: Joi.object({
+    request_status: Joi.string().allow("").optional(),
+    patient_name: Joi.string().allow("").optional(),
+    request_type: Joi.string().allow("").optional(),
+    from_date_of_service: Joi.any().allow("").optional(),
+    to_date_of_service: Joi.any().allow("").optional(),
+    provider_name: Joi.string().allow("").optional(),
+    email: Joi.string().email().allow("").optional(),
+    phone_no: Joi.string()
+    .trim()
+    .allow("")
+    .pattern(/^\d{11,13}$/)
+    .optional(),
+    page: Joi.string()
+    .optional()
+      .pattern(/^\d+$/, "page must be a positive integer"),
+    page_size: Joi.string()
+    .optional()
+      .pattern(/^\d+$/, "page_size must be a positive integer"),
+  }).optional(),
+
+  // Empty body (optional)
+  body: Joi.object().allow({}), // Allow an empty object for the body
+};
 
 /**Action's API */
 export const actions_validation = {

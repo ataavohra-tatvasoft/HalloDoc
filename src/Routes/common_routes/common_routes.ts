@@ -10,6 +10,7 @@ import {
   access,
   export_single_physician,
   export_all_physician,
+  export_records,
 } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
 import { celebrate } from "celebrate";
@@ -17,6 +18,7 @@ import {
   actions_validation,
   export_all_physician_validation,
   export_all_validation,
+  export_records_validation,
   export_single_physician_validation,
   export_single_validation,
   roles_validation,
@@ -49,6 +51,12 @@ router.get(
   celebrate(export_all_physician_validation),
   authmiddleware,
   export_all_physician
+);
+router.get(
+  "/commonroute/export_records",
+  celebrate(export_records_validation),
+  authmiddleware,
+  export_records
 );
 router.get(
   "/commonroute/:confirmation_no/actions",
