@@ -150,7 +150,7 @@ export const provider_onboarding_upload_validation = {
 export const provider_onboarding_view_validation = {
   params: Joi.object({
     user_id: Joi.number().required(),
-    document_id: Joi.number().required(),
+    // document_id: Joi.number().required(),
   }),
   query: Joi.object({
     independent_contractor_agreement: Joi.boolean().optional(),

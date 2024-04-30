@@ -1,4 +1,5 @@
 import { Joi } from "celebrate";
+import { query } from "express";
 
 export const provider_profile_reset_password_validation = {
   body: Joi.object({
@@ -31,6 +32,16 @@ export const provider_myprofile_onboarding_upload_validation = {
         .required(),
     })
   ),
+};
+
+export const provider_myprofile_onboarding_view_validation = {
+  // params: Joi.object({
+  //   document_id: Joi.number().required(),
+  // }),
+  query: Joi.object({
+    provider_agreement: Joi.boolean().optional(),
+    HIPAA: Joi.boolean().optional(),
+  }),
 };
 
 export const provider_myprofile_onboarding_delete_validation = {

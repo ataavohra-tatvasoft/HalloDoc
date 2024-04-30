@@ -128,7 +128,7 @@ router.put(
   provider_onboarding_upload
 );
 router.get(
-  "/providermenu/provider_list/:user_id/:document_id/provider_onboarding_view",
+  "/providermenu/provider_list/:user_id/provider_onboarding_view",
   authmiddleware,
   celebrate(provider_onboarding_view_validation),
   provider_onboarding_view

@@ -855,7 +855,8 @@ export const provider_onboarding_view = async (
   next: NextFunction
 ) => {
   try {
-    const { user_id, document_id } = req.params;
+    // const { user_id, document_id } = req.params;
+    const { user_id } = req.params;
     const {
       independent_contractor_agreement,
       background_check,
@@ -881,7 +882,7 @@ export const provider_onboarding_view = async (
       const document = await Documents.findOne({
         where: {
           user_id: user_id,
-          document_id: document_id,
+          // document_id: document_id,
           document_name: "independent_contractor_agreement",
         },
         attributes: ["document_id", "document_path", "document_name"],
@@ -918,7 +919,7 @@ export const provider_onboarding_view = async (
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${path.basename(
-          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
         )}"`
       );
 
@@ -935,7 +936,7 @@ export const provider_onboarding_view = async (
       const document = await Documents.findOne({
         where: {
           user_id: user_id,
-          document_id: document_id,
+          // document_id: document_id,
           document_name: "background_check",
         },
         attributes: ["document_id", "document_path", "document_name"],
@@ -972,7 +973,7 @@ export const provider_onboarding_view = async (
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${path.basename(
-          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
         )}"`
       );
 
@@ -989,7 +990,7 @@ export const provider_onboarding_view = async (
       const document = await Documents.findOne({
         where: {
           user_id: user_id,
-          document_id: document_id,
+          // document_id: document_id,
           document_name: "HIPAA",
         },
         attributes: ["document_id", "document_path", "document_name"],
@@ -1026,7 +1027,7 @@ export const provider_onboarding_view = async (
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${path.basename(
-          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
         )}"`
       );
 
@@ -1043,7 +1044,7 @@ export const provider_onboarding_view = async (
       const document = await Documents.findOne({
         where: {
           user_id: user_id,
-          document_id: document_id,
+          // document_id: document_id,
           document_name: "non_disclosure",
         },
         attributes: ["document_id", "document_path", "document_name"],
@@ -1080,7 +1081,7 @@ export const provider_onboarding_view = async (
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${path.basename(
-          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
         )}"`
       );
 
@@ -1097,7 +1098,7 @@ export const provider_onboarding_view = async (
       const document = await Documents.findOne({
         where: {
           user_id: user_id,
-          document_id: document_id,
+          // document_id: document_id,
           document_name: "licence_document",
         },
         attributes: ["document_id", "document_path", "document_name"],
@@ -1134,7 +1135,7 @@ export const provider_onboarding_view = async (
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${path.basename(
-          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
         )}"`
       );
 

@@ -15,6 +15,8 @@ import Role from "../../db/models/role";
 import Documents from "../../db/models/documents";
 import nodemailer from "nodemailer";
 import Logs from "../../db/models/log";
+import path from "path";
+import fs from "fs";
 // import UserRegionMapping from "../../db/models/user-region_mapping";
 
 /** Configs */
@@ -504,10 +506,7 @@ export const provider_myprofile_onboarding_upload = async (
     };
 
     if (provider_agreement_path) {
-      await update_document(
-        "independent_contractor_agreement",
-        provider_agreement_path
-      );
+      await update_document("provider_agreement", provider_agreement_path);
     }
 
     if (HIPAA_path) {
@@ -519,6 +518,147 @@ export const provider_myprofile_onboarding_upload = async (
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const provider_myprofile_onboarding_view = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { authorization } = req.headers as { authorization: string };
+    const token: string = authorization.split(" ")[1];
+    const verified_token = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as VerifiedToken;
+
+    // const { document_id } = req.params;
+    const { provider_agreement, HIPAA } = req.query;
+
+    const provider_id = verified_token.user_id;
+    const is_user = await User.findOne({
+      where: {
+        user_id: provider_id,
+        type_of_user: "physician",
+      },
+    });
+
+    if (!is_user) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
+
+    if (provider_agreement) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: is_user.user_id,
+          // document_id: document_id,
+          document_name: "provider_agreement",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+    if (HIPAA) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: is_user.user_id,
+          // document_id: document_id,
+          document_name: "HIPAA",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}__${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

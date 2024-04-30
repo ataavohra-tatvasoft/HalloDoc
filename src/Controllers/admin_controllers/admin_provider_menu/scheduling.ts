@@ -39,11 +39,11 @@ export const provider_shifts_list: Controller = async (
         "type_of_user",
         "role_id",
         "status",
-        "on_call_status",
+        // "on_call_status",
       ],
       where: {
         type_of_user: "physician",
-        on_call_status: "yes",
+        // on_call_status: "yes",
       },
       include: [
         {
