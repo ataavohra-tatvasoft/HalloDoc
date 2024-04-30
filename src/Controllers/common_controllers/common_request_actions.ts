@@ -460,9 +460,27 @@ export const view_uploads_download_all: Controller = async (
 ) => {
   try {
     const { confirmation_no } = req.params;
-    const { document_ids } = req.body as {
-      document_ids: Array<number>;
+    const { document_id } = req.query as {
+      document_id: string;
     };
+
+    // Split the comma-separated string into an array of strings
+    const document_strings = document_id.split(",");
+
+    // Convert each string to a number (handle errors and empty strings)
+    let document_ids: Array<any> = [];
+    document_strings.forEach((idString, index) => {
+      const id = parseInt(idString, 10);
+      if (!isNaN(id)) {
+        document_ids.push(id);
+      } else {
+        console.warn(
+          `Invalid document ID format at index ${index}: "${idString}". Skipping...`
+        );
+      }
+    });
+
+    console.log(document_ids); // Output: [12, 13] (assuming valid document_id)
 
     if (!document_ids) {
       return res.status(404).json({
@@ -706,13 +724,13 @@ export const view_uploads_send_mail_refactored: Controller = async (
           message: message_constants.DNF,
         });
       }
-  
+
       const file_path = file.document_path;
       const file_extension = file_path.split(".").pop();
       const filename = path.basename(
         `${confirmation_no}_doc.id_${document_id}.${file_extension}`
       );
-      
+
       // Check for file existence before adding to the archive
       if (fs.existsSync(file_path)) {
         archive.append(fs.createReadStream(file_path), { name: filename });

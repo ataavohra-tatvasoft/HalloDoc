@@ -22,6 +22,8 @@ import Role from "../../../db/models/role";
 import { WhereOptions } from "sequelize";
 import { UserAttributes } from "../../../interfaces/user";
 import Logs from "../../../db/models/log";
+import path from "path";
+import fs from "fs";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -844,6 +846,309 @@ export const provider_onboarding_upload = async (
     });
   } catch (error) {
     return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
+export const provider_onboarding_view = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { user_id, document_id } = req.params;
+    const {
+      independent_contractor_agreement,
+      background_check,
+      HIPAA,
+      non_disclosure,
+      licence_document,
+    } = req.query;
+
+    const is_user = await User.findOne({
+      where: {
+        user_id,
+      },
+      attributes: ["firstname", "lastname"],
+    });
+
+    if (!is_user) {
+      return res.status(404).json({
+        message: message_constants.UNF,
+      });
+    }
+
+    if (independent_contractor_agreement) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_id: document_id,
+          document_name: "independent_contractor_agreement",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+    if (background_check) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_id: document_id,
+          document_name: "background_check",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+    if (HIPAA) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_id: document_id,
+          document_name: "HIPAA",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+    if (non_disclosure) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_id: document_id,
+          document_name: "non_disclosure",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+    if (licence_document) {
+      const document = await Documents.findOne({
+        where: {
+          user_id: user_id,
+          document_id: document_id,
+          document_name: "licence_document",
+        },
+        attributes: ["document_id", "document_path", "document_name"],
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      let file_path = document.document_path;
+
+      // Handle relative paths by joining with "uploads"
+      if (!path.isAbsolute(file_path)) {
+        file_path = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "public",
+          "uploads",
+          file_path
+        );
+      }
+
+      const file_extension = file_path.split(".").pop();
+
+      // Check for file existence and send error if not found
+      if (!fs.existsSync(file_path)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${path.basename(
+          `${is_user.firstname}_${is_user.lastname}_doc.id_${document.document_name}.${file_extension}`
+        )}"`
+      );
+
+      // Initiate file download with `res.sendFile`
+      res.sendFile(file_path, (error) => {
+        if (error) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          console.log("Downloaded!!!");
+        }
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

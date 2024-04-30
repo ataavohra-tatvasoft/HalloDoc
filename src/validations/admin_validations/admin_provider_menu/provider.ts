@@ -1,4 +1,5 @@
 import { Joi } from "celebrate";
+import { query } from "express";
 
 export const provider_list_validation = {
   query: Joi.object({
@@ -144,6 +145,20 @@ export const provider_onboarding_upload_validation = {
         .required(),
     })
   ),
+};
+
+export const provider_onboarding_view_validation = {
+  params: Joi.object({
+    user_id: Joi.number().required(),
+    document_id: Joi.number().required(),
+  }),
+  query: Joi.object({
+    independent_contractor_agreement: Joi.boolean().optional(),
+    background_check: Joi.boolean().optional(),
+    HIPAA: Joi.boolean().optional(),
+    non_disclosure: Joi.boolean().optional(),
+    licence_document: Joi.boolean().optional(),
+  }),
 };
 
 export const provider_onboarding_delete_validation = {
