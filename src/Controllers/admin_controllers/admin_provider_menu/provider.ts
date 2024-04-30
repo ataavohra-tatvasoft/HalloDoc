@@ -24,6 +24,7 @@ import { UserAttributes } from "../../../interfaces/user";
 import Logs from "../../../db/models/log";
 import path from "path";
 import fs from "fs";
+import Shifts from "../../../db/models/shifts";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -652,7 +653,15 @@ export const delete_provider_account: Controller = async (
           message: message_constants.EWU,
         });
       }
+      const delete_shift_data = await Shifts.destroy({
+        where: {
+          user_id,
+        },
+      });
 
+      if (!delete_shift_data && delete_shift_data != 0) {
+        return res.status(404).json({ error: message_constants.EWD });
+      }
       const delete_region_data = await UserRegionMapping.destroy({
         where: {
           user_id,
