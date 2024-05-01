@@ -285,8 +285,11 @@ export const provider_profile_view: Controller = async (
         billing_mobile_no: profile.billing_mobile_no,
       },
       provider_profile: {
-        business_name: profile.business_name,
-        business_website: profile.business_website,
+        business_name: profile.business_name || null,
+        business_website: profile.business_website || null,
+        admin_notes: profile.admin_notes || null,
+        profile_picture: profile.profile_picture || null,
+        signature_photo: profile.signature_photo || null,
       },
       documents: {
         documents: documents.map((document) => ({

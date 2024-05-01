@@ -19,6 +19,7 @@ export const create_request_by_patient_validation = {
     state: Joi.string().alphanum().optional(),
     zip: Joi.string().allow(""),
     room: Joi.string().allow(""),
+    relation_with_patient: Joi.string().allow("").optional(),
     password: Joi.string()
       .min(5)
       .optional()

@@ -17,10 +17,11 @@ export const is_patient_registered: Controller = async (
   try {
     const { email } = req.body;
 
+    const allowedUserTypes = ["patient", "physician", "admin"];
+
     const is_patient = await User.findOne({
       where: {
-        type_of_user: "patient",
-        email,
+        [Op.and]: [{ type_of_user: { [Op.in]: allowedUserTypes } }, { email }],
       },
     });
 
@@ -36,7 +37,8 @@ export const is_patient_registered: Controller = async (
       });
     }
   } catch (error) {
-    res.status(500).json({ error: message_constants.ISE });
+    console.log(error);
+    return res.status(500).json({ error: message_constants.ISE });
   }
 };
 
@@ -62,6 +64,7 @@ export const create_request_by_patient: Controller = async (
         state,
         zip,
         room,
+        relation_with_patient,
         password,
       },
     } = req;
@@ -163,6 +166,7 @@ export const create_request_by_patient: Controller = async (
       city,
       state,
       zip,
+      relation_with_patient,
     });
 
     if (!request_data) {
@@ -208,9 +212,13 @@ export const create_request_by_patient: Controller = async (
       status: true,
       message: message_constants.RC,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({
+      error:
+        message_constants.ISE +
+        " as email is already registered with admin or physician or duplicate value for mobile number",
+    });
   }
 };
 
@@ -417,9 +425,15 @@ export const create_request_by_family_friend: Controller = async (
       status: true,
       message: message_constants.RC,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({
+      error:
+        message_constants.ISE +
+        " " +
+        error.message +
+        " email is already registered with admin or physician",
+    });
   }
 };
 
@@ -598,9 +612,15 @@ export const create_request_by_concierge: Controller = async (
       status: true,
       message: message_constants.RC,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({
+      error:
+        message_constants.ISE +
+        " " +
+        error.message +
+        " email is already registered with admin or physician",
+    });
   }
 };
 
@@ -776,8 +796,14 @@ export const create_request_by_business: Controller = async (
       status: true,
       message: message_constants.RC,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
+    return res.status(500).json({
+      error:
+        message_constants.ISE +
+        " " +
+        error.message +
+        " email is already registered with admin or physician",
+    });
   }
 };

@@ -311,19 +311,19 @@ export const export_single: Controller = async (
     for (const request of formatted_response.data) {
       // console.log(request);
       const rowData = [
-        request.sr_no,
-        request.request_state,
-        request.confirmationNo,
-        request.patient_data.name,
-        request.patient_data.DOB,
-        request.requestor_data.first_name +
+        request?.sr_no,
+        request?.request_state || null,
+        request?.confirmationNo || null,
+        request?.patient_data?.name || null,
+        request?.patient_data?.DOB || null,
+        request?.requestor_data?.first_name +
           " " +
-          request.requestor_data.last_name,
-        request.requested_date,
-        request.date_of_service,
-        request.physician_data.name,
-        request.physician_data.mobile_no,
-        request.physician_data.address,
+          request?.requestor_data?.last_name,
+        request?.requested_date || null,
+        request?.date_of_service || null,
+        request?.physician_data?.name || null,
+        request?.physician_data?.mobile_no || null,
+        request?.physician_data?.address || null,
         // Add more data fields as needed
       ];
       worksheet.addRow(rowData);
@@ -425,18 +425,18 @@ export const export_all: Controller = async (
         console.log(request);
         const rowData = [
           request?.sr_no,
-          request?.request_state,
-          request?.confirmationNo,
-          request?.patient_data?.name,
-          request?.patient_data?.DOB,
+          request?.request_state || null,
+          request?.confirmationNo || null,
+          request?.patient_data?.name || null,
+          request?.patient_data?.DOB || null,
           request?.requestor_data?.first_name +
             " " +
             request?.requestor_data?.last_name,
           request?.requested_date,
           request?.date_of_service,
-          request?.physician_data?.name,
-          request?.physician_data?.mobile_no,
-          request?.physician_data?.address,
+          request?.physician_data?.name || null,
+          request?.physician_data?.mobile_no || null,
+          request?.physician_data?.address || null,
           // Add more data fields as needed
         ];
         worksheet.addRow(rowData);
@@ -568,13 +568,13 @@ export const export_single_physician: Controller = async (
     // Add data to the worksheet
     for (const request of formatted_response.data) {
       const rowData = [
-        request.sr_no,
-        request.request_id,
-        request.request_state,
-        request.confirmation_no,
-        request.patient_data.name,
-        request.patient_data.mobile_no,
-        request.patient_data.address,
+        request?.sr_no,
+        request?.request_id || null,
+        request?.request_state || null,
+        request?.confirmation_no || null,
+        request?.patient_data.name || null,
+        request?.patient_data.mobile_no || null,
+        request?.patient_data.address || null,
         // Add more data fields as needed
       ];
       worksheet.addRow(rowData);
@@ -700,13 +700,13 @@ export const export_all_physician: Controller = async (
       // Add data to the worksheet
       for (const request of formatted_response.data) {
         const rowData = [
-          request.sr_no,
-          request.request_id,
-          request.request_state,
-          request.confirmation_no,
-          request.patient_data.name,
-          request.patient_data.mobile_no,
-          request.patient_data.address,
+          request.sr_no || null,
+          request.request_id || null,
+          request.request_state || null,
+          request.confirmation_no || null,
+          request.patient_data.name || null,
+          request.patient_data.mobile_no || null,
+          request.patient_data.address || null,
         ];
         worksheet.addRow(rowData);
       }

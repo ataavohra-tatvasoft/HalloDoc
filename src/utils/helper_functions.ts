@@ -403,7 +403,7 @@ export const handle_request_state_exports = async (
   additional_attributes?: any
 ) => {
   const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 10;
+  const limit = Number(page_size) || 100;
   const offset = (page_number - 1) * limit;
   const where_clause_patient = {
     type_of_user: "patient",
@@ -700,7 +700,7 @@ export const handle_request_state_physician_exports = async (
   additionalAttributes?: Array<string>
 ) => {
   const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 10;
+  const limit = Number(page_size) || 100;
   const offset = (page_number - 1) * limit;
 
   const where_clause_patient = {

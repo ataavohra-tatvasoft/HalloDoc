@@ -20,7 +20,7 @@ Getting Started:
 Clone the repository.
 Install dependencies using npm install or yarn install.
 Configure the database connection details.
-Run the development server using npm start or yarn start.
+Run the development server using npm run dev.
 
 Contributing (Optional):
 Pull requests are welcome.
@@ -28,9 +28,8 @@ Please follow the code style guide (if applicable).
 Write unit tests for your code.
 
 License (Replace with your chosen license):
-MIT License
+#Currently no licence required
 
 Disclaimer:
 This project is for educational purposes only. Always consult with a licensed physician for any medical concerns.
 
-Note:

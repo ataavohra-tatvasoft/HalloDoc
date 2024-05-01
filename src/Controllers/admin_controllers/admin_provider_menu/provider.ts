@@ -381,6 +381,8 @@ export const view_edit_physician_account: Controller = async (
         "zip",
         "billing_mobile_no",
         "admin_notes",
+        "profile_picture",
+        "signature_photo"
       ],
       include: [
         {
@@ -442,9 +444,11 @@ export const view_edit_physician_account: Controller = async (
         billing_mobile_no: profile.billing_mobile_no,
       },
       provider_profile: {
-        business_name: profile.business_name,
-        business_website: profile.business_website,
-        admin_notes: profile.admin_notes,
+        business_name: profile.business_name || null,
+        business_website: profile.business_website || null,
+        admin_notes: profile.admin_notes || null,
+        profile_picture: profile.profile_picture || null,
+        signature_photo: profile.signature_photo || null,
       },
       onboarding: {
         documents: documents?.map((document: any) => ({
