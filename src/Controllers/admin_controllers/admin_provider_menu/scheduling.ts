@@ -257,11 +257,10 @@ export const requested_shifts: Controller = async (
     for (const provider of providers) {
       const formatted_request_1 = {
         sr_no: i,
-        user_id: provider.user_id,
-        staff: provider.firstname + " " + provider.lastname,
         shifts: provider.Shifts?.map((shift) => ({
           shift_id: shift.shift_id,
           user_id: shift.user_id,
+          staff: provider.firstname + " " + provider.lastname,
           region: shift.region,
           status: shift.status,
           shift_date: shift.shift_date.toISOString().split("T")[0],
@@ -524,6 +523,32 @@ export const edit_shift: Controller = async (
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: message_constants.ISE });
+  }
+};
+
+export const delete_shift: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { shift_id } = req.params;
+    const shifts = Shifts.destroy({
+      where: {
+        shift_id,
+      },
+    });
+    if (!shifts) {
+      return res.status(500).json({
+        message: message_constants.EWD,
+      });
+    }
+
+    return res.status(200).json({
+      message: message_constants.Success,
+    });
+  } catch (error) {
     return res.status(500).json({ message: message_constants.ISE });
   }
 };

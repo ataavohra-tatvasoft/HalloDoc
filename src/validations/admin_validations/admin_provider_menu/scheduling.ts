@@ -66,6 +66,12 @@ export const edit_shift_validation = {
   })
 };
 
+export const delete_shift_validation = {
+  params: Joi.object({
+    shift_id: Joi.number().required(),
+  })
+};
+
 export const edit_return_shift_validation = {
   params: Joi.object({
     shift_id: Joi.number().required(),
