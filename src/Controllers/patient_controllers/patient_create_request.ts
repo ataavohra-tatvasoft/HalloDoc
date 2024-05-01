@@ -430,9 +430,7 @@ export const create_request_by_family_friend: Controller = async (
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " " +
-        error.message +
-        " email is already registered with admin or physician",
+        " as email is already registered with admin or physician or duplicate value for mobile number",
     });
   }
 };
@@ -617,9 +615,7 @@ export const create_request_by_concierge: Controller = async (
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " " +
-        error.message +
-        " email is already registered with admin or physician",
+        " as email is already registered with admin or physician or duplicate value for mobile number",
     });
   }
 };
@@ -801,9 +797,7 @@ export const create_request_by_business: Controller = async (
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " " +
-        error.message +
-        " email is already registered with admin or physician",
+        " as email is already registered with admin or physician or duplicate value for mobile number",
     });
   }
 };
