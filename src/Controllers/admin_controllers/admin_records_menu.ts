@@ -69,6 +69,7 @@ export const patient_history: Controller = async (
     for (const user of users) {
       const formatted_request = {
         sr_no: i,
+        user_id: user.user_id,
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
@@ -96,6 +97,7 @@ export const patient_records: Controller = async (
   next: NextFunction
 ) => {
   try {
+    const { user_id } = req.params;
     const { page, page_size } = req.query;
     const page_number = Number(page) || 1;
     const limit = Number(page_size) || 10;
@@ -117,6 +119,9 @@ export const patient_records: Controller = async (
         "state",
         "zip",
       ],
+      where: {
+        patient_id: user_id,
+      },
       include: [
         {
           model: User,
@@ -146,7 +151,7 @@ export const patient_records: Controller = async (
         created_at: request.createdAt,
         confirmation_no: request.confirmation_no,
         provider_name:
-          request.Physician?.firstname + " " + request.Physician?.lastname,
+          request?.Physician?.firstname + " " + request?.Physician?.lastname,
         concluded_date: request?.concluded_date,
         status: request.request_status,
         final_report: request?.final_report,
@@ -404,7 +409,7 @@ export const search_records: Controller = async (
             "address_1",
             "address_2",
             "zip",
-            "state"
+            "state",
           ],
           where: {
             ...(patient_name && {

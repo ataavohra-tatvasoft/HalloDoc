@@ -766,7 +766,7 @@ export const export_records: Controller = async (
     } = req.query;
 
     const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
+    const limit = Number(page_size) || 100;
     const offset = (page_number - 1) * limit;
     const formatted_response: FormattedResponse<any> = {
       status: true,

@@ -35,7 +35,7 @@ router.get(
   patient_history
 );
 router.get(
-  "/records/patient_records",
+  "/records/:user_id/patient_records",
   authmiddleware,
   celebrate(patient_records_validation),
   patient_records
