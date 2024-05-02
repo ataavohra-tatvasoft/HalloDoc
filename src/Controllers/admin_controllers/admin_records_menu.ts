@@ -12,6 +12,7 @@ import Notes from "../../db/models/notes";
 import Order from "../../db/models/order";
 import Documents from "../../db/models/documents";
 import Logs from "../../db/models/log";
+import { error } from "console";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -403,6 +404,7 @@ export const search_records: Controller = async (
             "address_1",
             "address_2",
             "zip",
+            "state"
           ],
           where: {
             ...(patient_name && {
@@ -473,9 +475,12 @@ export const search_records: Controller = async (
       offset,
     });
 
+    console.log(total_count);
+
     if (!total_count) {
+      console.log(error);
       return res.status(404).json({
-        message: message_constants.EWCounting,
+        message: message_constants.EWCounting + " or " + "Patient not found",
       });
     }
 
