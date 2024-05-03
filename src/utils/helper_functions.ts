@@ -839,6 +839,7 @@ export const repeat_days_shift = async (
   }
 
   const weekdays = repeat_days.split(",");
+  console.log(weekdays);
 
   // Optional validation (comment out if not needed)
 
@@ -879,7 +880,7 @@ export const repeat_days_shift = async (
         start,
         end,
         repeat_days: "", // No further repetition
-        repeat_end: 1, // Create one shift per iteration
+        repeat_end: 0, // Create one shift per iteration
       });
 
       if (!shift) {

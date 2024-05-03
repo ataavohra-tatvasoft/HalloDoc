@@ -1131,9 +1131,7 @@ export const roles: Controller = async (
       const roles = await Role.findAll({
         attributes: ["role_id", "role_name"],
         where: {
-          ...(account_type
-            ? { account_type: account_type }
-            : { account_type: "all" }),
+          ...(account_type && { account_type: account_type }),
           // ...(account_type && { account_type: account_type }),
         },
       });

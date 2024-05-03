@@ -388,7 +388,6 @@ export const create_shift: Controller = async (
       });
     }
 
- 
     const shifts = repeat_days_shift(
       user.user_id,
       region,

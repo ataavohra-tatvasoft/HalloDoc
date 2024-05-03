@@ -10,6 +10,7 @@ import Shifts from "../../db/models/shifts";
 import { DATE, Op } from "sequelize";
 import { VerifiedToken } from "../../interfaces/common_interface";
 import jwt from "jsonwebtoken";
+import { repeat_days_shift } from "../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -107,20 +108,22 @@ export const provider_create_shift: Controller = async (
         message: message_constants.PhNF,
       });
     }
-    const shift = await Shifts.create({
-      user_id: user.user_id,
+
+    const shifts = repeat_days_shift(
+      user.user_id,
       region,
-      physician: user.firstname + " " + user.lastname,
+      user.firstname + " " + user.lastname,
       shift_date,
       start,
       end,
       repeat_days,
       repeat_end,
-    });
+      res
+    );
 
-    if (!shift) {
+    if (!shifts) {
       return res.status(500).json({
-        message: message_constants.EWCS,
+        message: "Error while creating shifts!",
       });
     }
     return res.status(200).json({
