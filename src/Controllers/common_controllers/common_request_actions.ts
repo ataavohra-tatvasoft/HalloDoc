@@ -1028,13 +1028,18 @@ export const update_agreement_agree: Controller = async (
       return res.status(404).json({ error: message_constants.RNF });
     }
     const update_status = await RequestModel.update(
-      { agreement_status: "accepted" },
+      {
+        agreement_status: "accepted",
+        request_state: "pending",
+        request_status: "assigned",
+      },
       {
         where: {
           confirmation_no,
         },
       }
     );
+
     if (!update_status) {
       res.status(200).json({
         status: true,

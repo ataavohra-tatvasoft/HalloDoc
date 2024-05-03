@@ -9,7 +9,7 @@ import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
 import Shifts from "../../../db/models/shifts";
 import { DATE, Op } from "sequelize";
-import Role from "../../../db/models/role";
+import { repeat_days_shift } from "../../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -371,6 +371,7 @@ export const create_shift: Controller = async (
       repeat_end,
     } = req.body;
     console.log(physician);
+    console.log(repeat_days);
     const firstname = physician.split(" ")[0];
     const lastname = physician.split(" ")[1];
     const date = new DATE(shift_date);
@@ -386,8 +387,10 @@ export const create_shift: Controller = async (
         message: message_constants.PhNF,
       });
     }
-    const shift = await Shifts.create({
-      user_id: user.user_id,
+
+ 
+    const shifts = repeat_days_shift(
+      user.user_id,
       region,
       physician,
       shift_date,
@@ -395,11 +398,12 @@ export const create_shift: Controller = async (
       end,
       repeat_days,
       repeat_end,
-    });
+      res
+    );
 
-    if (!shift) {
+    if (!shifts) {
       return res.status(500).json({
-        message: message_constants.EWCS,
+        message: "Error while creating shifts!",
       });
     }
     return res.status(200).json({

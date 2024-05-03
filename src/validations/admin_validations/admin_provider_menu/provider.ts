@@ -90,7 +90,7 @@ export const save_user_information_validation = {
 
     // Business details
     business_name: Joi.string().trim().optional(),
-    business_website: Joi.string().uri().allow(null, ""), // Optional website URL
+    business_website: Joi.string().allow(null, ""), // Optional website URL
 
     // Optional admin notes
     admin_notes: Joi.string().allow(null, ""),
@@ -272,7 +272,7 @@ export const common_save_provider_account_validation = {
       .pattern(/^\d{11,13}$/)
       .optional(),
     business_name: Joi.string().trim().required(),
-    business_website: Joi.string().uri().allow(null, ""),
+    business_website: Joi.string().allow(null, ""),
     admin_notes: Joi.string().allow(null, ""),
   }),
   files: Joi.object({

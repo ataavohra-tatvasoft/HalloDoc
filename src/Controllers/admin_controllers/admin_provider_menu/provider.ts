@@ -380,9 +380,11 @@ export const view_edit_physician_account: Controller = async (
         "state",
         "zip",
         "billing_mobile_no",
+        "business_name",
+        "business_website",
         "admin_notes",
         "profile_picture",
-        "signature_photo"
+        "signature_photo",
       ],
       include: [
         {

@@ -5,6 +5,7 @@ import Region from "../db/models/region";
 import RequestModel from "../db/models/request";
 import Requestor from "../db/models/requestor";
 import Notes from "../db/models/notes";
+import Shifts from "../db/models/shifts";
 import UserRegionMapping from "../db/models/user-region_mapping";
 import message_constants from "../public/message_constants";
 import { Op } from "sequelize";
@@ -803,4 +804,97 @@ export const handle_request_state_physician_exports = async (
   }
 
   return formatted_response;
+};
+
+export const repeat_days_shift = async (
+  user_id: number,
+  region: string,
+  physician: string,
+  shift_date: Date,
+  start: string,
+  end: string,
+  repeat_days: string,
+  repeat_end: number,
+  res: Response
+) => {
+  const shift = await Shifts.create({
+    user_id,
+    region,
+    physician,
+    shift_date,
+    start,
+    end,
+    repeat_days: "",
+    repeat_end,
+  });
+
+  if (!shift) {
+    return res.status(500).json({
+      message: message_constants.EWCS,
+    });
+  }
+
+  if (repeat_end === 0) {
+    return "No extra shifts created (repeat end is zero)";
+  }
+
+  const weekdays = repeat_days.split(",");
+
+  // Optional validation (comment out if not needed)
+
+  // const validWeekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  // const invalidDays = weekdays.filter(day => !validWeekdays.includes(day.toLowerCase()));
+  // if (invalidDays.length > 0) {
+  //   return `Invalid weekdays provided: ${invalidDays.join(', ')}`;
+  // }
+  const days = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+
+  for (const day of weekdays) {
+    let currentShiftDate = new Date(shift_date); // Copy for each iteration
+
+    for (let i = 0; i < repeat_end; i++) {
+      // Find the next desired weekday
+      // console.log(currentShiftDate.getDay() + "->" + currentShiftDate);
+      // console.log(days.indexOf(day.toLowerCase()) + "->" + day);
+
+      while (currentShiftDate.getDay() !== days.indexOf(day.toLowerCase())) {
+        currentShiftDate.setDate(currentShiftDate.getDate() + 1);
+      }
+      // console.log(currentShiftDate.getDay() + "->" + currentShiftDate);
+      // console.log(days.indexOf(day.toLowerCase()) + "->" + day);
+
+      const shift = await Shifts.create({
+        user_id,
+        region,
+        physician,
+        shift_date: currentShiftDate,
+        start,
+        end,
+        repeat_days: "", // No further repetition
+        repeat_end: 1, // Create one shift per iteration
+      });
+
+      if (!shift) {
+        return `Error creating shift for ${day}`;
+      }
+
+      // Skip to next instance of the same weekday (considering weekly cycle)
+      let daysToSkip = (days.length - days.indexOf(day)) % 7; // Adjust for remaining days in the week
+      if (daysToSkip == 0) {
+        daysToSkip = 7;
+      }
+      currentShiftDate.setDate(currentShiftDate.getDate() + daysToSkip);
+    }
+  }
+
+  const totalShifts = repeat_end * weekdays.length;
+  return `Total shifts created: ${totalShifts}`;
 };
