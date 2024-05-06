@@ -385,6 +385,9 @@ export const export_all: Controller = async (
         page_size
       );
 
+      console.log(state);
+      // console.log(formatted_response);
+
       // Create a new worksheet for each state
       const worksheet = work_book.addWorksheet(state);
 
@@ -422,8 +425,7 @@ export const export_all: Controller = async (
 
       // Add data to the worksheet
       for (const request of formatted_response.data) {
-        console.log(request);
-        const rowData = [
+        const row_data = [
           request?.sr_no,
           request?.request_state || null,
           request?.confirmationNo || null,
@@ -439,13 +441,13 @@ export const export_all: Controller = async (
           request?.physician_data?.address || null,
           // Add more data fields as needed
         ];
-        worksheet.addRow(rowData);
+        worksheet.addRow(row_data);
       }
       // Create a buffer containing the Excel workbook data
-      const excelBuffer = await work_book.xlsx.writeBuffer();
+      const excel_buffer = await work_book.xlsx.writeBuffer();
 
       // Add the workbook data to the ZIP file with a descriptive filename
-      zip.file(`${state}.xlsx`, excelBuffer);
+      zip.file(`${state}.xlsx`, excel_buffer);
     }
 
     // Generate a unique filename for the Excel file
