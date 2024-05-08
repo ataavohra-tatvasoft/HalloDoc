@@ -8,8 +8,11 @@ import User from "../../../db/models/user";
 import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
 import Shifts from "../../../db/models/shifts";
-import { DATE, Op } from "sequelize";
-import { repeat_days_shift } from "../../../utils/helper_functions";
+import { DATE, Op, TIME } from "sequelize";
+import {
+  manage_shift_in_time,
+  repeat_days_shift,
+} from "../../../utils/helper_functions";
 
 /** Configs */
 dotenv.config({ path: `.env` });
@@ -135,7 +138,7 @@ export const provider_on_call: Controller = async (
     });
     var i = offset + 1;
     for (const provider of providers_on_call) {
-      if (provider.on_call_status == "yes") {
+      if (provider.on_call_status == "scheduled") {
         const formatted_request_1 = {
           sr_no: i,
           user_id: provider.user_id,
@@ -299,6 +302,19 @@ export const approve_selected: Controller = async (
 
     for (const shift_id of shift_ids) {
       // shift_id = Number(shift_id);
+
+      const is_shift = await Shifts.findOne({
+        where: {
+          shift_id,
+        },
+      });
+
+      if (!is_shift) {
+        return res.status(404).json({
+          message: message_constants.ShNF,
+        });
+      }
+
       const shifts = Shifts.update(
         {
           status: "approved",
@@ -309,11 +325,14 @@ export const approve_selected: Controller = async (
           },
         }
       );
+
       if (!shifts) {
         return res.status(500).json({
           message: message_constants.EWU,
         });
       }
+
+      await manage_shift_in_time(is_shift, "Asia/Kolkata");
     }
 
     return res.status(200).json({
@@ -594,6 +613,7 @@ export const edit_return_shift: Controller = async (
           message: message_constants.EWU,
         });
       }
+      await manage_shift_in_time(shift, "Asia/Kolkata");
     } else {
       const update_shift = await Shifts.update(
         {

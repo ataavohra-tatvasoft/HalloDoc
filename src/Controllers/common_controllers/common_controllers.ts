@@ -1115,6 +1115,55 @@ export const physicians: Controller = async (
   }
 };
 
+export const create_shift_region_physicians: Controller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // const {confirmation_no} = req.params;
+    const { region } = req.query as {
+      [key: string]: string;
+    };
+    var i = 1;
+    const formatted_response: FormattedResponse<any> = {
+      status: true,
+      // confirmation_no: confirmation_no,
+      data: [],
+    };
+    const physicians = await User.findAll({
+      attributes: ["state", "role_id", "firstname", "lastname"],
+      where: {
+        type_of_user: "physician",
+        on_call_status: "un-scheduled",
+        ...(region ? { state: region } : {}),
+      },
+    });
+    if (!physicians) {
+      return res.status(200).json({
+        status: false,
+        message: message_constants.PhNF,
+      });
+    }
+    for (const physician of physicians) {
+      const formatted_request = {
+        sr_no: i,
+        // firstname: physician.firstname,
+        // lastname: physician.lastname,
+        physician_name: physician.firstname + " " + physician.lastname,
+      };
+      i++;
+      formatted_response.data.push(formatted_request);
+    }
+    return res.status(200).json({
+      message: message_constants.Success,
+      ...formatted_response,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: message_constants.ISE });
+  }
+};
+
 /**Role's API */
 export const roles: Controller = async (
   req: Request,

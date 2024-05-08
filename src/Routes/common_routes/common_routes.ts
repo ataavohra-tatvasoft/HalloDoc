@@ -11,11 +11,13 @@ import {
   export_single_physician,
   export_all_physician,
   export_records,
+  create_shift_region_physicians,
 } from "../../controllers";
 import { authmiddleware } from "../../middlewares";
 import { celebrate } from "celebrate";
 import {
   actions_validation,
+  create_shift_region_physicians_validation,
   export_all_physician_validation,
   export_all_validation,
   export_records_validation,
@@ -65,6 +67,14 @@ router.get(
   actions
 );
 router.get("/commonroute/physicians", authmiddleware, physicians);
+
+router.get(
+  "/commonroute/create_shift/physicians",
+  celebrate(create_shift_region_physicians_validation),
+  authmiddleware,
+  create_shift_region_physicians
+);
+
 router.get(
   "/commonroute/roles",
   celebrate(roles_validation),

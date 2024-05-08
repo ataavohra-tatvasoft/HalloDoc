@@ -36,6 +36,7 @@ const message_constants = {
   RegNF: "Region not found",
   LNF: "Logs not found",
   RoNF: "Role not found",
+  ShNF: "Shifts not found",
   ReNF: "Requestor not found",
   RP: "Registered Patient",
   PNR: "Patient not registered",

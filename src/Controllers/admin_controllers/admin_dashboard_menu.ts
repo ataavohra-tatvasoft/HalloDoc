@@ -240,8 +240,7 @@ export const admin_create_request: Controller = async (
     console.log(error);
     return res.status(500).json({
       status: false,
-      error: error.errormessage,
-      message: message_constants.ISE,
+      message: message_constants.ISE + " " + error.errormessage,
     });
   }
 };

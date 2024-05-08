@@ -56,15 +56,15 @@ export const export_records_validation = {
     provider_name: Joi.string().allow("").optional(),
     email: Joi.string().email().allow("").optional(),
     phone_no: Joi.string()
-    .trim()
-    .allow("")
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .allow("")
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     page: Joi.string()
-    .optional()
+      .optional()
       .pattern(/^\d+$/, "page must be a positive integer"),
     page_size: Joi.string()
-    .optional()
+      .optional()
       .pattern(/^\d+$/, "page_size must be a positive integer"),
   }).optional(),
 
@@ -79,6 +79,13 @@ export const actions_validation = {
       .trim()
       .required()
       .error(new Error("Confirmation number is required")),
+  }),
+};
+
+/**Physician's API */
+export const create_shift_region_physicians_validation = {
+  query: Joi.object({
+    region: Joi.string().allow("").optional(),
   }),
 };
 

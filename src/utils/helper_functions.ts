@@ -899,3 +899,97 @@ export const repeat_days_shift = async (
   const totalShifts = repeat_end * weekdays.length;
   return `Total shifts created: ${totalShifts}`;
 };
+
+export function manage_shift_in_time(
+  shift: any,
+  time_zone?: string
+): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!shift || !shift.shift_date || !shift.start || !shift.end) {
+        throw new Error("Missing required shift data.");
+      }
+
+      const shift_date = new Date(shift.shift_date);
+
+      // Adjust for time zone if provided
+      if (time_zone) {
+        shift_date.setUTCHours(
+          shift_date.getUTCHours() + new Date().getTimezoneOffset() / (60 * 60)
+        ); // Convert to UTC and then adjust based on provided time zone
+      }
+
+      const start_time = new Date(shift_date.getTime());
+      const start_hours = Number(shift.start.split(":")[0]);
+      const start_minutes = Number(shift.start.split(":")[1]);
+      start_time.setHours(start_hours, start_minutes, 0); // Set time from string
+
+      const endTime = new Date(shift_date.getTime());
+      const end_hours = Number(shift.end.split(":")[0]);
+      const end_minutes = Number(shift.end.split(":")[1]);
+      endTime.setHours(end_hours, end_minutes, 0); // Set time from string
+
+      const completion_time = endTime.getTime(); // Get timestamp in milliseconds
+
+      console.log(typeof start_time);
+      const start_time_string = String(start_time);
+      console.log(typeof start_time_string);
+
+      function compare_times(timeString: string): "future" | "past" | "same" {
+        // Parse the time string into a Date object
+        const parsed_time = new Date(timeString);
+
+        // Get the current time
+        const now = new Date();
+
+        // Compare the times in milliseconds
+        const comparison_result = parsed_time.getTime() - now.getTime();
+
+        if (comparison_result > 0) {
+          return "future";
+        } else if (comparison_result < 0) {
+          return "past";
+        } else {
+          return "same";
+        }
+      }
+
+      const comparison_result = compare_times(start_time_string);
+
+      if (comparison_result === "future") {
+        console.log("The time string is in the future.");
+      } else if (comparison_result === "past") {
+        console.log("The time string is in the past.");
+      } else {
+        await User.update(
+          { on_call_status: "scheduled" },
+          { where: { user_id: shift.user_id } }
+        );
+        console.log(
+          'User status updated to "scheduled" for shift:',
+          shift.shift_id
+        );
+      }
+
+      // Schedule user status update after completion
+      setTimeout(async () => {
+        try {
+          await User.update(
+            { on_call_status: "un-scheduled" },
+            { where: { user_id: shift.user_id } }
+          );
+          console.log(
+            'User status updated to "un-scheduled" for shift:',
+            shift.shift_id
+          );
+        } catch (error) {
+          console.error("Error updating user status:", error);
+        }
+      }, completion_time - Date.now()); // Calculate delay until completion
+
+      resolve(); // Promise resolved successfully
+    } catch (error) {
+      reject(error); // Promise rejected with error
+    }
+  });
+}
