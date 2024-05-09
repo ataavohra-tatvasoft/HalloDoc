@@ -8,7 +8,7 @@ import User from "../../../db/models/user";
 import message_constants from "../../../public/message_constants";
 import dotenv from "dotenv";
 import Shifts from "../../../db/models/shifts";
-import { DATE, Op, TIME } from "sequelize";
+import { DATE, Op } from "sequelize";
 import {
   manage_shift_in_time,
   repeat_days_shift,

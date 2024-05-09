@@ -1,4 +1,4 @@
-import multer, { diskStorage } from "multer";
+import multer from "multer";
 import nodemailer from "nodemailer";
 import path from "path";
 import Region from "../db/models/region";
@@ -899,7 +899,6 @@ export const repeat_days_shift = async (
   const totalShifts = repeat_end * weekdays.length;
   return `Total shifts created: ${totalShifts}`;
 };
-
 export function manage_shift_in_time(
   shift: any,
   time_zone?: string
@@ -913,63 +912,50 @@ export function manage_shift_in_time(
       const shift_date = new Date(shift.shift_date);
 
       // Adjust for time zone if provided
-      if (time_zone) {
-        shift_date.setUTCHours(
-          shift_date.getUTCHours() + new Date().getTimezoneOffset() / (60 * 60)
-        ); // Convert to UTC and then adjust based on provided time zone
-      }
+      // if (time_zone) {
+      //   const timeZoneOptions = new Intl.DateTimeFormat([], { timeZone: time_zone }).resolvedOptions();
+      //   let targetOffsetInMinutes: number | null = null; // Initialize with null
+
+      //   // Declare targetTimeZoneOffset within the scope it's used
+      //   const targetTimeZoneOffset : any = timeZoneOptions.timeZone; // Might be a string
+
+      //   // Ensure targetOffsetInMinutes is a valid number
+      //   if (typeof targetTimeZoneOffset === 'string') {
+      //     targetOffsetInMinutes = parseInt(targetTimeZoneOffset, 10); // Parse to number
+      //   } else if (typeof targetTimeZoneOffset === 'object' && 'getTimezoneOffset' in targetTimeZoneOffset) {
+      //     targetOffsetInMinutes = targetTimeZoneOffset.getTimezoneOffset(); // Use getTimezoneOffset if valid object
+      //   } else {
+      //     // Handle unexpected type (optional):
+      //     console.error("Unexpected timeZoneOffset type:", targetTimeZoneOffset);
+      //     // You can throw an error or use a default behavior here (e.g., default time zone)
+      //   }
+
+      //   if (targetOffsetInMinutes !== null) {  // Check if assigned a value
+      //     const currentOffsetInMinutes = shift_date.getTimezoneOffset();
+      //     const offsetDifference = targetOffsetInMinutes - currentOffsetInMinutes;
+
+      //     // Adjust shift_date by the offset difference in minutes
+      //     shift_date.setTime(shift_date.getTime() + offsetDifference * 60 * 1000);
+      //   }
+      // }
 
       const start_time = new Date(shift_date.getTime());
       const start_hours = Number(shift.start.split(":")[0]);
       const start_minutes = Number(shift.start.split(":")[1]);
       start_time.setHours(start_hours, start_minutes, 0); // Set time from string
 
-      const endTime = new Date(shift_date.getTime());
+      const end_time = new Date(shift_date.getTime());
       const end_hours = Number(shift.end.split(":")[0]);
       const end_minutes = Number(shift.end.split(":")[1]);
-      endTime.setHours(end_hours, end_minutes, 0); // Set time from string
+      end_time.setHours(end_hours, end_minutes, 0); // Set time from string
 
-      const completion_time = endTime.getTime(); // Get timestamp in milliseconds
+      const completion_time = end_time.getTime(); // Get timestamp in milliseconds
 
-      console.log(typeof start_time);
-      const start_time_string = String(start_time);
-      console.log(typeof start_time_string);
-
-      function compare_times(timeString: string): "future" | "past" | "same" {
-        // Parse the time string into a Date object
-        const parsed_time = new Date(timeString);
-
-        // Get the current time
-        const now = new Date();
-
-        // Compare the times in milliseconds
-        const comparison_result = parsed_time.getTime() - now.getTime();
-
-        if (comparison_result > 0) {
-          return "future";
-        } else if (comparison_result < 0) {
-          return "past";
-        } else {
-          return "same";
-        }
-      }
-
-      const comparison_result = compare_times(start_time_string);
-
-      if (comparison_result === "future") {
-        console.log("The time string is in the future.");
-      } else if (comparison_result === "past") {
-        console.log("The time string is in the past.");
-      } else {
-        await User.update(
-          { on_call_status: "scheduled" },
-          { where: { user_id: shift.user_id } }
-        );
-        console.log(
-          'User status updated to "scheduled" for shift:',
-          shift.shift_id
-        );
-      }
+      console.log(shift_date);
+      console.log(shift_date.getTime());
+      console.log(start_time);
+      console.log(end_time);
+      console.log(completion_time);
 
       // Schedule user status update after completion
       setTimeout(async () => {
