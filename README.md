@@ -6,7 +6,6 @@
 </br>
 
 ## Features:
-</br>
 
 **Online Doctor Consultation:** Patients can connect with doctors virtually for consultations, reducing the need for physical visits.
 </br>
@@ -15,7 +14,6 @@
 </br>
 
 ## User Roles:
-</br>
 
 **Admin:** Manages the platform, including user accounts, patient records, and appointment requests. Can review patient history, manage cases, and control requests (cancel, block).
 </br>
@@ -27,7 +25,6 @@
 </br>
 
 ## Technology Stack:
-</br>
 
 **Frontend:** (Reactjs)
 </br>
@@ -42,7 +39,6 @@
 </br>
 
 ## Getting Started:
-</br>
 
 -> **Clone the repository.**
 </br>
@@ -92,7 +88,6 @@ Password: "Password@6789"
 
 
 ## Contributing:
-</br>
 
 **Pull requests are welcome.**
 </br>
@@ -101,12 +96,10 @@ Password: "Password@6789"
 </br>
 
 ## License:
-</br>
 
 **#Currently no licence required.**
 </br>
 
 ## Disclaimer:
-</br>
 
 **This project is for educational purposes only. Always consult with a licensed physician for any medical concerns.**
