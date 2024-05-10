@@ -1,4 +1,9 @@
 ## Project: HalloDoc
+</br>
+
+## Note:
+**This repository is of backend code only.**
+</br>
 
 ## Description:
 
@@ -85,7 +90,6 @@ Password: "Password@6789"
 ->Patient: "patient27@yopmail.com",
 Password: "Password@6789"
 </br>
-
 
 ## Contributing:
 
