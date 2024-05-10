@@ -12,6 +12,7 @@ import { DATE, Op } from "sequelize";
 import {
   manage_shift_in_time,
   repeat_days_shift,
+  shift_timeouts,
 } from "../../../utils/helper_functions";
 
 /** Configs */
@@ -582,11 +583,10 @@ export const edit_return_shift: Controller = async (
 ) => {
   try {
     const { shift_id } = req.params;
-    const numeric_shift_id = Number(shift_id);
 
     const shift = await Shifts.findOne({
       where: {
-        shift_id: numeric_shift_id,
+        shift_id: Number(shift_id),
       },
     });
 
@@ -631,6 +631,23 @@ export const edit_return_shift: Controller = async (
           message: message_constants.EWU,
         });
       }
+
+      await User.update(
+        { on_call_status: "un-scheduled" },
+        { where: { user_id: shift.user_id } }
+      );
+
+      console.log(shift_timeouts);
+      const timeout_ids = shift_timeouts.get(shift.shift_id) || [];
+
+      // Clear each stored timeout ID
+      for (const id of timeout_ids) {
+        console.log(id);
+        clearTimeout(id);
+      }
+
+      // Remove timeout IDs from storage (optional)
+      shift_timeouts.delete(shift.shift_id);
     }
 
     return res.status(200).json({

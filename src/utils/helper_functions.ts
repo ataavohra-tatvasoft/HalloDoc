@@ -15,6 +15,8 @@ import EncounterForm from "../db/models/encounter_form";
 import { FormattedResponse } from "../interfaces/common_interface";
 import User from "../db/models/user";
 
+export const shift_timeouts = new Map();
+
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "..", "..") + "\\src\\public\\uploads"); // Adjust as needed
@@ -899,65 +901,60 @@ export const repeat_days_shift = async (
   const totalShifts = repeat_end * weekdays.length;
   return `Total shifts created: ${totalShifts}`;
 };
-export function manage_shift_in_time(
-  shift: any,
-  time_zone?: string
-): Promise<void> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (!shift || !shift.shift_date || !shift.start || !shift.end) {
-        throw new Error("Missing required shift data.");
-      }
 
-      const shift_date = new Date(shift.shift_date);
+export const manage_shift_in_time = async (shift: any, time_zone?: string) => {
+  try {
+    // Validate required shift data
+    if (!shift || !shift.shift_date || !shift.start || !shift.end) {
+      throw new Error("Missing required shift data.");
+    }
 
-      // Adjust for time zone if provided
-      // if (time_zone) {
-      //   const timeZoneOptions = new Intl.DateTimeFormat([], { timeZone: time_zone }).resolvedOptions();
-      //   let targetOffsetInMinutes: number | null = null; // Initialize with null
+    const shift_date = new Date(shift.shift_date);
+    const timeout_ids = [];
 
-      //   // Declare targetTimeZoneOffset within the scope it's used
-      //   const targetTimeZoneOffset : any = timeZoneOptions.timeZone; // Might be a string
+    // Check if start time has already passed
+    const now = new Date();
+    const start_time = new Date(shift_date.getTime());
+    start_time.setHours(
+      Number(shift.start.split(":")[0]),
+      Number(shift.start.split(":")[1]),
+      0
+    );
 
-      //   // Ensure targetOffsetInMinutes is a valid number
-      //   if (typeof targetTimeZoneOffset === 'string') {
-      //     targetOffsetInMinutes = parseInt(targetTimeZoneOffset, 10); // Parse to number
-      //   } else if (typeof targetTimeZoneOffset === 'object' && 'getTimezoneOffset' in targetTimeZoneOffset) {
-      //     targetOffsetInMinutes = targetTimeZoneOffset.getTimezoneOffset(); // Use getTimezoneOffset if valid object
-      //   } else {
-      //     // Handle unexpected type (optional):
-      //     console.error("Unexpected timeZoneOffset type:", targetTimeZoneOffset);
-      //     // You can throw an error or use a default behavior here (e.g., default time zone)
-      //   }
+    if (start_time < now) {
+      console.log("Shift start time has already passed. Skipping update.");
+      return;
+    }
 
-      //   if (targetOffsetInMinutes !== null) {  // Check if assigned a value
-      //     const currentOffsetInMinutes = shift_date.getTimezoneOffset();
-      //     const offsetDifference = targetOffsetInMinutes - currentOffsetInMinutes;
+    // Schedule user status updates with timeouts
+    const start_delay = start_time.getTime() - Date.now();
 
-      //     // Adjust shift_date by the offset difference in minutes
-      //     shift_date.setTime(shift_date.getTime() + offsetDifference * 60 * 1000);
-      //   }
-      // }
+    timeout_ids.push(
+      setTimeout(async () => {
+        try {
+          await User.update(
+            { on_call_status: "scheduled" },
+            { where: { user_id: shift.user_id } }
+          );
+          console.log(
+            'User status updated to "scheduled" for shift:',
+            shift.shift_id
+          );
+        } catch (error) {
+          console.error("Error updating user status:", error);
+        }
+      }, start_delay)
+    );
 
-      const start_time = new Date(shift_date.getTime());
-      const start_hours = Number(shift.start.split(":")[0]);
-      const start_minutes = Number(shift.start.split(":")[1]);
-      start_time.setHours(start_hours, start_minutes, 0); // Set time from string
+    const end_time = new Date(shift_date.getTime());
+    end_time.setHours(
+      Number(shift.end.split(":")[0]),
+      Number(shift.end.split(":")[1]),
+      0
+    );
+    const end_delay = end_time.getTime() - Date.now();
 
-      const end_time = new Date(shift_date.getTime());
-      const end_hours = Number(shift.end.split(":")[0]);
-      const end_minutes = Number(shift.end.split(":")[1]);
-      end_time.setHours(end_hours, end_minutes, 0); // Set time from string
-
-      const completion_time = end_time.getTime(); // Get timestamp in milliseconds
-
-      console.log(shift_date);
-      console.log(shift_date.getTime());
-      console.log(start_time);
-      console.log(end_time);
-      console.log(completion_time);
-
-      // Schedule user status update after completion
+    timeout_ids.push(
       setTimeout(async () => {
         try {
           await User.update(
@@ -971,11 +968,12 @@ export function manage_shift_in_time(
         } catch (error) {
           console.error("Error updating user status:", error);
         }
-      }, completion_time - Date.now()); // Calculate delay until completion
+      }, end_delay)
+    );
 
-      resolve(); // Promise resolved successfully
-    } catch (error) {
-      reject(error); // Promise rejected with error
-    }
-  });
-}
+    // Associate timeout IDs with the shift (example using a map)
+    shift_timeouts.set(shift.shift_id, timeout_ids); // Replace with your storage mechanism
+  } catch (error) {
+    console.error("Error while managing shift:", error);
+  }
+};
