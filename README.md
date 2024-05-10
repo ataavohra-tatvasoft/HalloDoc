@@ -1,8 +1,12 @@
 ## Project: HalloDoc
-</br>
 
 ## Note:
+
 **This repository is of backend code only.**
+</br>
+
+**For Front-End Integration, integrate below repository and configure accordingly.**
+**Front-End repository link: (https://github.com/Abhay-tatva/Hallo-Doc-App.git)**
 </br>
 
 ## Description:
