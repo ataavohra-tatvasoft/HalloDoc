@@ -4,7 +4,6 @@ import bodyParser from "body-parser";
 import routes from "./src/routes";
 import dotenv from "dotenv";
 import fileUpload from "express-fileupload";
-import { handle_joi_errors } from "./src/middlewares";
 import connect_to_database from "./src/connections/database";
 import { errors } from "celebrate";
 
