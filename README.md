@@ -32,10 +32,10 @@
 **Frontend:** (Reactjs)
 </br>
 
-**Backend:** (Node.js,)
+**Backend:** (Node.js, Typescript)
 </br>
 
-**Database:** (MySQL)
+**Database:** (MySQL, WAMPP)
 </br>
 
 **API Test:** (Postman)
