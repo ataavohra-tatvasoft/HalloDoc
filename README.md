@@ -80,14 +80,14 @@ npx sequelize db:seed:all" in src/db directory.
 
 -> **Default users and password for getting started:**
 </br>
-*Admin: "admin27@yopmail.com"
-*Password: "Password@6789"
+-> Admin: "admin27@yopmail.com",
+Password: "Password@6789"
 </br>
-*Provider: "provider27@yopmail.com"
-*Password: "Password@6789"
+-> Provider: "provider27@yopmail.com",
+Password: "Password@6789"
 </br>
-*Patient: "patient27@yopmail.com"
-*Password: "Password@6789"
+->Patient: "patient27@yopmail.com",
+Password: "Password@6789"
 
 ## Contributing:
 
