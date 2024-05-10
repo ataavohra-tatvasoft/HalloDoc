@@ -3,18 +3,18 @@
 ## Description:
 
 **This project aims to develop a web-based platform that facilitates online doctor consultations and diagnostic services. Inspired by the Halodoc platform, it strives to create a user-friendly experience for both doctors and patients.**
+</br>
 
 ## Features:
-
 </br>
 
 **Online Doctor Consultation:** Patients can connect with doctors virtually for consultations, reducing the need for physical visits.
 </br>
 
 **Diagnostics Services:** The platform may integrate with third-party services to enable patients to access diagnostic tests and receive results securely. (Implementation details depend on integration feasibility).
+</br>
 
 ## User Roles:
-
 </br>
 
 **Admin:** Manages the platform, including user accounts, patient records, and appointment requests. Can review patient history, manage cases, and control requests (cancel, block).
@@ -24,9 +24,9 @@
 </br>
 
 **Patient:** Seeks online consultations, requests diagnostic services (if available), manages appointments, and securely communicates with doctors.
+</br>
 
 ## Technology Stack:
-
 </br>
 
 **Frontend:** (Reactjs)
@@ -39,9 +39,9 @@
 </br>
 
 **API Test:** (Postman)
+</br>
 
 ## Getting Started:
-
 </br>
 
 -> **Clone the repository.**
@@ -88,24 +88,25 @@ Password: "Password@6789"
 </br>
 ->Patient: "patient27@yopmail.com",
 Password: "Password@6789"
+</br>
+
 
 ## Contributing:
-
 </br>
 
 **Pull requests are welcome.**
 </br>
 
 **Please follow the code style guide.**
+</br>
 
 ## License:
-
 </br>
 
 **#Currently no licence required.**
+</br>
 
 ## Disclaimer:
-
 </br>
 
 **This project is for educational purposes only. Always consult with a licensed physician for any medical concerns.**
