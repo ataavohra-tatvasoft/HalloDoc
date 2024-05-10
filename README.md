@@ -44,16 +44,16 @@
 
 </br>
 
-**Clone the repository.**
+-> **Clone the repository.**
 </br>
 
-**Install dependencies using npm install or yarn install.**
+-> **Install dependencies using npm install or yarn install.**
 </br>
 
-**Make config.env, src/connections/database.ts && src/db/config/config.json file according to your credentials if they are not available in repository.**
+-> **Make config.env, src/connections/database.ts && src/db/config/config.json file according to your credentials if they are not available in repository.**
 </br>
 
-**Configure the database connection details from:**
+-> **Configure the database connection details from:**
 </br>
 "config.env",
 "src/db/config/config.json
@@ -61,24 +61,24 @@
 src/connections/database.ts".
 </br>
 
-**Run migrations and seeders as:**
+-> **Run migrations and seeders as:**
 </br>
 "npx sequelize-cli db:migrate
 &&
 npx sequelize db:seed:all" in src/db directory.
 </br>
 
-**To undo migrations and seeders, run:**
+-> **To undo migrations and seeders, run:**
 </br>
 "npx sequelize-cli db:migrate:undo:all"
 &&
 "npx sequelize db:seed:undo:all" in src/db directory.
 </br>
 
-**Run the development server using "npm run dev" in root directory.**
+-> **Run the development server using "npm run dev" in root directory.**
 </br>
 
-**Default users and password for getting started:**
+-> **Default users and password for getting started:**
 </br>
 *Admin: "admin27@yopmail.com"
 *Password: "Password@6789"
