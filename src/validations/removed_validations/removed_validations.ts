@@ -59,9 +59,9 @@ export const save_physician_information_validation = {
       .trim()
       .pattern(/^\d{11,13}$/)
       .required(),
-    medical_licence: Joi.string().allow(""),
+    medical_licence: Joi.string().allow("").optional(),
     NPI_no: Joi.string().allow(""),
-    synchronization_email: Joi.string().email().allow(""),
+    synchronization_email: Joi.string().email().allow("").optional(),
     region_ids: Joi.array()
       .items(Joi.number().integer().positive().required())
       .optional(),
@@ -71,7 +71,7 @@ export const save_mailing_billing_info_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
     address_1: Joi.string().trim().required(),
-    address_2: Joi.string().trim().allow(""),
+    address_2: Joi.string().trim().allow("").optional(),
     city: Joi.string().trim().required(),
     state: Joi.string().length(2).uppercase().required(),
     zip: Joi.string()
@@ -86,8 +86,8 @@ export const save_mailing_billing_info_validation = {
 export const save_provider_profile_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
-    business_name: Joi.string().trim().allow(""),
-    business_website: Joi.string().uri().allow(""),
-    admin_notes: Joi.string().allow(""),
+    business_name: Joi.string().trim().allow("").optional(),
+    business_website: Joi.string().allow(null,"").optional(),
+    admin_notes: Joi.string().allow("").optional(),
   }),
 };
