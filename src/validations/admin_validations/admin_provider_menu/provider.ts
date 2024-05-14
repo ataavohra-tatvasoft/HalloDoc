@@ -89,11 +89,11 @@ export const save_user_information_validation = {
       .optional(),
 
     // Business details
-    business_name: Joi.string().trim().optional(),
-    business_website: Joi.string().allow(null, ""), // Optional website URL
+    business_name: Joi.string().allow(null, "").trim().optional(),
+    business_website: Joi.string().allow(null, "").trim().optional(), // Optional website URL
 
     // Optional admin notes
-    admin_notes: Joi.string().allow(null, ""),
+    admin_notes: Joi.string().allow(null, "").trim().optional(),
 
     // Region selections
     // district_of_columbia: Joi.boolean().allow(null),
