@@ -70,7 +70,7 @@
 
   `"npx sequelize-cli db:migrate:undo:all" & "npx sequelize db:seed:undo:all" in src/db directory`
 
-- **Run the development server using "npm run dev" in root directory.**
+- **Run the development server using `npm run dev` in root directory.**
 
 - **Default users and password for getting started:**
 
