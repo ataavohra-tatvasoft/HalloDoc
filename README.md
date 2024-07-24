@@ -59,6 +59,7 @@
 - **Make config.env, src/connections/database.ts && src/db/config/config.json file according to your credentials if they are not available in repository.**
 
 - **Configure the database connection details from:**
+
   `"config.env","src/db/config/config.json" & "src/connections/database.ts"`
 
 - **Run migrations and seeders as:**
