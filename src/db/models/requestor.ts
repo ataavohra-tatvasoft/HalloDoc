@@ -1,77 +1,71 @@
-import { Table, Column, DataType, Model } from "sequelize-typescript";
-import {
-  RequestorCreationAttributes,
-  RequestorAttributes,
-} from "../../interfaces";
+import { Table, Column, DataType, Model } from 'sequelize-typescript'
+import { RequestorCreationAttributes, RequestorAttributes } from '../../interfaces'
 
 @Table({
   timestamps: true,
-  tableName: "requestor",
+  tableName: 'requestor'
 })
-export class Requestor extends Model<
-  RequestorCreationAttributes,
-  RequestorAttributes
-> {
+export class Requestor extends Model<RequestorCreationAttributes, RequestorAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  user_id: number;
+  user_id: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
-  first_name: string;
+  first_name: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
-  last_name: string;
+  last_name: string
 
   @Column({
     type: DataType.BIGINT,
     allowNull: false,
-    unique: true,
+    unique: true
   })
-  mobile_number: bigint;
+  mobile_number: bigint
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    unique: true
   })
-  email: string;
+  email: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  house_name: string;
+  house_name: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  street: string;
+  street: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  city: string;
+  city: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  state: string;
+  state: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  zip: number;
+  zip: number
 }

@@ -1,51 +1,43 @@
-import { Request, Response, NextFunction } from "express";
-import { Op } from "sequelize";
-import bcrypt from "bcrypt";
-import message_constants from "../../constants/message_constants";
-import { generate_confirmation_number } from "../../utils";
-import { Controller } from "../../interfaces";
-import { User, RequestModel, Requestor, Documents } from "../../db/models";
+import { Request, Response } from 'express'
+import { Op } from 'sequelize'
+import bcrypt from 'bcrypt'
+import message_constants from '../../constants/message_constants'
+import { generate_confirmation_number } from '../../utils'
+import { Controller } from '../../interfaces'
+import { User, RequestModel, Requestor, Documents } from '../../db/models'
 
-export const is_patient_registered: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const is_patient_registered: Controller = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body
 
-    const allowedUserTypes = ["patient", "physician", "admin"];
+    const allowedUserTypes = ['patient', 'physician', 'admin']
 
     const is_patient = await User.findOne({
       where: {
-        [Op.and]: [{ type_of_user: { [Op.in]: allowedUserTypes } }, { email }],
-      },
-    });
+        [Op.and]: [{ type_of_user: { [Op.in]: allowedUserTypes } }, { email }]
+      }
+    })
 
     if (is_patient) {
       return res.status(200).json({
         status: true,
-        message: message_constants.RP,
-      });
+        message: message_constants.RP
+      })
     } else {
       return res.status(200).json({
         status: false,
-        message: message_constants.PNR,
-      });
+        message: message_constants.PNR
+      })
     }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: message_constants.ISE });
+    console.log(error)
+    return res.status(500).json({ error: message_constants.ISE })
   }
-};
+}
 
-export const create_request_by_patient: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const create_request_by_patient: Controller = async (req: Request, res: Response) => {
   try {
-    const file = req.file;
+    const file = req.file
     const {
       body: {
         symptoms,
@@ -60,25 +52,23 @@ export const create_request_by_patient: Controller = async (
         zip,
         room,
         relation_with_patient,
-        password,
-      },
-    } = req;
+        password
+      }
+    } = req
 
-    let hashed_password;
+    let hashed_password
     if (password) {
-      hashed_password = await bcrypt.hash(password, 10);
+      hashed_password = await bcrypt.hash(password, 10)
     }
 
     const is_patient = await User.findOne({
       where: {
-        type_of_user: "patient",
-        email,
-      },
-    });
+        type_of_user: 'patient',
+        email
+      }
+    })
 
-    let patient_data;
-
-    console.log(is_patient);
+    let patient_data
 
     if (is_patient) {
       const update_status = await User.update(
@@ -91,24 +81,24 @@ export const create_request_by_patient: Controller = async (
           city,
           state,
           zip: Number(zip),
-          address_1: room,
+          address_1: room
         },
         {
           where: {
-            type_of_user: "patient",
-            email,
-          },
+            type_of_user: 'patient',
+            email
+          }
         }
-      );
+      )
       if (!update_status) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
-      patient_data = is_patient;
+      patient_data = is_patient
     } else {
       patient_data = await User.create({
-        type_of_user: "patient",
+        type_of_user: 'patient',
         firstname,
         lastname,
         mobile_no: BigInt(mobile_no),
@@ -119,39 +109,37 @@ export const create_request_by_patient: Controller = async (
         state,
         zip: Number(zip),
         address_1: room,
-        ...(password && { password: hashed_password }),
-      });
+        ...(password && { password: hashed_password })
+      })
 
       if (!patient_data) {
         return res.status(400).json({
           status: false,
-          message: message_constants.EWCA,
-        });
+          message: message_constants.EWCA
+        })
       }
     }
-
-    console.log("error_2 is here");
 
     const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
-          [Op.gte]: `${new Date().toISOString().split("T")[0]}`, // Since midnight today
-          [Op.lt]: `${new Date().toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-        },
-      },
-    });
+          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z` // Until the end of today
+        }
+      }
+    })
 
     const confirmation_no = generate_confirmation_number(
       patient_data.state,
       firstname,
       lastname,
       todays_requests_count
-    );
+    )
 
     const request_data = await RequestModel.create({
-      request_state: "new",
+      request_state: 'new',
       patient_id: patient_data.user_id,
-      requested_by: "patient",
+      requested_by: 'patient',
       requested_date: new Date(),
       confirmation_no,
       notes_symptoms: symptoms,
@@ -159,69 +147,65 @@ export const create_request_by_patient: Controller = async (
       city,
       state,
       zip,
-      relation_with_patient,
-    });
+      relation_with_patient
+    })
 
     if (!request_data) {
       return res.status(400).json({
         status: false,
-        message: message_constants.EWCR,
-      });
+        message: message_constants.EWCR
+      })
     }
 
     if (file) {
       const is_document = await Documents.findOne({
         where: {
-          request_id: request_data.request_id,
-        },
-      });
+          request_id: request_data.request_id
+        }
+      })
 
       if (is_document) {
         const document_update = await Documents.update(
           {
-            document_path: file.path,
+            document_path: file.path
           },
           {
-            where: { request_id: request_data.request_id },
+            where: { request_id: request_data.request_id }
           }
-        );
+        )
 
         if (!document_update) {
-          return res.status(404).json({ error: message_constants.EWU });
+          return res.status(404).json({ error: message_constants.EWU })
         }
       } else {
         const new_document = await Documents.create({
           request_id: request_data.request_id,
-          document_path: file.path,
-        });
+          document_path: file.path
+        })
 
         if (!new_document) {
-          return res.status(404).json({ error: message_constants.FTU });
+          return res.status(404).json({ error: message_constants.FTU })
         }
       }
     }
 
     return res.status(200).json({
       status: true,
-      message: message_constants.RC,
-    });
+      message: message_constants.RC
+    })
   } catch (error: any) {
-    console.log(error);
+    console.log(error)
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " as email is already registered with admin or physician or duplicate value for mobile number",
-    });
+        ' as email is already registered with admin or physician or duplicate value for mobile number'
+    })
   }
-};
+}
 
-export const create_request_by_family_friend: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const create_request_by_family_friend: Controller = async (req: Request, res: Response) => {
   try {
-    const file = req.file;
+    const file = req.file
     const {
       your_first_name,
       your_last_name,
@@ -238,17 +222,17 @@ export const create_request_by_family_friend: Controller = async (
       city,
       state,
       zip,
-      room,
-    } = req.body;
+      room
+    } = req.body
 
     const is_patient = await User.findOne({
       where: {
-        type_of_user: "patient",
-        email,
-      },
-    });
+        type_of_user: 'patient',
+        email
+      }
+    })
 
-    let patient_data;
+    let patient_data
 
     if (is_patient) {
       const update_status = await User.update(
@@ -261,24 +245,24 @@ export const create_request_by_family_friend: Controller = async (
           city,
           state,
           zip,
-          address_1: room,
+          address_1: room
         },
         {
           where: {
-            type_of_user: "patient",
-            email,
-          },
+            type_of_user: 'patient',
+            email
+          }
         }
-      );
+      )
       if (!update_status) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
-      patient_data = is_patient;
+      patient_data = is_patient
     } else {
       patient_data = await User.create({
-        type_of_user: "patient",
+        type_of_user: 'patient',
         firstname,
         lastname,
         mobile_no,
@@ -288,39 +272,39 @@ export const create_request_by_family_friend: Controller = async (
         city,
         state,
         zip,
-        address_1: room,
-      });
+        address_1: room
+      })
 
       if (!patient_data) {
         return res.status(400).json({
           status: false,
-          message: message_constants.EWCA,
-        });
+          message: message_constants.EWCA
+        })
       }
     }
 
     const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
-          [Op.gte]: `${new Date().toISOString().split("T")[0]}`, // Since midnight today
-          [Op.lt]: `${new Date().toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-        },
-      },
-    });
+          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z` // Until the end of today
+        }
+      }
+    })
 
     const confirmation_no = generate_confirmation_number(
       patient_data.state,
       firstname,
       lastname,
       todays_requests_count
-    );
+    )
 
     const is_requestor = await Requestor.findOne({
       where: {
-        email: your_email,
-      },
-    });
-    let requestor;
+        email: your_email
+      }
+    })
+    let requestor
 
     if (is_requestor) {
       requestor = await Requestor.update(
@@ -328,18 +312,18 @@ export const create_request_by_family_friend: Controller = async (
           first_name: your_first_name,
           last_name: your_last_name,
           mobile_number: BigInt(your_mobile_no),
-          email: your_email,
+          email: your_email
         },
         {
           where: {
-            email: your_email,
-          },
+            email: your_email
+          }
         }
-      );
+      )
       if (!requestor) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
     }
 
@@ -350,20 +334,20 @@ export const create_request_by_family_friend: Controller = async (
         mobile_number: BigInt(your_mobile_no),
         email: your_email,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+        updatedAt: new Date()
+      })
 
       if (!requestor) {
         return res.status(404).json({
-          message: message_constants.ReNF,
-        });
+          message: message_constants.ReNF
+        })
       }
     }
 
     const request_data = await RequestModel.create({
-      request_state: "new",
+      request_state: 'new',
       patient_id: patient_data.user_id,
-      requested_by: "family/friend",
+      requested_by: 'family/friend',
       requestor_id: is_requestor?.user_id,
       requested_date: new Date(),
       confirmation_no,
@@ -372,67 +356,63 @@ export const create_request_by_family_friend: Controller = async (
       street,
       city,
       state,
-      zip,
-    });
+      zip
+    })
 
     if (!request_data) {
       return res.status(400).json({
         status: false,
-        message: message_constants.EWCR,
-      });
+        message: message_constants.EWCR
+      })
     }
 
     if (file) {
       const is_document = await Documents.findOne({
         where: {
-          request_id: request_data.request_id,
-        },
-      });
+          request_id: request_data.request_id
+        }
+      })
 
       if (is_document) {
         const document_update = await Documents.update(
           {
-            document_path: file.path,
+            document_path: file.path
           },
           {
-            where: { request_id: request_data.request_id },
+            where: { request_id: request_data.request_id }
           }
-        );
+        )
 
         if (!document_update) {
-          return res.status(404).json({ error: message_constants.EWU });
+          return res.status(404).json({ error: message_constants.EWU })
         }
       } else {
         const new_document = await Documents.create({
           request_id: request_data.request_id,
-          document_path: file.path,
-        });
+          document_path: file.path
+        })
 
         if (!new_document) {
-          return res.status(404).json({ error: message_constants.FTU });
+          return res.status(404).json({ error: message_constants.FTU })
         }
       }
     }
 
     return res.status(200).json({
       status: true,
-      message: message_constants.RC,
-    });
+      message: message_constants.RC
+    })
   } catch (error: any) {
-    console.log(error);
+    console.log(error)
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " as email is already registered with admin or physician or duplicate value for mobile number",
-    });
+        ' as email is already registered with admin or physician or duplicate value for mobile number'
+    })
   }
-};
+}
 
-export const create_request_by_concierge: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const create_request_by_concierge: Controller = async (req: Request, res: Response) => {
   try {
     const {
       your_first_name,
@@ -450,19 +430,17 @@ export const create_request_by_concierge: Controller = async (
       date_of_birth,
       email,
       mobile_no,
-      room,
-    } = req.body;
-
-    console.log(req.body);
+      room
+    } = req.body
 
     const is_patient = await User.findOne({
       where: {
-        type_of_user: "patient",
-        email,
-      },
-    });
+        type_of_user: 'patient',
+        email
+      }
+    })
 
-    let patient_data;
+    let patient_data
 
     if (is_patient) {
       const update_status = await User.update(
@@ -471,63 +449,61 @@ export const create_request_by_concierge: Controller = async (
           lastname,
           mobile_no,
           dob: new Date(date_of_birth),
-          address_1: room,
+          address_1: room
         },
         {
           where: {
-            type_of_user: "patient",
-            email,
-          },
+            type_of_user: 'patient',
+            email
+          }
         }
-      );
+      )
       if (!update_status) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
-      patient_data = is_patient;
+      patient_data = is_patient
     } else {
       patient_data = await User.create({
-        type_of_user: "patient",
+        type_of_user: 'patient',
         firstname,
         lastname,
         mobile_no,
         email,
         dob: new Date(date_of_birth),
-        address_1: room,
-      });
+        address_1: room
+      })
 
       if (!patient_data) {
         return res.status(400).json({
           status: false,
-          message: message_constants.EWCA,
-        });
+          message: message_constants.EWCA
+        })
       }
     }
     const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
-          [Op.gte]: `${new Date().toISOString().split("T")[0]}`, // Since midnight today
-          [Op.lt]: `${new Date().toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-        },
-      },
-    });
-
-    console.log(todays_requests_count);
+          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z` // Until the end of today
+        }
+      }
+    })
 
     const confirmation_no = generate_confirmation_number(
       your_state,
       firstname,
       lastname,
       todays_requests_count
-    );
+    )
 
     const is_requestor = await Requestor.findOne({
       where: {
-        email: your_email,
-      },
-    });
-    let requestor;
+        email: your_email
+      }
+    })
+    let requestor
 
     if (is_requestor) {
       requestor = await Requestor.update(
@@ -540,18 +516,18 @@ export const create_request_by_concierge: Controller = async (
           street: your_street,
           city: your_city,
           state: your_state,
-          zip: Number(your_zip),
+          zip: Number(your_zip)
         },
         {
           where: {
-            email: your_email,
-          },
+            email: your_email
+          }
         }
-      );
+      )
       if (!requestor) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
     }
 
@@ -567,20 +543,20 @@ export const create_request_by_concierge: Controller = async (
         state: your_state,
         zip: Number(your_zip),
         createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+        updatedAt: new Date()
+      })
 
       if (!requestor) {
         return res.status(404).json({
-          message: message_constants.ReNF,
-        });
+          message: message_constants.ReNF
+        })
       }
     }
 
     const request_data = await RequestModel.create({
-      request_state: "new",
+      request_state: 'new',
       patient_id: patient_data.user_id,
-      requested_by: "concierge",
+      requested_by: 'concierge',
       requestor_id: is_requestor?.user_id,
       requested_date: new Date(),
       confirmation_no,
@@ -588,35 +564,31 @@ export const create_request_by_concierge: Controller = async (
       street: your_street,
       city: your_city,
       state: your_state,
-      zip: your_zip,
-    });
+      zip: your_zip
+    })
 
     if (!request_data) {
       return res.status(400).json({
         status: false,
-        message: message_constants.EWCR,
-      });
+        message: message_constants.EWCR
+      })
     }
 
     return res.status(200).json({
       status: true,
-      message: message_constants.RC,
-    });
+      message: message_constants.RC
+    })
   } catch (error: any) {
-    console.log(error);
+    console.log(error)
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " as email is already registered with admin or physician or duplicate value for mobile number",
-    });
+        ' as email is already registered with admin or physician or duplicate value for mobile number'
+    })
   }
-};
+}
 
-export const create_request_by_business: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const create_request_by_business: Controller = async (req: Request, res: Response) => {
   try {
     const {
       your_first_name,
@@ -634,17 +606,17 @@ export const create_request_by_business: Controller = async (
       city,
       state,
       zip,
-      room,
-    } = req.body;
+      room
+    } = req.body
 
     const is_patient = await User.findOne({
       where: {
-        type_of_user: "patient",
-        email,
-      },
-    });
+        type_of_user: 'patient',
+        email
+      }
+    })
 
-    let patient_data;
+    let patient_data
 
     if (is_patient) {
       const update_status = await User.update(
@@ -658,24 +630,24 @@ export const create_request_by_business: Controller = async (
           city,
           state,
           zip,
-          address_1: room,
+          address_1: room
         },
         {
           where: {
-            type_of_user: "patient",
-            email,
-          },
+            type_of_user: 'patient',
+            email
+          }
         }
-      );
+      )
       if (!update_status) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
-      patient_data = is_patient;
+      patient_data = is_patient
     } else {
       patient_data = await User.create({
-        type_of_user: "patient",
+        type_of_user: 'patient',
         firstname,
         lastname,
         mobile_no,
@@ -685,39 +657,39 @@ export const create_request_by_business: Controller = async (
         city,
         state,
         zip,
-        address_1: room,
-      });
+        address_1: room
+      })
 
       if (!patient_data) {
         return res.status(400).json({
           status: false,
-          message: message_constants.EWCA,
-        });
+          message: message_constants.EWCA
+        })
       }
     }
 
     const todays_requests_count: number = await RequestModel.count({
       where: {
         createdAt: {
-          [Op.gte]: `${new Date().toISOString().split("T")[0]}`, // Since midnight today
-          [Op.lt]: `${new Date().toISOString().split("T")[0]}T23:59:59.999Z`, // Until the end of today
-        },
-      },
-    });
+          [Op.gte]: `${new Date().toISOString().split('T')[0]}`, // Since midnight today
+          [Op.lt]: `${new Date().toISOString().split('T')[0]}T23:59:59.999Z` // Until the end of today
+        }
+      }
+    })
 
     const confirmation_no = generate_confirmation_number(
       patient_data.state,
       firstname,
       lastname,
       todays_requests_count
-    );
+    )
 
     const is_requestor = await Requestor.findOne({
       where: {
-        email: your_email,
-      },
-    });
-    let requestor;
+        email: your_email
+      }
+    })
+    let requestor
 
     if (is_requestor) {
       requestor = await Requestor.update(
@@ -726,18 +698,18 @@ export const create_request_by_business: Controller = async (
           last_name: your_last_name,
           mobile_number: BigInt(your_mobile_no),
           email: your_email,
-          house_name: your_property_name,
+          house_name: your_property_name
         },
         {
           where: {
-            email: your_email,
-          },
+            email: your_email
+          }
         }
-      );
+      )
       if (!requestor) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
     }
 
@@ -749,20 +721,20 @@ export const create_request_by_business: Controller = async (
         email: your_email,
         house_name: your_property_name,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+        updatedAt: new Date()
+      })
 
       if (!requestor) {
         return res.status(404).json({
-          message: message_constants.ReNF,
-        });
+          message: message_constants.ReNF
+        })
       }
     }
 
     const request_data = await RequestModel.create({
-      request_state: "new",
+      request_state: 'new',
       patient_id: patient_data.user_id,
-      requested_by: "business",
+      requested_by: 'business',
       requestor_id: is_requestor?.user_id,
       requested_date: new Date(),
       confirmation_no,
@@ -770,26 +742,26 @@ export const create_request_by_business: Controller = async (
       street,
       city,
       state,
-      zip,
-    });
+      zip
+    })
 
     if (!request_data) {
       return res.status(400).json({
         status: false,
-        message: message_constants.EWCR,
-      });
+        message: message_constants.EWCR
+      })
     }
 
     return res.status(200).json({
       status: true,
-      message: message_constants.RC,
-    });
+      message: message_constants.RC
+    })
   } catch (error: any) {
-    console.log(error);
+    console.log(error)
     return res.status(500).json({
       error:
         message_constants.ISE +
-        " as email is already registered with admin or physician or duplicate value for mobile number",
-    });
+        ' as email is already registered with admin or physician or duplicate value for mobile number'
+    })
   }
-};
+}

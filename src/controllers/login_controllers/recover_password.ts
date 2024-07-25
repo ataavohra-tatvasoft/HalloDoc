@@ -1,47 +1,40 @@
-import { Request, Response, NextFunction } from "express";
-import Sequelize from "sequelize";
-import brcypt from "bcrypt";
-import dotenv from "dotenv";
-import nodemailer from "nodemailer";
-import * as crypto from "crypto";
-import { User } from "../../db/models";
-import message_constants from "../../constants/message_constants";
-import { Controller } from "../../interfaces";
+/* eslint-disable no-undef */
+import { Request, Response } from 'express'
+import Sequelize from 'sequelize'
+import brcypt from 'bcrypt'
+import dotenv from 'dotenv'
+import nodemailer from 'nodemailer'
+import * as crypto from 'crypto'
+import { User } from '../../db/models'
+import message_constants from '../../constants/message_constants'
+import { Controller } from '../../interfaces'
 
-dotenv.config();
-const Op = Sequelize.Op;
+dotenv.config()
+const Op = Sequelize.Op
 
 /**
  * @description Handles the process of initiating a password reset by sending a reset link to the user's email address.
- * @param {Request} req - The request object containing the user's email address.
- * @param {Response} res - The response object to send the status of the password reset initiation.
- * @param {NextFunction} next - The next middleware function in the request-response cycle.
- * @returns {Response} A JSON response indicating the success or failure of the password reset initiation.
  */
-export const forgot_password: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const forgot_password: Controller = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const { email } = req.body
+    const user = await User.findOne({ where: { email } })
 
     if (!user) {
       return res.status(400).json({
         message: message_constants.IEA,
-        errormessage: message_constants.NF,
-      });
+        errormessage: message_constants.NF
+      })
     }
 
-    const reset_token = crypto.createHash("sha256").update(email).digest("hex");
-    const expireTime = Date.now() + 60 * 60 * 1000; // 1 hour
+    const reset_token = crypto.createHash('sha256').update(email).digest('hex')
+    const expireTime = Date.now() + 60 * 60 * 1000 // 1 hour
 
     if (user) {
       await User.update(
         { reset_token: reset_token, reset_token_expiry: expireTime },
         { where: { email } }
-      );
+      )
     }
     const mailContent = `
         <html>
@@ -56,7 +49,7 @@ export const forgot_password: Controller = async (
         <p>This link will expire in 1 hour.</p>
         </form>
         </html>
-      `;
+      `
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
@@ -64,82 +57,74 @@ export const forgot_password: Controller = async (
       debug: true,
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+        pass: process.env.EMAIL_PASS
+      }
+    })
     const info = await transporter.sendMail({
-      from: "vohraatta@gmail.com",
+      from: 'vohraatta@gmail.com',
       to: email,
-      subject: "Password Reset Request",
-      html: mailContent,
-    });
+      subject: 'Password Reset Request',
+      html: mailContent
+    })
     if (!info) {
       return res.status(500).json({
-        message: message_constants.ESRPL,
-      });
+        message: message_constants.ESRPL
+      })
     }
 
     return res.status(200).json({
       message: message_constants.RPLSE,
-      response_message: message_constants.OK,
-    });
+      response_message: message_constants.OK
+    })
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return res.status(500).json({
-      errormessage: message_constants.ISE,
-    });
+      errormessage: message_constants.ISE
+    })
   }
-};
+}
 
 /**
  * @description Handles the process of resetting the user's password using the provided reset token.
- * @param {Request} req - The request object containing the new password and reset token.
- * @param {Response} res - The response object to send the status of the password reset operation.
- * @param {NextFunction} next - The next middleware function in the request-response cycle.
- * @returns {Response} A JSON response indicating the success or failure of the password reset operation.
  */
-export const reset_password: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const reset_password: Controller = async (req: Request, res: Response) => {
   try {
-    const { password, reset_token } = req.body;
+    const { password, reset_token } = req.body
     const user = await User.findOne({
       where: {
         reset_token: reset_token,
-        reset_token_expiry: { [Op.gt]: Date.now() },
-      },
-    });
+        reset_token_expiry: { [Op.gt]: Date.now() }
+      }
+    })
 
     if (!user) {
       return res.status(400).json({
         message: message_constants.IERT,
-        errormessage: message_constants.UA,
-      });
+        errormessage: message_constants.UA
+      })
     }
 
-    const hashedPassword = await brcypt.hash(password, 10);
+    const hashedPassword = await brcypt.hash(password, 10)
     if (user) {
       await User.update(
         {
           password: hashedPassword,
           reset_token: null,
-          reset_token_expiry: null,
+          reset_token_expiry: null
         },
         { where: { user_id: user.user_id } }
-      );
+      )
 
       res.status(200).json({
         message: message_constants.PRS,
-        errormessage: message_constants.OK,
-      });
+        errormessage: message_constants.OK
+      })
     }
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.status(500).json({
       message: message_constants.ERP,
-      errormessage: message_constants.ISE,
-    });
+      errormessage: message_constants.ISE
+    })
   }
-};
+}

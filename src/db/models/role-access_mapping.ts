@@ -1,16 +1,6 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-  ForeignKey,
-} from "sequelize-typescript";
-import {
-  RoleAccessMappingAttributes,
-  RoleAccessMappingCreationAttributes,
-} from "../../interfaces";
-@Table({ timestamps: true, tableName: "role-access-mapping" })
+import { Table, Column, DataType, Model } from 'sequelize-typescript'
+import { RoleAccessMappingAttributes, RoleAccessMappingCreationAttributes } from '../../interfaces'
+@Table({ timestamps: true, tableName: 'role-access-mapping' })
 export class RoleAccessMapping extends Model<
   RoleAccessMappingAttributes,
   RoleAccessMappingCreationAttributes
@@ -19,19 +9,19 @@ export class RoleAccessMapping extends Model<
     type: DataType.INTEGER,
     autoIncrement: true,
     allowNull: false,
-    primaryKey: true,
+    primaryKey: true
   })
-  id: number;
+  id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  role_id: number;
+  role_id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  access_id: number;
+  access_id: number
 }

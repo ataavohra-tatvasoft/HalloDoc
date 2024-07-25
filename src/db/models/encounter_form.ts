@@ -1,262 +1,249 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-  AutoIncrement,
-} from "sequelize-typescript";
-import {
-  EncounterFormAttributes,
-  EncounterFormCreationAttributes,
-} from "../../interfaces";
-import { RequestModel } from "./request";
+import { Table, Column, DataType, Model, BelongsTo } from 'sequelize-typescript'
+import { EncounterFormAttributes, EncounterFormCreationAttributes } from '../../interfaces'
+import { RequestModel } from './request'
 
-@Table({ timestamps: true, tableName: "encounter-form" })
-export class EncounterForm extends Model<
-  EncounterFormAttributes,
-  EncounterFormCreationAttributes
-> {
+@Table({ timestamps: true, tableName: 'encounter-form' })
+export class EncounterForm extends Model<EncounterFormAttributes, EncounterFormCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   })
-  form_id: number;
+  form_id: number
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    unique: true
   })
-  request_id: string;
+  request_id: string
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  first_name: string
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  last_name: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    unique: true
   })
-  first_name: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  last_name: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-    unique: true,
-  })
-  location: string;
+  location: string
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  date_of_birth: Date;
+  date_of_birth: Date
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  date_of_service: Date;
+  date_of_service: Date
 
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  phone_no: bigint;
+  phone_no: bigint
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  email: string;
+  email: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  history_of_present: string;
+  history_of_present: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  medical_history: string;
+  medical_history: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  medications: string;
+  medications: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  allergies: string;
+  allergies: string
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  temperature: number;
+  temperature: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  heart_rate: number;
+  heart_rate: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  respiratory_rate: number;
+  respiratory_rate: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  blood_pressure_1: number;
+  blood_pressure_1: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  blood_pressure_2: number;
+  blood_pressure_2: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  o2: number;
+  o2: number
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  pain: string;
+  pain: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  heent: string;
+  heent: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  cv: string;
+  cv: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  chest: string;
+  chest: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  abd: string;
+  abd: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  extr: string;
+  extr: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  skin: string;
+  skin: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  neuro: string;
+  neuro: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  other: string;
+  other: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  diagnosis: string;
+  diagnosis: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  treatment_plan: string;
+  treatment_plan: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  medication_dispensed: string;
+  medication_dispensed: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  procedures: string;
+  procedures: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  follow_up: string;
+  follow_up: string
 
   @Column({
-    type: DataType.ENUM("true", "false"),
+    type: DataType.ENUM('true', 'false'),
     allowNull: false,
-    defaultValue: "false",
+    defaultValue: 'false'
   })
-  is_finalize: string;
+  is_finalize: string
 
   @BelongsTo(() => RequestModel, {
-    foreignKey: "request_id",
-    targetKey: "request_id",
+    foreignKey: 'request_id',
+    targetKey: 'request_id'
   })
-  Request: RequestModel;
+  Request: RequestModel
 }

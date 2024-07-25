@@ -1,40 +1,42 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("role", {
+    await queryInterface.createTable('role', {
       role_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true
       },
 
       role_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
 
       account_type: {
-        type: Sequelize.ENUM("all", "admin", "physician", "patient"),
-        allowNull: false,
+        type: Sequelize.ENUM('all', 'admin', 'physician', 'patient'),
+        allowNull: false
       },
 
       createdAt: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: false
       },
 
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("role");
-  },
-};
+    await queryInterface.dropTable('role')
+  }
+}

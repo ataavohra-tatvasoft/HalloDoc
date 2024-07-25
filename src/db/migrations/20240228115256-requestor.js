@@ -1,66 +1,66 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("requestor", {
+    await queryInterface.createTable('requestor', {
       user_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
+        primaryKey: true
       },
 
       first_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       last_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       mobile_number: {
         type: Sequelize.BIGINT,
         allowNull: false,
-        unique: true,
+        unique: true
       },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
+        unique: true
       },
       house_name: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       street: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       city: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       state: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       zip: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: true
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
   async down(queryInterface, Sequelize) {
-
-      await queryInterface.dropTable('requestor');
-     
-  },
-};
+    await queryInterface.dropTable('requestor')
+  }
+}

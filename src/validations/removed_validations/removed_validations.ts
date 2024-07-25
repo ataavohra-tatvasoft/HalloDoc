@@ -1,4 +1,4 @@
-import { Joi } from "celebrate";
+import { Joi } from 'celebrate'
 
 /** Admin MyProfileMenu*/
 
@@ -7,7 +7,7 @@ export const admin_profile_admin_info_edit_validation = {
     firstname: Joi.string().trim().required(),
     lastname: Joi.string().trim().required(),
     email: Joi.string().email().required(),
-    confirm_email: Joi.ref("email"),
+    confirm_email: Joi.ref('email'),
     mobile_no: Joi.string()
       .trim()
       .pattern(/^\d{11,13}$/)
@@ -16,14 +16,14 @@ export const admin_profile_admin_info_edit_validation = {
     new_york: Joi.boolean().optional(),
     virginia: Joi.boolean().optional(),
     maryland: Joi.boolean().optional(),
-    user_id: Joi.number().required(),
-  }).required(),
-};
+    user_id: Joi.number().required()
+  }).required()
+}
 export const admin_profile_mailing_billling_info_edit_validation = {
   body: Joi.object({
     user_id: Joi.number().required(),
     address_1: Joi.string().trim().required(),
-    address_2: Joi.string().trim().allow(""), // Optional field
+    address_2: Joi.string().trim().allow(''), // Optional field
     city: Joi.string().trim().required(),
     state: Joi.string().length(2).uppercase().required(),
     zip: Joi.string()
@@ -33,9 +33,9 @@ export const admin_profile_mailing_billling_info_edit_validation = {
     billing_mobile_no: Joi.string()
       .trim()
       .pattern(/^\d{11,13}$/)
-      .optional(),
-  }),
-};
+      .optional()
+  })
+}
 
 /**AdminProviderMenu */
 /**Provider */
@@ -45,10 +45,10 @@ export const save_account_information_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
     username: Joi.string().required(),
-    status: Joi.string().allow(""),
-    role: Joi.string().allow(""),
-  }),
-};
+    status: Joi.string().allow(''),
+    role: Joi.string().allow('')
+  })
+}
 export const save_physician_information_validation = {
   body: Joi.object({
     user_id: Joi.number().required(),
@@ -59,35 +59,33 @@ export const save_physician_information_validation = {
       .trim()
       .pattern(/^\d{11,13}$/)
       .required(),
-    medical_licence: Joi.string().allow("").optional(),
-    NPI_no: Joi.string().allow(""),
-    synchronization_email: Joi.string().email().allow("").optional(),
-    region_ids: Joi.array()
-      .items(Joi.number().integer().positive().required())
-      .optional(),
-  }),
-};
+    medical_licence: Joi.string().allow('').optional(),
+    NPI_no: Joi.string().allow(''),
+    synchronization_email: Joi.string().email().allow('').optional(),
+    region_ids: Joi.array().items(Joi.number().integer().positive().required()).optional()
+  })
+}
 export const save_mailing_billing_info_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
     address_1: Joi.string().trim().required(),
-    address_2: Joi.string().trim().allow("").optional(),
+    address_2: Joi.string().trim().allow('').optional(),
     city: Joi.string().trim().required(),
     state: Joi.string().length(2).uppercase().required(),
     zip: Joi.string()
-      .pattern(/^\d{6}$/, "zip code must be 6 digits")
+      .pattern(/^\d{6}$/, 'zip code must be 6 digits')
       .required(),
     billing_mobile_no: Joi.string()
       .trim()
       .pattern(/^\d{11,13}$/)
-      .optional(),
-  }),
-};
+      .optional()
+  })
+}
 export const save_provider_profile_validation = {
   body: Joi.object({
     user_id: Joi.string().required(),
-    business_name: Joi.string().trim().allow("").optional(),
-    business_website: Joi.string().allow(null,"").optional(),
-    admin_notes: Joi.string().allow("").optional(),
-  }),
-};
+    business_name: Joi.string().trim().allow('').optional(),
+    business_website: Joi.string().allow(null, '').optional(),
+    admin_notes: Joi.string().allow('').optional()
+  })
+}

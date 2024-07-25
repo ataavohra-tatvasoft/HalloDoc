@@ -1,63 +1,57 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-} from "sequelize-typescript";
-import { NotesAttributes, NotesCreationAttributes } from "../../interfaces";
-import { RequestModel } from "./request";
+import { Table, Column, DataType, Model, BelongsTo } from 'sequelize-typescript'
+import { NotesAttributes, NotesCreationAttributes } from '../../interfaces'
+import { RequestModel } from './request'
 
-@Table({ timestamps: true, tableName: "notes" })
+@Table({ timestamps: true, tableName: 'notes' })
 export class Notes extends Model<NotesAttributes, NotesCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  request_id: number;
+  request_id: number
 
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  note_id: number;
+  note_id: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  physician_name: string;
+  physician_name: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  reason: string;
+  reason: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
-  description: string;
+  description: string
 
   @Column({
     type: DataType.ENUM(
-      "transfer_notes",
-      "admin_notes",
-      "physician_notes",
-      "patient_notes",
-      "admin_cancellation_notes",
-      "physician_cancellation_notes",
-      "patient_cancellation_notes"
+      'transfer_notes',
+      'admin_notes',
+      'physician_notes',
+      'patient_notes',
+      'admin_cancellation_notes',
+      'physician_cancellation_notes',
+      'patient_cancellation_notes'
     ),
-    allowNull: false,
+    allowNull: false
   })
-  type_of_note: string;
+  type_of_note: string
 
   @BelongsTo(() => RequestModel, {
-    foreignKey: "request_id",
-    targetKey: "request_id",
+    foreignKey: 'request_id',
+    targetKey: 'request_id'
   })
-  Request: RequestModel;
+  Request: RequestModel
 }

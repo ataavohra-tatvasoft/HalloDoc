@@ -1,15 +1,14 @@
-import { Joi } from "celebrate";
-import { query } from "express";
+import { Joi } from 'celebrate'
 
 export const partner_vendor_list_validation = {
   query: Joi.object({
-    vendor: Joi.string().allow("", null).optional(),
-    region: Joi.string().allow("", null).optional(),
-    profession: Joi.string().allow("", null).optional(),
+    vendor: Joi.string().allow('', null).optional(),
+    region: Joi.string().allow('', null).optional(),
+    profession: Joi.string().allow('', null).optional(),
     page: Joi.number().integer().min(1).optional(),
-    page_size: Joi.number().integer().min(1).optional(),
-  }),
-};
+    page_size: Joi.number().integer().min(1).optional()
+  })
+}
 
 export const add_business_validation = {
   body: Joi.object({
@@ -17,23 +16,23 @@ export const add_business_validation = {
     profession: Joi.string().required(),
     fax_number: Joi.number().allow(null).optional(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .required(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .required(),
     email: Joi.string().email().required(),
     business_contact: Joi.number().required(),
     street: Joi.string().required(),
     city: Joi.string().required(),
     state: Joi.string().required(),
-    zip: Joi.number().required(),
-  }),
-};
+    zip: Joi.number().required()
+  })
+}
 
 export const update_business_view_validation = {
   params: Joi.object({
-   business_id: Joi.number().required()
-  }),
-};
+    business_id: Joi.number().required()
+  })
+}
 
 export const update_business_validation = {
   body: Joi.object({
@@ -41,20 +40,20 @@ export const update_business_validation = {
     profession: Joi.string().required(),
     fax_number: Joi.number().allow(null).optional(),
     mobile_no: Joi.string()
-    .trim()
-    .pattern(/^\d{11,13}$/)
-    .optional(),
+      .trim()
+      .pattern(/^\d{11,13}$/)
+      .optional(),
     email: Joi.string().email().required(),
     business_contact: Joi.number().required(),
     street: Joi.string().required(),
     city: Joi.string().required(),
     state: Joi.string().required(),
-    zip: Joi.number().required(),
-  }),
-};
+    zip: Joi.number().required()
+  })
+}
 
 export const delete_vendor_validation = {
   params: Joi.object({
-    business_id: Joi.number().required(),
-  }),
-};
+    business_id: Joi.number().required()
+  })
+}

@@ -1,220 +1,202 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  HasMany,
-  HasOne,
-  BelongsTo,
-} from "sequelize-typescript";
-import { Documents } from "./documents";
-import { Order } from "./order";
-import { Notes } from "./notes";
-import { User } from "./user";
-import { Requestor } from "./requestor";
-import { RequestCreationAttributes, RequestAttributes } from "../../interfaces";
-import { EncounterForm } from "./encounter_form";
+import { Table, Column, DataType, Model, HasMany, HasOne, BelongsTo } from 'sequelize-typescript'
+import { Documents } from './documents'
+import { Order } from './order'
+import { Notes } from './notes'
+import { User } from './user'
+import { Requestor } from './requestor'
+import { RequestCreationAttributes, RequestAttributes } from '../../interfaces'
+import { EncounterForm } from './encounter_form'
 
 @Table({
   timestamps: true,
-  tableName: "request",
+  tableName: 'request'
 })
-export class RequestModel extends Model<
-  RequestAttributes,
-  RequestCreationAttributes
-> {
+export class RequestModel extends Model<RequestAttributes, RequestCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  request_id: number;
+  request_id: number
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    unique: true
   })
-  confirmation_no: string;
+  confirmation_no: string
+
+  @Column({
+    type: DataType.ENUM('new', 'active', 'pending', 'conclude', 'toclose', 'unpaid'),
+    allowNull: false
+  })
+  request_state: string
 
   @Column({
     type: DataType.ENUM(
-      "new",
-      "active",
-      "pending",
-      "conclude",
-      "toclose",
-      "unpaid"
+      'unassigned',
+      'assigned',
+      'accepted',
+      'md_on_route',
+      'md_on_site',
+      'closed',
+      'conclude',
+      'blocked',
+      'clear',
+      'cancelled by admin',
+      'cancelled by provider'
     ),
-    allowNull: false,
+    defaultValue: 'unassigned',
+    allowNull: false
   })
-  request_state: string;
+  request_status: string
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false
+  })
+  patient_id: number
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true
+  })
+  physician_id: number
 
   @Column({
     type: DataType.ENUM(
-      "unassigned",
-      "assigned",
-      "accepted",
-      "md_on_route",
-      "md_on_site",
-      "closed",
-      "conclude",
-      "blocked",
-      "clear",
-      "cancelled by admin",
-      "cancelled by provider"
+      'family/friend',
+      'concierge',
+      'business',
+      'vip',
+      'admin',
+      'patient',
+      'physician'
     ),
-    defaultValue: "unassigned",
-    allowNull: false,
+    allowNull: false
   })
-  request_status: string;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  patient_id: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-  })
-  physician_id: number;
-
-  @Column({
-    type: DataType.ENUM(
-      "family/friend",
-      "concierge",
-      "business",
-      "vip",
-      "admin",
-      "patient",
-      "physician"
-    ),
-    allowNull: false,
-  })
-  requested_by: string;
+  requested_by: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  relation_with_patient: string;
+  relation_with_patient: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  requestor_id: number;
+  requestor_id: number
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  requested_date: Date;
+  requested_date: Date
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  concluded_date: Date;
+  concluded_date: Date
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  date_of_service: Date;
+  date_of_service: Date
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  closed_date: Date;
+  closed_date: Date
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  street: string;
+  street: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  city: string;
+  city: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  state: string;
+  state: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  zip: number;
+  zip: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  block_reason: string;
+  block_reason: string
 
   @Column({
-    type: DataType.ENUM("pending", "accepted", "rejected"),
-    defaultValue: "pending",
-    allowNull: false,
+    type: DataType.ENUM('pending', 'accepted', 'rejected'),
+    defaultValue: 'pending',
+    allowNull: false
   })
-  agreement_status: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  notes_symptoms: string;
+  agreement_status: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  assign_req_description: string;
+  notes_symptoms: string
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  assign_req_description: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  final_report: number;
+  final_report: number
 
   @BelongsTo(() => User, {
-    as: "Physician",
-    foreignKey: "physician_id",
-    targetKey: "user_id",
+    as: 'Physician',
+    foreignKey: 'physician_id',
+    targetKey: 'user_id'
   })
-  Physician: User;
+  Physician: User
 
   @BelongsTo(() => User, {
-    as: "Patient",
-    foreignKey: "patient_id",
-    targetKey: "user_id",
+    as: 'Patient',
+    foreignKey: 'patient_id',
+    targetKey: 'user_id'
   })
-  Patient: User;
+  Patient: User
 
   @BelongsTo(() => Requestor, {
-    foreignKey: "requestor_id",
-    targetKey: "user_id",
+    foreignKey: 'requestor_id',
+    targetKey: 'user_id'
   })
-  Requestor: Requestor;
+  Requestor: Requestor
 
-  @HasMany(() => Notes, { foreignKey: "request_id" })
-  Notes: Notes[];
+  @HasMany(() => Notes, { foreignKey: 'request_id' })
+  Notes: Notes[]
 
-  @HasOne(() => Order, { foreignKey: "request_id" })
-  Order: Order[];
+  @HasOne(() => Order, { foreignKey: 'request_id' })
+  Order: Order[]
 
-  @HasOne(() => EncounterForm, { foreignKey: "request_id" })
-  EncounterForm: EncounterForm;
+  @HasOne(() => EncounterForm, { foreignKey: 'request_id' })
+  EncounterForm: EncounterForm
 
-  @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })
-  Documents: Documents[];
+  @HasMany(() => Documents, { as: 'Documents', foreignKey: 'request_id' })
+  Documents: Documents[]
 }

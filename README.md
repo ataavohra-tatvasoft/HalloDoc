@@ -81,7 +81,7 @@
 
 - **Install dependencies using `npm install`.**
 
-- **Make `.env`, `src/connections/database.ts` & `src/db/config/config.json` file according to your credentials if they are not available in repository.**
+- **Make `.env` file according to your credentials as they are not available in repository.**
 
 - **Configure the database connection details from:**
 
@@ -89,13 +89,13 @@
 
 - **Run migrations and seeders as:**
 
-  `"npx sequelize-cli db:migrate" & "npx sequelize db:seed:all" in src/db directory"`
+  `"npm run migrate" & "npm run seed" in root directory"`
 
 - **To undo migrations and seeders, run:**
 
-  `"npx sequelize-cli db:migrate:undo:all" & "npx sequelize db:seed:undo:all" in src/db directory`
+  `"npm run migrate:undo" & "npm run seed:undo" in root directory`
 
-- **Run the development server using `npm run dev` in root directory.**
+- **Run the development server using `npm run dev` or `npm run dev:watch` in root directory.**
 
 - **Default users and password for getting started:**
 

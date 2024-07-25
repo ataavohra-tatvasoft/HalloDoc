@@ -1,31 +1,31 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize'
 export interface ShiftsAttributes {
-  shift_id: number;
-  user_id: number;
-  region: string;
-  physician: string;
-  status: string;
-  shift_date: Date;
-  start: string;
-  end: string;
-  repeat_end: number;
-  repeat_days: string;
-  createdAt: Date;
-  updatedAt: Date;
+  shift_id: number
+  user_id: number
+  region: string
+  physician: string
+  status: string
+  shift_date: Date
+  start: string
+  end: string
+  repeat_end: number
+  repeat_days: string
+  createdAt: Date
+  updatedAt: Date
 }
 export interface ShiftsCreationAttributes
   extends Optional<
     ShiftsAttributes,
-    | "shift_id"
-    | "user_id"
-    | "region"
-    | "physician"
-    | "status"
-    | "shift_date"
-    | "start"
-    | "end"
-    | "repeat_end"
-    | "repeat_days"
-    | "createdAt"
-    | "updatedAt"
+    | 'shift_id'
+    | 'user_id'
+    | 'region'
+    | 'physician'
+    | 'status'
+    | 'shift_date'
+    | 'start'
+    | 'end'
+    | 'repeat_end'
+    | 'repeat_days'
+    | 'createdAt'
+    | 'updatedAt'
   > {}

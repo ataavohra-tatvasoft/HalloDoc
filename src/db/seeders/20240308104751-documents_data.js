@@ -1,8 +1,10 @@
-'use strict';
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add seed commands here.
      *
@@ -11,12 +13,10 @@ module.exports = {
      *   name: 'John Doe',
      *   isBetaMember: false
      * }], {});
-    */
+     */
   },
 
-  async down (queryInterface, Sequelize) {
-   
-      await queryInterface.bulkDelete("documents", null, {});
-    
+  async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete('documents', null, {})
   }
-};
+}

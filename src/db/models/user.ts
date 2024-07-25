@@ -5,255 +5,255 @@ import {
   Model,
   HasMany,
   BelongsToMany,
-  BelongsTo,
-} from "sequelize-typescript";
-import { UserAttributes, UserCreationAttributes } from "../../interfaces";
-import { Shifts } from "./shifts";
-import { UserRegionMapping } from "./user-region_mapping";
-import { Region } from "./region";
-import { Role } from "./role";
+  BelongsTo
+} from 'sequelize-typescript'
+import { UserAttributes, UserCreationAttributes } from '../../interfaces'
+import { Shifts } from './shifts'
+import { UserRegionMapping } from './user-region_mapping'
+import { Region } from './region'
+import { Role } from './role'
 
 @Table({
   timestamps: true,
-  tableName: "user",
+  tableName: 'user'
 })
 export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  user_id: number;
+  user_id: number
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  username: string;
+  username: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  email: string;
+  email: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  password: string;
+  password: string
 
   @Column({
-    type: DataType.ENUM("admin", "patient", "physician"),
-    allowNull: false,
+    type: DataType.ENUM('admin', 'patient', 'physician'),
+    allowNull: false
   })
-  type_of_user: string;
+  type_of_user: string
 
   // Common fields
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  firstname: string;
+  firstname: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  lastname: string;
+  lastname: string
 
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  mobile_no: bigint;
+  mobile_no: bigint
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  reset_token: string;
+  reset_token: string
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  reset_token_expiry: bigint;
+  reset_token_expiry: bigint
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  address_1: string;
+  address_1: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  address_2: string;
+  address_2: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  city: string;
+  city: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  state: string;
+  state: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  country_code: string;
+  country_code: string
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true
+  })
+  zip: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
+    defaultValue: null
   })
-  zip: number;
+  role_id: number
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.ENUM('active', 'pending', 'in-active'),
     allowNull: true,
-    defaultValue: null,
+    defaultValue: 'pending'
   })
-  role_id: number;
-
-  @Column({
-    type: DataType.ENUM("active", "pending", "in-active"),
-    allowNull: true,
-    defaultValue: "pending",
-  })
-  status: string;
+  status: string
 
   // Admin-specific fields
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  billing_mobile_no: bigint;
+  billing_mobile_no: bigint
 
   // Patient-specific fields
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  dob: Date;
+  dob: Date
 
   // Provider-specific fields
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  medical_licence: string;
+  medical_licence: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  NPI_no: number;
+  NPI_no: number
 
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  alternative_mobile_no: bigint;
+  alternative_mobile_no: bigint
 
   @Column({
-    type: DataType.ENUM("yes", "no"),
+    type: DataType.ENUM('yes', 'no'),
     allowNull: true,
-    defaultValue: "no",
+    defaultValue: 'no'
   })
-  stop_notification_status: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-    unique: true,
-  })
-  synchronization_email: string;
+  stop_notification_status: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
+    unique: true
   })
-  admin_notes: string;
+  synchronization_email: string
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  admin_notes: string
 
   // Common attributes between Patient and Provider (optional)
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  street: string;
+  street: string
 
   //Common attributes between Admin and Provider
   @Column({
     type: DataType.NUMBER,
     allowNull: true,
-    defaultValue: 0,
+    defaultValue: 0
   })
-  open_requests: number;
+  open_requests: number
 
   // Common attributes between Patient and Provider
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  business_name: string;
+  business_name: string
 
   // Additional attributes
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  tax_id: string;
+  tax_id: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  business_website: string;
+  business_website: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  profile_picture: string;
+  profile_picture: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  signature_photo: string;
+  signature_photo: string
 
   @Column({
-    type: DataType.ENUM("scheduled", "un-scheduled", "busy"),
+    type: DataType.ENUM('scheduled', 'un-scheduled', 'busy'),
     allowNull: true,
-    defaultValue: null,
+    defaultValue: null
   })
-  on_call_status: string;
+  on_call_status: string
 
-  @HasMany(() => Shifts, { foreignKey: "user_id" })
-  Shifts: Shifts[];
+  @HasMany(() => Shifts, { foreignKey: 'user_id' })
+  Shifts: Shifts[]
 
   @BelongsTo(() => Role, {
-    foreignKey: "role_id",
-    targetKey: "role_id",
+    foreignKey: 'role_id',
+    targetKey: 'role_id'
   })
-  Role: Role;
+  Role: Role
 
   @BelongsToMany(() => Region, {
     through: () => UserRegionMapping,
-    foreignKey: "user_id",
-    otherKey: "region_id",
+    foreignKey: 'user_id',
+    otherKey: 'region_id'
   })
-  Regions: Region[];
+  Regions: Region[]
 }

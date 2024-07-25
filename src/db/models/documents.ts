@@ -1,79 +1,67 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-} from "sequelize-typescript";
-import {
-  DocumentsAttributes,
-  DocumentsCreationAttributes,
-} from "../../interfaces";
-import { RequestModel } from "./request";
-import { User } from "./user";
+import { Table, Column, DataType, Model, BelongsTo } from 'sequelize-typescript'
+import { DocumentsAttributes, DocumentsCreationAttributes } from '../../interfaces'
+import { RequestModel } from './request'
+import { User } from './user'
 
-@Table({ timestamps: true, tableName: "documents" })
-export class Documents extends Model<
-  DocumentsAttributes,
-  DocumentsCreationAttributes
-> {
+@Table({ timestamps: true, tableName: 'documents' })
+export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  request_id: number;
+  request_id: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    defaultValue: null,
+    defaultValue: null
   })
-  user_id: number;
+  user_id: number
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true
   })
-  document_id: number;
+  document_id: number
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    defaultValue: null,
+    defaultValue: null
   })
-  uploader: number;
+  uploader: number
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    defaultValue: null,
+    defaultValue: null
   })
-  document_name: string;
+  document_name: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
-  document_path: string;
+  document_path: string
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
-  createdAt: Date;
+  createdAt: Date
 
   @BelongsTo(() => RequestModel, {
-    foreignKey: "request_id",
-    targetKey: "request_id",
+    foreignKey: 'request_id',
+    targetKey: 'request_id'
   })
-  Request: RequestModel;
+  Request: RequestModel
 
   @BelongsTo(() => User, {
-    foreignKey: "user_id",
-    targetKey: "user_id",
+    foreignKey: 'user_id',
+    targetKey: 'user_id'
   })
-  User: User;
+  User: User
 }

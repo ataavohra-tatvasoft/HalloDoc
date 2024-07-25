@@ -1,40 +1,34 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsToMany,
-} from "sequelize-typescript";
-import { AccessAttributes, AccessCreationAttributes } from "../../interfaces";
-import { RoleAccessMapping } from "./role-access_mapping";
-import { Role } from "./role";
+import { Table, Column, DataType, Model, BelongsToMany } from 'sequelize-typescript'
+import { AccessAttributes, AccessCreationAttributes } from '../../interfaces'
+import { RoleAccessMapping } from './role-access_mapping'
+import { Role } from './role'
 
-@Table({ timestamps: true, tableName: "access" })
+@Table({ timestamps: true, tableName: 'access' })
 export class Access extends Model<AccessAttributes, AccessCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
     allowNull: false,
-    primaryKey: true,
+    primaryKey: true
   })
-  access_id: number;
+  access_id: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
-  access_name: string;
+  access_name: string
 
   @Column({
-    type: DataType.ENUM("all", "admin", "physician", "patient"),
-    allowNull: false,
+    type: DataType.ENUM('all', 'admin', 'physician', 'patient'),
+    allowNull: false
   })
-  account_type: string;
+  account_type: string
 
   @BelongsToMany(() => Role, {
     through: () => RoleAccessMapping,
-    foreignKey: "access_id",
-    otherKey: "role_id",
+    foreignKey: 'access_id',
+    otherKey: 'role_id'
   })
-  Role: Role[];
+  Role: Role[]
 }

@@ -1,16 +1,6 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-  ForeignKey,
-} from "sequelize-typescript";
-import {
-  UserRegionMappingAttributes,
-  UserRegionMappingCreationAttributes,
-} from "../../interfaces";
-@Table({ timestamps: true, tableName: "user-region-mapping" })
+import { Table, Column, DataType, Model } from 'sequelize-typescript'
+import { UserRegionMappingAttributes, UserRegionMappingCreationAttributes } from '../../interfaces'
+@Table({ timestamps: true, tableName: 'user-region-mapping' })
 export class UserRegionMapping extends Model<
   UserRegionMappingAttributes,
   UserRegionMappingCreationAttributes
@@ -19,19 +9,19 @@ export class UserRegionMapping extends Model<
     type: DataType.INTEGER,
     autoIncrement: true,
     allowNull: false,
-    primaryKey: true,
+    primaryKey: true
   })
-  id: number;
+  id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  user_id: number;
+  user_id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  region_id: number;
+  region_id: number
 }

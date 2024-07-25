@@ -1,88 +1,82 @@
-import { Table, Column, DataType, Model } from "sequelize-typescript";
-import {
-  BusinessAttributes,
-  BusinessCreationAttributes,
-} from "../../interfaces";
+import { Table, Column, DataType, Model } from 'sequelize-typescript'
+import { BusinessAttributes, BusinessCreationAttributes } from '../../interfaces'
 
-@Table({ timestamps: true, tableName: "business-vendor" })
-export class Business extends Model<
-  BusinessAttributes,
-  BusinessCreationAttributes
-> {
+@Table({ timestamps: true, tableName: 'business-vendor' })
+export class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  business_id: number;
+  business_id: number
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    unique: true
   })
-  business_name: string;
+  business_name: string
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  business_website: string;
+  business_website: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  profession: string;
+  profession: string
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  fax_number: bigint;
+  fax_number: bigint
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  mobile_no: bigint;
+  mobile_no: bigint
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    unique: true,
+    unique: true
   })
-  email: string;
+  email: string
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  business_contact: bigint;
+  business_contact: bigint
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  street: string;
+  street: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  city: string;
+  city: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  state: string;
+  state: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  zip: number;
+  zip: number
 }

@@ -1,79 +1,73 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-} from "sequelize-typescript";
-import { ShiftsAttributes, ShiftsCreationAttributes } from "../../interfaces";
-import { User } from "./user";
-@Table({ timestamps: true, tableName: "shifts" })
+import { Table, Column, DataType, Model, BelongsTo } from 'sequelize-typescript'
+import { ShiftsAttributes, ShiftsCreationAttributes } from '../../interfaces'
+import { User } from './user'
+@Table({ timestamps: true, tableName: 'shifts' })
 export class Shifts extends Model<ShiftsAttributes, ShiftsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  shift_id: number;
+  shift_id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  user_id: number;
+  user_id: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  region: string;
+  region: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  physician: string;
+  physician: string
 
   @Column({
-    type: DataType.ENUM("approved", "pending"),
+    type: DataType.ENUM('approved', 'pending'),
     allowNull: false,
-    defaultValue: "pending",
+    defaultValue: 'pending'
   })
-  status: string;
+  status: string
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
-  shift_date: Date;
+  shift_date: Date
 
   @Column({
     type: DataType.TIME,
-    allowNull: true,
+    allowNull: true
   })
-  start: string;
+  start: string
 
   @Column({
     type: DataType.TIME,
-    allowNull: true,
+    allowNull: true
   })
-  end: string;
+  end: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  repeat_end: number;
+  repeat_end: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  repeat_days: string;
+  repeat_days: string
 
   @BelongsTo(() => User, {
-    foreignKey: "user_id",
-    targetKey: "user_id",
+    foreignKey: 'user_id',
+    targetKey: 'user_id'
   })
-  User: User;
+  User: User
 }

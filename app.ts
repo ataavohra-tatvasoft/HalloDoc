@@ -1,45 +1,43 @@
-import cors from "cors";
-import express, { Express } from "express";
-import bodyParser from "body-parser";
-import routes from "./src/routes";
-import dotenv from "dotenv";
-import fileUpload from "express-fileupload";
-import connect_to_database from "./src/connections/database";
-import { errors } from "celebrate";
+/* eslint-disable no-undef */
+import cors from 'cors'
+import express, { Express } from 'express'
+import bodyParser from 'body-parser'
+import routes from './src/routes'
+import dotenv from 'dotenv'
+import fileUpload from 'express-fileupload'
+import connect_to_database from './src/connections/database'
+import { errors } from 'celebrate'
 
-dotenv.config({ path: ".env" });
+dotenv.config({ path: '.env' })
 
 /** Constants */
-const app: Express = express();
+const app: Express = express()
 
-(async () => {
+;(async () => {
   try {
-    await connect_to_database();
+    await connect_to_database()
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
-})();
+})()
 
-app.use(cors());
+app.use(cors())
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(routes);
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  next()
+})
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use(routes)
 app.use(
   fileUpload({
     limits: { fileSize: 5000000 },
-    useTempFiles: true,
+    useTempFiles: true
   })
-);
-app.use(errors());
+)
+app.use(errors())
 
-app.listen(process.env.PORT);
-console.log("Application Started!!!");
+app.listen(process.env.PORT)
+console.log('Application Started!!!')

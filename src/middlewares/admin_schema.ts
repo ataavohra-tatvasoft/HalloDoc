@@ -1,12 +1,8 @@
-import Joi, { Schema } from "joi";
-import { Request, Response, NextFunction } from "express";
-import message_constants from "../constants/message_constants";
+import Joi, { Schema } from 'joi'
+import { Request, Response, NextFunction } from 'express'
+import message_constants from '../constants/message_constants'
 
-export const admin_schema_signup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const admin_schema_signup = async (req: Request, res: Response, next: NextFunction) => {
   const {
     body: {
       Email,
@@ -24,24 +20,23 @@ export const admin_schema_signup = async (
       Address_2,
       City,
       State,
-      Country_Code,
-    },
-  } = req;
+      Country_Code
+    }
+  } = req
 
   const adminSchema: Schema = Joi.object({
     Email: Joi.string().email({
       minDomainSegments: 2,
-      tlds: { allow: ["com"] },
+      tlds: { allow: ['com'] }
     }),
-    Confirm_Email: Joi.ref("Email"),
+    Confirm_Email: Joi.ref('Email'),
     Password: Joi.string()
       .min(5)
       .required()
-      .pattern(
-        /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/
-      ),
-    Confirm_Password: Joi.ref("Password"),
-    Status: Joi.string().valid("active", "in-active"),
+      // eslint-disable-next-line no-useless-escape
+      .pattern(/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=?{|}\[\]:\'\";,.<>\/\\|\s]).+$/),
+    Confirm_Password: Joi.ref('Password'),
+    Status: Joi.string().valid('active', 'in-active'),
     Role_Id: Joi.number().optional(),
     FirstName: Joi.string().max(8).min(3),
     LastName: Joi.string().max(8).min(3),
@@ -56,17 +51,12 @@ export const admin_schema_signup = async (
       .required(),
     Address_1: Joi.string().max(15).min(10),
     Address_2: Joi.string().max(15).min(10),
-    City: Joi.string().valid("City 1", "City 2"),
-    State: Joi.string().valid(
-      "District Of Columbia",
-      "Virginia",
-      "Maryland",
-      "New York"
-    ),
+    City: Joi.string().valid('City 1', 'City 2'),
+    State: Joi.string().valid('District Of Columbia', 'Virginia', 'Maryland', 'New York'),
     Country_Code: Joi.string()
       .pattern(/^[a-zA-Z]{2}$/)
-      .required(),
-  });
+      .required()
+  })
 
   try {
     await adminSchema.validateAsync(
@@ -86,17 +76,17 @@ export const admin_schema_signup = async (
         Address_2: Address_2,
         City: City,
         State: State,
-        Country_Code: Country_Code,
+        Country_Code: Country_Code
       },
-      { abortEarly: false, presence: "required" }
-    );
+      { abortEarly: false, presence: 'required' }
+    )
 
-    next();
+    next()
   } catch (error: any) {
     return res.status(500).json({
       status: false,
       errormessage: error.message,
-      message: message_constants.ISE,
-    });
+      message: message_constants.ISE
+    })
   }
-};
+}

@@ -1,73 +1,66 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-  BelongsTo,
-  Sequelize,
-} from "sequelize-typescript";
-import { LogsAttributes, LogsCreationAttributes } from "../../interfaces";
+import { Table, Column, DataType, Model } from 'sequelize-typescript'
+import { LogsAttributes, LogsCreationAttributes } from '../../interfaces'
 
-@Table({ timestamps: true, tableName: "logs" })
+@Table({ timestamps: true, tableName: 'logs' })
 export class Logs extends Model<LogsAttributes, LogsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  log_id: number;
+  log_id: number
 
   @Column({
-    type: DataType.ENUM("SMS", "Email"),
-    allowNull: false,
+    type: DataType.ENUM('SMS', 'Email'),
+    allowNull: false
   })
-  type_of_log: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  recipient: string;
+  type_of_log: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  action: string;
+  recipient: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  role_name: string;
+  action: string
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  email: string;
+  role_name: string
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  email: string
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: true,
+    allowNull: true
   })
-  mobile_no: bigint;
+  mobile_no: bigint
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  sent: string;
+  sent: string
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  sent_tries: number;
+  sent_tries: number
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
-  confirmation_no: string;
+  confirmation_no: string
 }

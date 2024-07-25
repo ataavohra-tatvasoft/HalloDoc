@@ -1,32 +1,33 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("profession", {
+    await queryInterface.createTable('profession', {
       profession_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true
       },
 
       profession_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('profession');
-
-  },
-};
+    await queryInterface.dropTable('profession')
+  }
+}

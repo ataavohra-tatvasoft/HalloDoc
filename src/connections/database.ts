@@ -1,6 +1,6 @@
-// import { Sequelize } from "sequelize";
-import { Sequelize } from "sequelize-typescript";
-import dotenv from "dotenv";
+/* eslint-disable no-undef */
+import { Sequelize } from 'sequelize-typescript'
+import dotenv from 'dotenv'
 import {
   User,
   RequestModel,
@@ -17,18 +17,18 @@ import {
   RoleAccessMapping,
   UserRegionMapping,
   EncounterForm,
-  Shifts,
-} from "../db/models";
+  Shifts
+} from '../db/models'
 
-dotenv.config({ path: ".env" });
+dotenv.config({ path: '.env' })
 
 const sequelize = new Sequelize({
-  database: "hallodoc",
-  host: "localhost",
-  dialect: "mysql",
+  database: 'hallodoc',
+  host: 'localhost',
+  dialect: 'mysql',
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
-  storage: ":memory:",
+  storage: ':memory:',
   models: [
     User,
     RequestModel,
@@ -45,29 +45,29 @@ const sequelize = new Sequelize({
     Role,
     UserRegionMapping,
     RoleAccessMapping,
-    EncounterForm,
-  ],
-});
+    EncounterForm
+  ]
+})
 
-const connection: Promise<void> = sequelize.authenticate();
+const connection: Promise<void> = sequelize.authenticate()
 
 /** Connection to Database */
 connection
   .then(() => {
-    console.log("Connected to database :-) ");
+    console.log('Connected to database :-) ')
   })
   .catch((error: Error) => {
-    console.log("Error Occurred =>", error);
-  });
+    console.log('Error Occurred =>', error)
+  })
 
 async function connect_to_database() {
   try {
-    await sequelize.authenticate();
-    console.log("Database connection successful");
+    await sequelize.authenticate()
+    console.log('Database connection successful')
   } catch (error) {
-    console.error("Error connecting to database:", error);
-    process.exit(1);
+    console.error('Error connecting to database:', error)
+    process.exit(1)
   }
 }
 
-export default connect_to_database;
+export default connect_to_database

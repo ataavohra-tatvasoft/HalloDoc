@@ -1,57 +1,48 @@
-import { Request, Response, NextFunction } from "express";
-import { Op, WhereOptions } from "sequelize";
-import message_constants from "../../constants/message_constants";
-import {
-  Controller,
-  FormattedResponse,
-  BusinessAttributes,
-} from "../../interfaces";
-import { Business } from "../../db/models";
+import { Request, Response } from 'express'
+import { Op, WhereOptions } from 'sequelize'
+import message_constants from '../../constants/message_constants'
+import { Controller, FormattedResponse, BusinessAttributes } from '../../interfaces'
+import { Business } from '../../db/models'
 
-export const partner_vendor_list: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const partner_vendor_list: Controller = async (req: Request, res: Response) => {
   try {
     const { vendor, profession, region, page, page_size } = req.query as {
-      [key: string]: string;
-    };
-    const page_number = Number(page) || 1;
-    const limit = Number(page_size) || 10;
-    const offset = (page_number - 1) * limit;
+      [key: string]: string
+    }
+    const page_number = Number(page) || 1
+    const limit = Number(page_size) || 10
+    const offset = (page_number - 1) * limit
 
     const formatted_response: FormattedResponse<any> = {
       status: true,
-      data: [],
-    };
+      data: []
+    }
     const where_clause: WhereOptions<BusinessAttributes> = {
       ...(vendor && {
-        [Op.or]: [{ business_name: { [Op.like]: `%${vendor}%` } }],
+        [Op.or]: [{ business_name: { [Op.like]: `%${vendor}%` } }]
       }),
       ...(profession && { profession }),
-      ...(region && { state: region }),
-    };
+      ...(region && { state: region })
+    }
 
-    const { count: total_count, rows: businesses } =
-      await Business.findAndCountAll({
-        attributes: [
-          "business_id",
-          "profession",
-          "business_name",
-          "email",
-          "fax_number",
-          "mobile_no",
-          "business_contact",
-        ],
-        where: where_clause,
-      });
+    const { count: total_count, rows: businesses } = await Business.findAndCountAll({
+      attributes: [
+        'business_id',
+        'profession',
+        'business_name',
+        'email',
+        'fax_number',
+        'mobile_no',
+        'business_contact'
+      ],
+      where: where_clause
+    })
     if (!businesses) {
       return res.status(404).json({
-        message: message_constants.BNF,
-      });
+        message: message_constants.BNF
+      })
     }
-    var i = offset + 1;
+    var i = offset + 1
     for (const business of businesses) {
       const formatted_request = {
         sr_no: i,
@@ -61,28 +52,24 @@ export const partner_vendor_list: Controller = async (
         email: business.email,
         fax_number: business.fax_number,
         mobile_no: business.mobile_no,
-        business_contact: business.business_contact,
-      };
-      i++;
-      formatted_response.data.push(formatted_request);
+        business_contact: business.business_contact
+      }
+      i++
+      formatted_response.data.push(formatted_request)
     }
 
     return res.status(200).json({
       ...formatted_response,
       total_pages: Math.ceil(total_count / limit),
       current_page: page_number,
-      total_count: total_count,
-    });
+      total_count: total_count
+    })
   } catch (error) {
-    res.status(500).json({ message: message_constants.ISE });
+    res.status(500).json({ message: message_constants.ISE })
   }
-};
+}
 
-export const add_business: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const add_business: Controller = async (req: Request, res: Response) => {
   try {
     const {
       business_name,
@@ -94,8 +81,8 @@ export const add_business: Controller = async (
       street,
       city,
       state,
-      zip,
-    } = req.body;
+      zip
+    } = req.body
 
     await Business.create({
       business_name,
@@ -107,40 +94,34 @@ export const add_business: Controller = async (
       street,
       city,
       state,
-      zip: Number(zip),
-    });
+      zip: Number(zip)
+    })
 
     return res.status(200).json({
-      message: message_constants.Success,
-    });
+      message: message_constants.Success
+    })
   } catch (error: any) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ message: message_constants.EWCB + " " + error.message });
+    console.log(error)
+    res.status(500).json({ message: message_constants.EWCB + ' ' + error.message })
   }
-};
+}
 
-export const update_business_view: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const update_business_view: Controller = async (req: Request, res: Response) => {
   try {
     const { business_id } = req.params as {
-      [key: string]: string;
-    };
+      [key: string]: string
+    }
 
     const formatted_response: FormattedResponse<any> = {
       status: true,
-      data: [],
-    };
+      data: []
+    }
 
     const business = await Business.findOne({
       where: {
-        business_id,
-      },
-    });
+        business_id
+      }
+    })
 
     const formatted_request = {
       business_id: business?.business_id,
@@ -153,38 +134,32 @@ export const update_business_view: Controller = async (
       street: business?.street,
       city: business?.city,
       state: business?.state,
-      zip: business?.zip,
-    };
+      zip: business?.zip
+    }
 
-    formatted_response.data.push(formatted_request);
+    formatted_response.data.push(formatted_request)
 
     return res.status(200).json({
-      ...formatted_response,
-    });
+      ...formatted_response
+    })
   } catch (error: any) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ message: message_constants.EWCB + " " + error.message });
+    console.log(error)
+    res.status(500).json({ message: message_constants.EWCB + ' ' + error.message })
   }
-};
+}
 
-export const update_business: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const update_business: Controller = async (req: Request, res: Response) => {
   try {
-    const { business_id } = req.params;
+    const { business_id } = req.params
     const is_business = await Business.findOne({
       where: {
-        business_id,
-      },
-    });
+        business_id
+      }
+    })
     if (!is_business) {
       return res.status(400).json({
-        message: message_constants.BNF,
-      });
+        message: message_constants.BNF
+      })
     }
     const {
       business_name,
@@ -196,8 +171,8 @@ export const update_business: Controller = async (
       street,
       city,
       state,
-      zip,
-    } = req.body;
+      zip
+    } = req.body
 
     const status = await Business.update(
       {
@@ -210,57 +185,53 @@ export const update_business: Controller = async (
         street,
         city,
         state,
-        zip: Number(zip),
+        zip: Number(zip)
       },
       {
-        where: { business_id },
+        where: { business_id }
       }
-    );
+    )
     if (!status) {
       return res.status(400).json({
-        message: message_constants.EWUB,
-      });
+        message: message_constants.EWUB
+      })
     }
     return res.status(200).json({
-      message: message_constants.Success,
-    });
+      message: message_constants.Success
+    })
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: message_constants.ISE });
+    console.log(error)
+    res.status(500).json({ message: message_constants.ISE })
   }
-};
+}
 
-export const delete_vendor: Controller = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const delete_vendor: Controller = async (req: Request, res: Response) => {
   try {
-    const { business_id } = req.params;
+    const { business_id } = req.params
     const is_business = await Business.findOne({
       where: {
-        business_id,
-      },
-    });
+        business_id
+      }
+    })
     if (!is_business) {
       return res.status(400).json({
-        message: message_constants.BNF,
-      });
+        message: message_constants.BNF
+      })
     }
     const status = await Business.destroy({
       where: {
-        business_id,
-      },
-    });
+        business_id
+      }
+    })
     if (!status) {
       return res.status(400).json({
-        message: message_constants.EWDB,
-      });
+        message: message_constants.EWDB
+      })
     }
     return res.status(200).json({
-      message: message_constants.Success,
-    });
+      message: message_constants.Success
+    })
   } catch (error) {
-    return res.status(500).json({ message: message_constants.ISE });
+    return res.status(500).json({ message: message_constants.ISE })
   }
-};
+}

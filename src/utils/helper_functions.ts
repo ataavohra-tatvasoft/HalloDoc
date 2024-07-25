@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import multer from "multer";
-import nodemailer from "nodemailer";
-import path from "path";
-import { Op } from "sequelize";
-import { FormattedResponse } from "../interfaces";
-import message_constants from "../constants/message_constants";
+/* eslint-disable no-undef */
+import { Request, Response } from 'express'
+import multer from 'multer'
+import nodemailer from 'nodemailer'
+import path from 'path'
+import { Op } from 'sequelize'
+import { FormattedResponse } from '../interfaces'
+import message_constants from '../constants/message_constants'
 import {
   Region,
   RequestModel,
@@ -14,118 +15,108 @@ import {
   UserRegionMapping,
   Documents,
   EncounterForm,
-  User,
-} from "../db/models";
+  User
+} from '../db/models'
 
-export const shift_timeouts = new Map();
+export const shift_timeouts = new Map()
 
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "..", "..") + "\\src\\public\\uploads"); // Adjust as needed
+    cb(null, path.join(__dirname, '..', '..') + '\\src\\public\\uploads') // Adjust as needed
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-";
-    const ext = path.extname(file.originalname); // Extract extension
-    cb(null, uniqueSuffix + ext);
-  },
-});
+    const uniqueSuffix = Date.now() + '-'
+    const ext = path.extname(file.originalname) // Extract extension
+    cb(null, uniqueSuffix + ext)
+  }
+})
 
 export const upload = multer({
   storage: storage,
   limits: { fileSize: 5000000 },
   fileFilter: (req, file, cb) => {
-    const allowedExtensions = [
-      "image/png",
-      "image/jpg",
-      "image/jpeg",
-      "application/pdf",
-    ];
-    const extname = file.mimetype.toLowerCase();
+    const allowedExtensions = ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf']
+    const extname = file.mimetype.toLowerCase()
     if (allowedExtensions.includes(extname)) {
-      cb(null, true);
+      cb(null, true)
     } else {
-      cb(
-        new Error(
-          "Invalid file type. Only PNG,PDF, JPG, and JPEG files are allowed."
-        )
-      );
+      cb(new Error('Invalid file type. Only PNG,PDF, JPG, and JPEG files are allowed.'))
     }
-  },
-});
+  }
+})
 
 export const update_region_mapping = async (
   user_id: number,
   region_ids: Array<number>,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
   const delete_where = {
     user_id: user_id,
     region_id: {
-      [Op.notIn]: region_ids,
-    },
-  };
+      [Op.notIn]: region_ids
+    }
+  }
 
   for (const region of region_ids) {
     const region_data = await Region.findOne({
       where: {
-        region_id: region,
-      },
-    });
+        region_id: region
+      }
+    })
 
     if (!region_data) {
-      return console.log("message:", message_constants.RegNF);
+      return console.log('message:', message_constants.RegNF)
     }
 
     const is_exist = await UserRegionMapping.findOne({
       where: {
         user_id: user_id,
-        region_id: region_data.region_id,
-      },
-    });
+        region_id: region_data.region_id
+      }
+    })
 
     if (is_exist) {
       const mapping = await UserRegionMapping.update(
         {
           user_id: user_id,
-          region_id: region_data?.region_id,
+          region_id: region_data?.region_id
         },
         {
           where: {
             user_id: user_id,
-            region_id: region_data?.region_id,
-          },
+            region_id: region_data?.region_id
+          }
         }
-      );
+      )
 
       if (!mapping) {
         return res.status(500).json({
-          message: message_constants.EWU,
-        });
+          message: message_constants.EWU
+        })
       }
     } else {
       const mapping = await UserRegionMapping.create({
         user_id: user_id,
-        region_id: region_data?.region_id,
-      });
+        region_id: region_data?.region_id
+      })
 
       if (!mapping) {
-        return console.log("message:", message_constants.EWC);
+        return console.log('message:', message_constants.EWC)
       }
     }
   }
 
   const deleted_mappings = await UserRegionMapping.destroy({
-    where: delete_where,
-  });
+    where: delete_where
+  })
 
   if (deleted_mappings === 0) {
-    return console.log("No region mappings deleted");
+    return console.log('No region mappings deleted')
   } else {
-    return console.log(`${deleted_mappings} region mappings deleted`);
+    return console.log(`${deleted_mappings} region mappings deleted`)
   }
-};
+}
 
 // Function to send email with attachment
 export const send_email_with_attachment = async (
@@ -140,46 +131,43 @@ export const send_email_with_attachment = async (
     debug: true,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+      pass: process.env.EMAIL_PASS
+    }
+  })
 
   const info = await transporter.sendMail({
-    from: "vohraatta@gmail.com",
+    from: 'vohraatta@gmail.com',
     to: email,
-    subject: "Requested Documents",
-    text: "Please find the requested documents attached.",
+    subject: 'Requested Documents',
+    text: 'Please find the requested documents attached.',
     attachments: [
       {
         filename: filename,
-        path: file_path,
-      },
-    ],
-  });
+        path: file_path
+      }
+    ]
+  })
 
   if (!info) {
-    throw new Error("Error sending email");
+    throw new Error('Error sending email')
   }
-};
+}
 
 export const update_document = async (
   user_id: number,
   document_name: string,
   document_path: string
 ) => {
-  if (!document_path) return;
+  if (!document_path) return
   const document_status = await Documents.findOne({
-    where: { user_id, document_name },
-  });
+    where: { user_id, document_name }
+  })
   if (!document_status) {
-    await Documents.create({ user_id, document_name, document_path });
+    await Documents.create({ user_id, document_name, document_path })
   } else {
-    await Documents.update(
-      { document_path },
-      { where: { user_id, document_name } }
-    );
+    await Documents.update({ document_path }, { where: { user_id, document_name } })
   }
-};
+}
 
 export const generate_confirmation_number = (
   state: string,
@@ -187,18 +175,15 @@ export const generate_confirmation_number = (
   lastname: string,
   todays_requests_count: number
 ): string => {
-  const today = new Date();
-  const year = today.getFullYear().toString().slice(-2); // Last 2 digits of year
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // 0-padded month
-  const day = String(today.getDate()).padStart(2, "0"); // 0-padded day
+  const today = new Date()
+  const year = today.getFullYear().toString().slice(-2) // Last 2 digits of year
+  const month = String(today.getMonth() + 1).padStart(2, '0') // 0-padded month
+  const day = String(today.getDate()).padStart(2, '0') // 0-padded day
   return `${state.slice(0, 2)}${year}${month}${day}${lastname.slice(
     0,
     2
-  )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(
-    4,
-    "0"
-  )}`;
-};
+  )}${firstname.slice(0, 2)}${String(todays_requests_count + 1).padStart(4, '0')}`
+}
 
 export const handle_request_state = async (
   res: Response,
@@ -210,23 +195,23 @@ export const handle_request_state = async (
   page_size: string,
   additionalAttributes?: Array<string>
 ) => {
-  console.log(state);
-  const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 10;
-  const offset = (page_number - 1) * limit;
+  console.log(state)
+  const page_number = Number(page) || 1
+  const limit = Number(page_size) || 10
+  const offset = (page_number - 1) * limit
   const formatted_response: FormattedResponse<any> = {
     status: true,
-    data: [],
-  };
+    data: []
+  }
   const where_clause_patient = {
-    type_of_user: "patient",
+    type_of_user: 'patient',
     ...(search && {
       [Op.or]: [
         { firstname: { [Op.like]: `%${search}%` } },
-        { lastname: { [Op.like]: `%${search}%` } },
-      ],
-    }),
-  };
+        { lastname: { [Op.like]: `%${search}%` } }
+      ]
+    })
+  }
 
   const { rows: requests } = await RequestModel.findAndCountAll({
     where: {
@@ -234,60 +219,55 @@ export const handle_request_state = async (
       ...(region && { state: region }),
       request_status: {
         [Op.notIn]:
-          state === "toclose"
-            ? ["cancelled by provider", "blocked", "clear"]
-            : [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
+          state === 'toclose'
+            ? ['cancelled by provider', 'blocked', 'clear']
+            : ['cancelled by admin', 'cancelled by provider', 'blocked', 'clear']
       },
-      ...(requestor && { requested_by: requestor }),
+      ...(requestor && { requested_by: requestor })
     },
     attributes: [
-      "request_id",
-      "request_state",
-      "confirmation_no",
-      "requested_by",
-      "requested_date",
-      "date_of_service",
-      "physician_id",
-      "patient_id",
-      "street",
-      "city",
-      "state",
-      "zip",
-      ...(additionalAttributes || []),
+      'request_id',
+      'request_state',
+      'confirmation_no',
+      'requested_by',
+      'requested_date',
+      'date_of_service',
+      'physician_id',
+      'patient_id',
+      'street',
+      'city',
+      'state',
+      'zip',
+      ...(additionalAttributes || [])
     ],
     include: [
       {
-        as: "Patient",
+        as: 'Patient',
         model: User,
-        where: where_clause_patient,
+        where: where_clause_patient
       },
-      ...(state !== "new"
+      ...(state !== 'new'
         ? [
             {
-              as: "Physician",
+              as: 'Physician',
               model: User,
               where: {
-                type_of_user: "physician",
+                type_of_user: 'physician'
               },
-              required: false, // Make physician association optional
-            },
+              required: false // Make physician association optional
+            }
           ]
         : []),
       {
-        model: Requestor,
+        model: Requestor
       },
       {
-        model: Notes,
-      },
+        model: Notes
+      }
     ],
     limit,
-    offset,
-  });
+    offset
+  })
 
   const { count } = await RequestModel.findAndCountAll({
     where: {
@@ -295,41 +275,36 @@ export const handle_request_state = async (
       ...(region && { state: region }),
       request_status: {
         [Op.notIn]:
-          state === "toclose"
-            ? ["cancelled by provider", "blocked", "clear"]
-            : [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
+          state === 'toclose'
+            ? ['cancelled by provider', 'blocked', 'clear']
+            : ['cancelled by admin', 'cancelled by provider', 'blocked', 'clear']
       },
-      ...(requestor && { requested_by: requestor }),
+      ...(requestor && { requested_by: requestor })
     },
     include: [
       {
-        as: "Patient",
+        as: 'Patient',
         model: User,
-        where: where_clause_patient,
+        where: where_clause_patient
       },
-      ...(state !== "new"
+      ...(state !== 'new'
         ? [
             {
-              as: "Physician",
+              as: 'Physician',
               model: User,
               where: {
-                type_of_user: "physician",
+                type_of_user: 'physician'
               },
-              required: false,
-            },
+              required: false
+            }
           ]
-        : []),
+        : [])
     ],
     limit,
-    offset,
-  });
+    offset
+  })
 
-  var i = offset + 1;
+  var i = offset + 1
   for (const request of requests) {
     const formatted_request = {
       sr_no: i,
@@ -337,67 +312,58 @@ export const handle_request_state = async (
       request_state: request.request_state,
       confirmation_no: request.confirmation_no,
       requestor: request.requested_by,
-      requested_date: request.requested_date?.toISOString().split("T")[0],
-      ...(state !== "new"
+      requested_date: request.requested_date?.toISOString().split('T')[0],
+      ...(state !== 'new'
         ? {
-            date_of_service: request.date_of_service
-              ?.toISOString()
-              .split("T")[0],
+            date_of_service: request.date_of_service?.toISOString().split('T')[0]
           }
         : {}),
       patient_data: {
         user_id: request?.Patient?.user_id || null,
-        name: request?.Patient?.firstname + " " + request?.Patient?.lastname,
-        DOB: request?.Patient?.dob?.toISOString().split("T")[0],
+        name: request?.Patient?.firstname + ' ' + request?.Patient?.lastname,
+        DOB: request?.Patient?.dob?.toISOString().split('T')[0],
         mobile_no: request?.Patient?.mobile_no || null,
-        address: request?.street + " " + request?.city + " " + request?.state,
-        ...(state === "toclose"
-          ? { region: request?.Patient?.state || null }
-          : {}),
+        address: request?.street + ' ' + request?.city + ' ' + request?.state,
+        ...(state === 'toclose' ? { region: request?.Patient?.state || null } : {})
       },
-      ...(state !== "new"
+      ...(state !== 'new'
         ? {
             physician_data: {
               user_id: request?.Physician?.user_id || null,
-              name:
-                request?.Physician?.firstname +
-                " " +
-                request?.Physician?.lastname,
-              DOB: request?.Physician?.dob?.toISOString().split("T")[0] || null,
+              name: request?.Physician?.firstname + ' ' + request?.Physician?.lastname,
+              DOB: request?.Physician?.dob?.toISOString().split('T')[0] || null,
               mobile_no: request?.Physician?.mobile_no || null,
               address:
                 request?.Physician?.address_1 ||
-                null + " " + request?.Physician?.address_2 ||
-                null + " " + request?.Physician?.state ||
-                null,
-            },
+                null + ' ' + request?.Physician?.address_2 ||
+                null + ' ' + request?.Physician?.state ||
+                null
+            }
           }
         : {}),
       requestor_data: {
         user_id: request?.Requestor?.user_id || null,
         first_name:
-          request?.Requestor?.first_name ||
-          null + " " + request?.Requestor?.last_name ||
-          null,
-        last_name: request?.Requestor?.last_name || null,
+          request?.Requestor?.first_name || null + ' ' + request?.Requestor?.last_name || null,
+        last_name: request?.Requestor?.last_name || null
       },
       notes: request?.Notes?.map((note) => ({
         note_id: note?.note_id || null,
         type_of_note: note?.type_of_note || null,
-        description: note?.description || null,
-      })),
-    };
-    i++;
-    formatted_response.data.push(formatted_request);
+        description: note?.description || null
+      }))
+    }
+    i++
+    formatted_response.data.push(formatted_request)
   }
 
   return res.status(200).json({
     ...formatted_response,
     total_pages: Math.ceil(count / limit),
     current_page: page_number,
-    total_count: count,
-  });
-};
+    total_count: count
+  })
+}
 
 export const handle_request_state_exports = async (
   state: string,
@@ -408,110 +374,105 @@ export const handle_request_state_exports = async (
   page_size: string,
   additional_attributes?: any
 ) => {
-  const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 100;
-  const offset = (page_number - 1) * limit;
+  const page_number = Number(page) || 1
+  const limit = Number(page_size) || 100
+  const offset = (page_number - 1) * limit
   const where_clause_patient = {
-    type_of_user: "patient",
+    type_of_user: 'patient',
     ...(search && {
       [Op.or]: [
         { firstname: { [Op.like]: `%${search}%` } },
-        { lastname: { [Op.like]: `%${search}%` } },
-      ],
-    }),
-  };
+        { lastname: { [Op.like]: `%${search}%` } }
+      ]
+    })
+  }
   const formatted_response: FormattedResponse<any> = {
     status: true,
-    data: [],
-  };
-  const { count, rows: requests } = await RequestModel.findAndCountAll({
+    data: []
+  }
+  const { rows: requests } = await RequestModel.findAndCountAll({
     where: {
       request_state: state,
       ...(region && { state: region }),
-      ...(state == "toclose"
+      ...(state == 'toclose'
         ? {
             request_status: {
-              [Op.notIn]: ["cancelled by provider", "blocked", "clear"],
-            },
+              [Op.notIn]: ['cancelled by provider', 'blocked', 'clear']
+            }
           }
         : {
             request_status: {
-              [Op.notIn]: [
-                "cancelled by admin",
-                "cancelled by provider",
-                "blocked",
-                "clear",
-              ],
-            },
+              [Op.notIn]: ['cancelled by admin', 'cancelled by provider', 'blocked', 'clear']
+            }
           }),
-      ...(requestor ? { requested_by: requestor } : {}),
+      ...(requestor ? { requested_by: requestor } : {})
     },
     attributes: [
-      "request_id",
-      "request_state",
-      "confirmation_no",
-      "requested_by",
-      "requested_date",
-      "date_of_service",
-      "physician_id",
-      "patient_id",
-      "street",
-      "city",
-      "state",
-      "zip",
-      ...(additional_attributes || []),
+      'request_id',
+      'request_state',
+      'confirmation_no',
+      'requested_by',
+      'requested_date',
+      'date_of_service',
+      'physician_id',
+      'patient_id',
+      'street',
+      'city',
+      'state',
+      'zip',
+      ...(additional_attributes || [])
     ],
     include: [
       {
-        as: "Patient",
+        as: 'Patient',
         model: User,
         attributes: [
-          "user_id",
-          "type_of_user",
-          "firstname",
-          "lastname",
-          "dob",
-          "mobile_no",
-          "address_1",
-          "state",
+          'user_id',
+          'type_of_user',
+          'firstname',
+          'lastname',
+          'dob',
+          'mobile_no',
+          'address_1',
+          'state'
         ],
-        where: where_clause_patient,
+        where: where_clause_patient
       },
-      ...(state !== "new"
+      ...(state !== 'new'
         ? [
             {
-              as: "Physician",
+              as: 'Physician',
               model: User,
               attributes: [
-                "user_id",
-                "type_of_user",
-                "firstname",
-                "lastname",
-                "dob",
-                "mobile_no",
-                "address_1",
-                "address_2",
+                'user_id',
+                'type_of_user',
+                'firstname',
+                'lastname',
+                'dob',
+                'mobile_no',
+                'address_1',
+                'address_2'
               ],
               where: {
-                type_of_user: "physician",
-              },
-            },
+                type_of_user: 'physician'
+              }
+            }
           ]
         : []),
       {
         model: Requestor,
-        attributes: ["user_id", "first_name", "last_name"],
+        attributes: ['user_id', 'first_name', 'last_name']
       },
       {
         model: Notes,
-        attributes: ["note_id", "type_of_note", "description"],
-      },
+        attributes: ['note_id', 'type_of_note', 'description']
+      }
     ],
     limit,
-    offset,
-  });
+    offset
+  })
 
-  var i = offset + 1;
+  var i = offset + 1
   for (const request of requests) {
     const formatted_request = {
       sr_no: i,
@@ -519,59 +480,54 @@ export const handle_request_state_exports = async (
       request_state: request.request_state,
       confirmationNo: request.confirmation_no,
       requestor: request.requested_by,
-      requested_date: request.requested_date?.toISOString().split("T")[0],
-      ...(state !== "new"
+      requested_date: request.requested_date?.toISOString().split('T')[0],
+      ...(state !== 'new'
         ? {
-            date_of_service: request.date_of_service
-              ?.toISOString()
-              .split("T")[0],
+            date_of_service: request.date_of_service?.toISOString().split('T')[0]
           }
         : {}),
       patient_data: {
         user_id: request.Patient.user_id,
-        name: request.Patient.firstname + " " + request.Patient.lastname,
-        DOB: request.Patient.dob?.toISOString().split("T")[0],
+        name: request.Patient.firstname + ' ' + request.Patient.lastname,
+        DOB: request.Patient.dob?.toISOString().split('T')[0],
         mobile_no: request.Patient.mobile_no,
-        address: request?.street + " " + request?.city + " " + request?.state,
-        ...(state === "toclose" ? { region: request.Patient.state } : {}),
+        address: request?.street + ' ' + request?.city + ' ' + request?.state,
+        ...(state === 'toclose' ? { region: request.Patient.state } : {})
       },
-      ...(state !== "new"
+      ...(state !== 'new'
         ? {
             physician_data: {
               user_id: request.Physician.user_id,
-              name:
-                request.Physician.firstname + " " + request.Physician.lastname,
-              DOB: request.Physician.dob?.toISOString().split("T")[0],
+              name: request.Physician.firstname + ' ' + request.Physician.lastname,
+              DOB: request.Physician.dob?.toISOString().split('T')[0],
               mobile_no: request.Physician.mobile_no,
               address:
                 request.Physician.address_1 +
-                " " +
+                ' ' +
                 request.Physician.address_2 +
-                " " +
-                request.Patient.state,
-            },
+                ' ' +
+                request.Patient.state
+            }
           }
         : {}),
       requestor_data: {
         user_id: request.Requestor?.user_id || null,
         first_name:
-          request.Requestor?.first_name ||
-          null + " " + request.Requestor?.last_name ||
-          null,
-        last_name: request.Requestor?.last_name || null,
+          request.Requestor?.first_name || null + ' ' + request.Requestor?.last_name || null,
+        last_name: request.Requestor?.last_name || null
       },
       notes: request.Notes?.map((note) => ({
         note_id: note.note_id,
         type_of_note: note.type_of_note,
-        description: note.description,
-      })),
-    };
-    i++;
-    formatted_response.data.push(formatted_request);
+        description: note.description
+      }))
+    }
+    i++
+    formatted_response.data.push(formatted_request)
   }
 
-  return formatted_response;
-};
+  return formatted_response
+}
 
 export const handle_request_state_physician = async (
   user_id: number,
@@ -584,76 +540,76 @@ export const handle_request_state_physician = async (
   page_size: string,
   additionalAttributes?: Array<string>
 ) => {
-  const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 10;
-  const offset = (page_number - 1) * limit;
+  const page_number = Number(page) || 1
+  const limit = Number(page_size) || 10
+  const offset = (page_number - 1) * limit
 
   const where_clause_patient = {
-    type_of_user: "patient",
+    type_of_user: 'patient',
     ...(search && {
       [Op.or]: [
         { firstname: { [Op.like]: `%${search}%` } },
-        { lastname: { [Op.like]: `%${search}%` } },
-      ],
-    }),
-  };
+        { lastname: { [Op.like]: `%${search}%` } }
+      ]
+    })
+  }
   const formatted_response: FormattedResponse<any> = {
     status: true,
-    data: [],
-  };
+    data: []
+  }
   const { count, rows: requests } = await RequestModel.findAndCountAll({
     where: {
       request_state: state,
       physician_id: user_id,
       ...(region && { state: region }),
-      ...(requestor ? { requested_by: requestor } : {}),
+      ...(requestor ? { requested_by: requestor } : {})
     },
     attributes: [
-      "request_id",
-      "request_state",
-      "confirmation_no",
-      "requested_by",
-      "request_status",
-      "physician_id",
-      "patient_id",
-      "street",
-      "city",
-      "state",
-      "zip",
-      ...(additionalAttributes || []),
+      'request_id',
+      'request_state',
+      'confirmation_no',
+      'requested_by',
+      'request_status',
+      'physician_id',
+      'patient_id',
+      'street',
+      'city',
+      'state',
+      'zip',
+      ...(additionalAttributes || [])
     ],
     include: [
       {
-        as: "Patient",
+        as: 'Patient',
         model: User,
         attributes: [
-          "user_id",
-          "type_of_user",
-          "firstname",
-          "lastname",
-          "dob",
-          "mobile_no",
-          "address_1",
-          "state",
+          'user_id',
+          'type_of_user',
+          'firstname',
+          'lastname',
+          'dob',
+          'mobile_no',
+          'address_1',
+          'state'
         ],
-        where: where_clause_patient,
+        where: where_clause_patient
       },
       {
         model: Requestor,
-        attributes: ["user_id", "first_name", "last_name"],
-      },
+        attributes: ['user_id', 'first_name', 'last_name']
+      }
     ],
     limit,
-    offset,
-  });
+    offset
+  })
 
-  var i = offset + 1;
+  var i = offset + 1
   for (const request of requests) {
     const encounter_form = await EncounterForm.findOne({
       where: {
-        request_id: request.request_id,
-      },
-    });
+        request_id: request.request_id
+      }
+    })
     const formatted_request = {
       sr_no: i,
       request_id: request.request_id,
@@ -664,36 +620,34 @@ export const handle_request_state_physician = async (
       is_finalized: encounter_form?.is_finalize || false,
       patient_data: {
         user_id: request.Patient.user_id,
-        name: request.Patient.firstname + " " + request.Patient.lastname,
+        name: request.Patient.firstname + ' ' + request.Patient.lastname,
         mobile_no: request.Patient.mobile_no,
-        address: request?.street + " " + request?.city + " " + request?.state,
-        ...(state == "active"
+        address: request?.street + ' ' + request?.city + ' ' + request?.state,
+        ...(state == 'active'
           ? {
-              status: request.Patient.status,
+              status: request.Patient.status
             }
-          : {}),
+          : {})
       },
 
       requestor_data: {
         user_id: request.Requestor?.user_id || null,
         first_name:
-          request.Requestor?.first_name ||
-          null + " " + request.Requestor?.last_name ||
-          null,
-        last_name: request.Requestor?.last_name || null,
-      },
-    };
-    i++;
-    formatted_response.data.push(formatted_request);
+          request.Requestor?.first_name || null + ' ' + request.Requestor?.last_name || null,
+        last_name: request.Requestor?.last_name || null
+      }
+    }
+    i++
+    formatted_response.data.push(formatted_request)
   }
 
   return res.status(200).json({
     ...formatted_response,
     total_pages: Math.ceil(count / limit),
     current_page: page_number,
-    total_count: count,
-  });
-};
+    total_count: count
+  })
+}
 
 export const handle_request_state_physician_exports = async (
   user_id: number,
@@ -705,76 +659,76 @@ export const handle_request_state_physician_exports = async (
   page_size: string,
   additionalAttributes?: Array<string>
 ) => {
-  const page_number = Number(page) || 1;
-  const limit = Number(page_size) || 100;
-  const offset = (page_number - 1) * limit;
+  const page_number = Number(page) || 1
+  const limit = Number(page_size) || 100
+  const offset = (page_number - 1) * limit
 
   const where_clause_patient = {
-    type_of_user: "patient",
+    type_of_user: 'patient',
     ...(search && {
       [Op.or]: [
         { firstname: { [Op.like]: `%${search}%` } },
-        { lastname: { [Op.like]: `%${search}%` } },
-      ],
-    }),
-  };
+        { lastname: { [Op.like]: `%${search}%` } }
+      ]
+    })
+  }
   const formatted_response: FormattedResponse<any> = {
     status: true,
-    data: [],
-  };
-  const { count, rows: requests } = await RequestModel.findAndCountAll({
+    data: []
+  }
+  const { rows: requests } = await RequestModel.findAndCountAll({
     where: {
       request_state: state,
       physician_id: user_id,
       ...(region && { state: region }),
-      ...(requestor ? { requested_by: requestor } : {}),
+      ...(requestor ? { requested_by: requestor } : {})
     },
     attributes: [
-      "request_id",
-      "request_state",
-      "confirmation_no",
-      "requested_by",
-      "request_status",
-      "physician_id",
-      "patient_id",
-      "street",
-      "city",
-      "state",
-      "zip",
-      ...(additionalAttributes || []),
+      'request_id',
+      'request_state',
+      'confirmation_no',
+      'requested_by',
+      'request_status',
+      'physician_id',
+      'patient_id',
+      'street',
+      'city',
+      'state',
+      'zip',
+      ...(additionalAttributes || [])
     ],
     include: [
       {
-        as: "Patient",
+        as: 'Patient',
         model: User,
         attributes: [
-          "user_id",
-          "type_of_user",
-          "firstname",
-          "lastname",
-          "dob",
-          "mobile_no",
-          "address_1",
-          "state",
+          'user_id',
+          'type_of_user',
+          'firstname',
+          'lastname',
+          'dob',
+          'mobile_no',
+          'address_1',
+          'state'
         ],
-        where: where_clause_patient,
+        where: where_clause_patient
       },
       {
         model: Requestor,
-        attributes: ["user_id", "first_name", "last_name"],
-      },
+        attributes: ['user_id', 'first_name', 'last_name']
+      }
     ],
     limit,
-    offset,
-  });
+    offset
+  })
 
-  var i = offset + 1;
+  var i = offset + 1
   for (const request of requests) {
     const encounter_form = await EncounterForm.findOne({
       where: {
-        request_id: request.request_id,
-      },
-    });
+        request_id: request.request_id
+      }
+    })
     const formatted_request = {
       sr_no: i,
       request_id: request.request_id,
@@ -785,31 +739,29 @@ export const handle_request_state_physician_exports = async (
       is_finalized: encounter_form?.is_finalize || false,
       patient_data: {
         user_id: request.Patient.user_id,
-        name: request.Patient.firstname + " " + request.Patient.lastname,
+        name: request.Patient.firstname + ' ' + request.Patient.lastname,
         mobile_no: request.Patient.mobile_no,
-        address: request?.street + " " + request?.city + " " + request?.state,
-        ...(state == "active"
+        address: request?.street + ' ' + request?.city + ' ' + request?.state,
+        ...(state == 'active'
           ? {
-              status: request.Patient.status,
+              status: request.Patient.status
             }
-          : {}),
+          : {})
       },
 
       requestor_data: {
         user_id: request.Requestor?.user_id || null,
         first_name:
-          request.Requestor?.first_name ||
-          null + " " + request.Requestor?.last_name ||
-          null,
-        last_name: request.Requestor?.last_name || null,
-      },
-    };
-    i++;
-    formatted_response.data.push(formatted_request);
+          request.Requestor?.first_name || null + ' ' + request.Requestor?.last_name || null,
+        last_name: request.Requestor?.last_name || null
+      }
+    }
+    i++
+    formatted_response.data.push(formatted_request)
   }
 
-  return formatted_response;
-};
+  return formatted_response
+}
 
 export const repeat_days_shift = async (
   user_id: number,
@@ -829,39 +781,30 @@ export const repeat_days_shift = async (
     shift_date,
     start,
     end,
-    repeat_days: "",
-    repeat_end,
-  });
+    repeat_days: '',
+    repeat_end
+  })
 
   if (!shift) {
     return res.status(500).json({
-      message: message_constants.EWCS,
-    });
+      message: message_constants.EWCS
+    })
   }
 
   if (repeat_end === 0) {
-    return "No extra shifts created (repeat end is zero)";
+    return 'No extra shifts created (repeat end is zero)'
   }
 
-  const weekdays = repeat_days.split(",");
-  console.log(weekdays);
+  const weekdays = repeat_days.split(',')
 
-  const days = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
   for (const day of weekdays) {
-    let currentShiftDate = new Date(shift_date); // Copy for each iteration
+    let currentShiftDate = new Date(shift_date) // Copy for each iteration
 
     for (let i = 0; i < repeat_end; i++) {
       while (currentShiftDate.getDay() !== days.indexOf(day.toLowerCase())) {
-        currentShiftDate.setDate(currentShiftDate.getDate() + 1);
+        currentShiftDate.setDate(currentShiftDate.getDate() + 1)
       }
 
       const shift = await Shifts.create({
@@ -871,98 +814,81 @@ export const repeat_days_shift = async (
         shift_date: currentShiftDate,
         start,
         end,
-        repeat_days: "", // No further repetition
-        repeat_end: 0, // Create one shift per iteration
-      });
+        repeat_days: '', // No further repetition
+        repeat_end: 0 // Create one shift per iteration
+      })
 
       if (!shift) {
-        return `Error creating shift for ${day}`;
+        return `Error creating shift for ${day}`
       }
 
       // Skip to next instance of the same weekday (considering weekly cycle)
-      let daysToSkip = (days.length - days.indexOf(day)) % 7; // Adjust for remaining days in the week
+      let daysToSkip = (days.length - days.indexOf(day)) % 7 // Adjust for remaining days in the week
       if (daysToSkip == 0) {
-        daysToSkip = 7;
+        daysToSkip = 7
       }
-      currentShiftDate.setDate(currentShiftDate.getDate() + daysToSkip);
+      currentShiftDate.setDate(currentShiftDate.getDate() + daysToSkip)
     }
   }
 
-  const totalShifts = repeat_end * weekdays.length;
-  return `Total shifts created: ${totalShifts}`;
-};
+  const totalShifts = repeat_end * weekdays.length
+  return `Total shifts created: ${totalShifts}`
+}
 
-export const manage_shift_in_time = async (shift: any, time_zone?: string) => {
+export const manage_shift_in_time = async (shift: any) => {
   try {
     if (!shift || !shift.shift_date || !shift.start || !shift.end) {
-      throw new Error("Missing required shift data.");
+      throw new Error('Missing required shift data.')
     }
 
-    const shift_date = new Date(shift.shift_date);
-    const timeout_ids = [];
+    const shift_date = new Date(shift.shift_date)
+    const timeout_ids = []
 
     // Check if start time has already passed
-    const now = new Date();
-    const start_time = new Date(shift_date.getTime());
-    start_time.setHours(
-      Number(shift.start.split(":")[0]),
-      Number(shift.start.split(":")[1]),
-      0
-    );
+    const now = new Date()
+    const start_time = new Date(shift_date.getTime())
+    start_time.setHours(Number(shift.start.split(':')[0]), Number(shift.start.split(':')[1]), 0)
 
     if (start_time < now) {
-      console.log("Shift start time has already passed. Skipping update.");
-      return;
+      console.log('Shift start time has already passed. Skipping update.')
+      return
     }
 
     // Schedule user status updates with timeouts
-    const start_delay = start_time.getTime() - Date.now();
+    const start_delay = start_time.getTime() - Date.now()
 
     timeout_ids.push(
       setTimeout(async () => {
         try {
-          await User.update(
-            { on_call_status: "scheduled" },
-            { where: { user_id: shift.user_id } }
-          );
-          console.log(
-            'User status updated to "scheduled" for shift:',
-            shift.shift_id
-          );
+          await User.update({ on_call_status: 'scheduled' }, { where: { user_id: shift.user_id } })
+          console.log('User status updated to "scheduled" for shift:', shift.shift_id)
         } catch (error) {
-          console.error("Error updating user status:", error);
+          console.error('Error updating user status:', error)
         }
       }, start_delay)
-    );
+    )
 
-    const end_time = new Date(shift_date.getTime());
-    end_time.setHours(
-      Number(shift.end.split(":")[0]),
-      Number(shift.end.split(":")[1]),
-      0
-    );
-    const end_delay = end_time.getTime() - Date.now();
+    const end_time = new Date(shift_date.getTime())
+    end_time.setHours(Number(shift.end.split(':')[0]), Number(shift.end.split(':')[1]), 0)
+    const end_delay = end_time.getTime() - Date.now()
 
     timeout_ids.push(
       setTimeout(async () => {
         try {
           await User.update(
-            { on_call_status: "un-scheduled" },
+            { on_call_status: 'un-scheduled' },
             { where: { user_id: shift.user_id } }
-          );
-          console.log(
-            'User status updated to "un-scheduled" for shift:',
-            shift.shift_id
-          );
+          )
+          console.log('User status updated to "un-scheduled" for shift:', shift.shift_id)
         } catch (error) {
-          console.error("Error updating user status:", error);
+          console.error('Error updating user status:', error)
         }
       }, end_delay)
-    );
+    )
 
-    // Associate timeout IDs with the shift (example using a map)
-    shift_timeouts.set(shift.shift_id, timeout_ids); // Replace with your storage mechanism
+    // Associate timeout IDs with the shift
+    shift_timeouts.set(shift.shift_id, timeout_ids) // Replace with your storage mechanism
   } catch (error) {
-    console.error("Error while managing shift:", error);
+    console.error('Error while managing shift:', error)
   }
-};
+}

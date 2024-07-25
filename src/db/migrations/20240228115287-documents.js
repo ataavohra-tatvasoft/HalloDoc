@@ -1,51 +1,53 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("documents", {
+    await queryInterface.createTable('documents', {
       request_id: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: true
       },
 
       user_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: null
       },
       document_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: true
       },
       uploader: {
         type: Sequelize.STRING,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: null
       },
       document_name: {
         type: Sequelize.STRING,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: null
       },
       document_path: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("documents");
-  },
-};
+    await queryInterface.dropTable('documents')
+  }
+}

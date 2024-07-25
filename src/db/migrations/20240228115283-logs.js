@@ -1,70 +1,72 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("logs", {
+    await queryInterface.createTable('logs', {
       log_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
+        primaryKey: true
       },
 
       type_of_log: {
-        type: Sequelize.ENUM("SMS", "Email"),
-        allowNull: false,
+        type: Sequelize.ENUM('SMS', 'Email'),
+        allowNull: false
       },
 
       recipient: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       action: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       role_name: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
 
       email: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
 
       mobile_no: {
         type: Sequelize.BIGINT,
-        allowNull: true,
+        allowNull: true
       },
 
       sent: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
 
       sent_tries: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: true
       },
 
       confirmation_no: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
-      
+
       createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("logs");
-  },
-};
+    await queryInterface.dropTable('logs')
+  }
+}

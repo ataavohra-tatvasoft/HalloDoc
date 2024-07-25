@@ -1,71 +1,72 @@
-"use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("shifts", {
+    await queryInterface.createTable('shifts', {
       shift_id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
+        primaryKey: true
       },
       user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "user",
-          key: "user_id",
-          onDelete: "SET NULL",
-          onUpdate: "CASCADE",
-        },
+          model: 'user',
+          key: 'user_id',
+          onDelete: 'SET NULL',
+          onUpdate: 'CASCADE'
+        }
       },
       region: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       physician: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       status: {
-        type: Sequelize.ENUM("approved", "pending"),
+        type: Sequelize.ENUM('approved', 'pending'),
         allowNull: false,
-        defaultValue: "pending",
+        defaultValue: 'pending'
       },
       shift_date: {
         type: Sequelize.DATE,
-        allowNull: true,
+        allowNull: true
       },
       start: {
         type: Sequelize.TIME,
-        allowNull: true,
+        allowNull: true
       },
       end: {
         type: Sequelize.TIME,
-        allowNull: true,
+        allowNull: true
       },
       repeat_end: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: true
       },
       repeat_days: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        onUpdate: "CASCADE",
-      },
-    });
+        onUpdate: 'CASCADE'
+      }
+    })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('shifts');
-
-  },
-};
+    await queryInterface.dropTable('shifts')
+  }
+}
