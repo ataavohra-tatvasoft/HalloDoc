@@ -2,10 +2,10 @@ import { Table, Column, DataType, Model } from "sequelize-typescript";
 import {
   BusinessAttributes,
   BusinessCreationAttributes,
-} from "../../interfaces/business-vendor";
+} from "../../interfaces";
 
 @Table({ timestamps: true, tableName: "business-vendor" })
-export default class Business extends Model<
+export class Business extends Model<
   BusinessAttributes,
   BusinessCreationAttributes
 > {

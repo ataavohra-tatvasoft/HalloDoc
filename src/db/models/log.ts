@@ -6,13 +6,10 @@ import {
   BelongsTo,
   Sequelize,
 } from "sequelize-typescript";
-import { LogsAttributes, LogsCreationAttributes } from "../../interfaces/logs";
+import { LogsAttributes, LogsCreationAttributes } from "../../interfaces";
 
 @Table({ timestamps: true, tableName: "logs" })
-export default class Logs extends Model<
-  LogsAttributes,
-  LogsCreationAttributes
-> {
+export class Logs extends Model<LogsAttributes, LogsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,

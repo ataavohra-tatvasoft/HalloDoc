@@ -8,12 +8,12 @@ import {
 import {
   DocumentsAttributes,
   DocumentsCreationAttributes,
-} from "../../interfaces/documents";
-import Request from "./request";
-import User from "./user";
+} from "../../interfaces";
+import { RequestModel } from "./request";
+import { User } from "./user";
 
 @Table({ timestamps: true, tableName: "documents" })
-export default class Documents extends Model<
+export class Documents extends Model<
   DocumentsAttributes,
   DocumentsCreationAttributes
 > {
@@ -22,12 +22,6 @@ export default class Documents extends Model<
     allowNull: true,
   })
   request_id: number;
-
-  // @BelongsTo(() => Request, {
-  //   foreignKey: "request_id",
-  //   targetKey: "request_id",
-  // })
-  // request: Request; // Optional association for Request
 
   @Column({
     type: DataType.INTEGER,
@@ -44,11 +38,10 @@ export default class Documents extends Model<
   })
   document_id: number;
 
-  
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    defaultValue: null
+    defaultValue: null,
   })
   uploader: number;
 
@@ -72,17 +65,15 @@ export default class Documents extends Model<
   })
   createdAt: Date;
 
-  @BelongsTo(() => Request, {
+  @BelongsTo(() => RequestModel, {
     foreignKey: "request_id",
     targetKey: "request_id",
   })
-  Request: Request;
+  Request: RequestModel;
 
   @BelongsTo(() => User, {
     foreignKey: "user_id",
     targetKey: "user_id",
   })
   User: User;
-
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

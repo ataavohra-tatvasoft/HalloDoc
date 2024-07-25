@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface RequestorAttributes {
   user_id?: number;
   first_name?: string;

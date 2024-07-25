@@ -1,4 +1,3 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
 
 export interface BusinessAttributes {
@@ -22,7 +21,7 @@ export interface BusinessCreationAttributes
     BusinessAttributes,
     | "createdAt"
     | "updatedAt"
-    |"business_id"
+    | "business_id"
     | "business_website"
     | "profession"
     | "fax_number"

@@ -7,22 +7,19 @@ import {
   HasOne,
   BelongsTo,
 } from "sequelize-typescript";
-import Documents from "./documents";
-import Order from "./order";
-import Notes from "./notes";
-import User from "./user";
-import Requestor from "./requestor";
-import {
-  RequestCreationAttributes,
-  RequestAttributes,
-} from "../../interfaces/request";
-import EncounterForm from "./encounter_form";
+import { Documents } from "./documents";
+import { Order } from "./order";
+import { Notes } from "./notes";
+import { User } from "./user";
+import { Requestor } from "./requestor";
+import { RequestCreationAttributes, RequestAttributes } from "../../interfaces";
+import { EncounterForm } from "./encounter_form";
 
 @Table({
   timestamps: true,
   tableName: "request",
 })
-export default class Request extends Model<
+export class RequestModel extends Model<
   RequestAttributes,
   RequestCreationAttributes
 > {
@@ -220,10 +217,4 @@ export default class Request extends Model<
 
   @HasMany(() => Documents, { as: "Documents", foreignKey: "request_id" })
   Documents: Documents[];
-  
-  // @HasMany(() => User)
-  // Patient: User[];
-
-  // @HasMany(() => Requestor)
-  // Requestors: Requestor[];
 }

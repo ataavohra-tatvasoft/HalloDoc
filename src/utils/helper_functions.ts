@@ -1,19 +1,21 @@
+import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import path from "path";
-import Region from "../db/models/region";
-import RequestModel from "../db/models/request";
-import Requestor from "../db/models/requestor";
-import Notes from "../db/models/notes";
-import Shifts from "../db/models/shifts";
-import UserRegionMapping from "../db/models/user-region_mapping";
-import message_constants from "../public/message_constants";
 import { Op } from "sequelize";
-import { Request, Response, NextFunction } from "express";
-import Documents from "../db/models/documents";
-import EncounterForm from "../db/models/encounter_form";
-import { FormattedResponse } from "../interfaces/common_interface";
-import User from "../db/models/user";
+import { FormattedResponse } from "../interfaces";
+import message_constants from "../constants/message_constants";
+import {
+  Region,
+  RequestModel,
+  Requestor,
+  Notes,
+  Shifts,
+  UserRegionMapping,
+  Documents,
+  EncounterForm,
+  User,
+} from "../db/models";
 
 export const shift_timeouts = new Map();
 
@@ -124,6 +126,7 @@ export const update_region_mapping = async (
     return console.log(`${deleted_mappings} region mappings deleted`);
   }
 };
+
 // Function to send email with attachment
 export const send_email_with_attachment = async (
   email: string,
@@ -843,13 +846,6 @@ export const repeat_days_shift = async (
   const weekdays = repeat_days.split(",");
   console.log(weekdays);
 
-  // Optional validation (comment out if not needed)
-
-  // const validWeekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  // const invalidDays = weekdays.filter(day => !validWeekdays.includes(day.toLowerCase()));
-  // if (invalidDays.length > 0) {
-  //   return `Invalid weekdays provided: ${invalidDays.join(', ')}`;
-  // }
   const days = [
     "sunday",
     "monday",
@@ -864,15 +860,9 @@ export const repeat_days_shift = async (
     let currentShiftDate = new Date(shift_date); // Copy for each iteration
 
     for (let i = 0; i < repeat_end; i++) {
-      // Find the next desired weekday
-      // console.log(currentShiftDate.getDay() + "->" + currentShiftDate);
-      // console.log(days.indexOf(day.toLowerCase()) + "->" + day);
-
       while (currentShiftDate.getDay() !== days.indexOf(day.toLowerCase())) {
         currentShiftDate.setDate(currentShiftDate.getDate() + 1);
       }
-      // console.log(currentShiftDate.getDay() + "->" + currentShiftDate);
-      // console.log(days.indexOf(day.toLowerCase()) + "->" + day);
 
       const shift = await Shifts.create({
         user_id,
@@ -904,7 +894,6 @@ export const repeat_days_shift = async (
 
 export const manage_shift_in_time = async (shift: any, time_zone?: string) => {
   try {
-    // Validate required shift data
     if (!shift || !shift.shift_date || !shift.start || !shift.end) {
       throw new Error("Missing required shift data.");
     }

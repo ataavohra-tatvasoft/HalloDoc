@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface RequestAttributes {
   request_id: number;
   confirmation_no: string;

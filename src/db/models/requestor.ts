@@ -1,19 +1,14 @@
-import {
-  Table,
-  Column,
-  DataType,
-  Model,
-} from "sequelize-typescript";
+import { Table, Column, DataType, Model } from "sequelize-typescript";
 import {
   RequestorCreationAttributes,
   RequestorAttributes,
-} from "../../interfaces/requestor";
+} from "../../interfaces";
 
 @Table({
   timestamps: true,
-  tableName: "requestor"
+  tableName: "requestor",
 })
-export default class Requestor extends Model<
+export class Requestor extends Model<
   RequestorCreationAttributes,
   RequestorAttributes
 > {

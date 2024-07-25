@@ -7,11 +7,18 @@
 **For Front-End Integration, integrate below repository and configure accordingly.**
 
 [Front-End Repository Link](https://github.com/Abhay-tatva/Hallo-Doc-App.git)
-</br>
 
 ## Description:
 
-**This project aims to develop a web-based platform that facilitates online doctor consultations and diagnostic services. Inspired by the Halodoc platform, it strives to create a user-friendly experience for both doctors and patients.**
+**The HalloDoc platform 🏥 offers:**
+
+- Online doctor consultations and diagnostics services
+- A valuable tool for doctors to enhance patient care and streamline their work processes
+- A user-friendly interface that simplifies tasks for doctors:
+  - Convenient access to patient records 📁
+  - Efficient management of appointments 📅
+  - Secure communication with patients 💬
+- Functionality for patients to request care for themselves or on behalf of others
 
 ## Badges
 
@@ -27,14 +34,29 @@
 
 ## User Roles:
 
-- **Admin:** Manages the platform, including user accounts, patient records, and appointment requests. Can review patient history, manage cases, and control requests (cancel, block).
-  </br>
+- **Admin:**
 
-- **Physician:** Offers consultations online, manages patient appointments, accesses patient medical records securely, and communicates with patients through the platform.
-  </br>
+  - Comprehensive access to patient and physician records
+  - Ability to review patient history 📜
+  - Manage cases and control requests (cancel/block) 🚫
+  - Directed to the landing page showcasing patient requests upon login
+  - Filter requests by type and search by patient/requestor names 🔍
+  - View requests in grid format on desktop 🖥️ and card view on mobile devices 📱
+  - Schedule appointments for providers
+  - Manage request actions (view cases, notes, documents) 📄
+  - View provider locations
+  - Create roles and assign them to specific users
 
-- **Patient:** Seeks online consultations, requests diagnostic services (if available), manages appointments, and securely communicates with doctors.
-  </br>
+- **Physician:**
+
+  - Manage request states (new, active, pending, to close)
+  - View profiles
+  - Accept/reject appointments
+  - Create own appointments
+
+- **Patient:**
+  - View their requests and statuses
+  - Access request actions (view notes, documents) 📝
 
 ## Technology Stack:
 
@@ -44,7 +66,7 @@
 - **Backend:** Node.js, Typescript
   </br>
 
-- **Database:** MySQL, WAMPP
+- **Database:** MySQL
   </br>
 
 - **API Test:** Postman
@@ -54,13 +76,13 @@
 
 - **Clone the repository.**
 
-- **Install dependencies using npm install or yarn install.**
+- **Install dependencies using `npm install`.**
 
-- **Make `config.env`, `src/connections/database.ts` && `src/db/config/config.json` file according to your credentials if they are not available in repository.**
+- **Make `.env`, `src/connections/database.ts` & `src/db/config/config.json` file according to your credentials if they are not available in repository.**
 
 - **Configure the database connection details from:**
 
-  `"config.env","src/db/config/config.json" & "src/connections/database.ts"`
+  `".env","src/db/config/config.json" & "src/connections/database.ts"`
 
 - **Run migrations and seeders as:**
 
@@ -87,9 +109,9 @@
 
 - We welcome contributions! Please follow these guidelines:
 
-  - Fork the repository and create your branch from main.
-  - Ensure your code follows our coding standards.
-  - Submit a pull request detailing your changes.
+  - Fork the repository and create your branch from main
+  - Ensure your code follows our coding standards
+  - Submit a pull request detailing your changes
 
 ## Authors and acknowledgment
 

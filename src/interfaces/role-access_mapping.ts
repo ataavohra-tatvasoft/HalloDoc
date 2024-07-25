@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface RoleAccessMappingAttributes {
   id: number;
   role_id: number;
@@ -10,6 +8,6 @@ export interface RoleAccessMappingAttributes {
 }
 export interface RoleAccessMappingCreationAttributes
   extends Optional<
-  RoleAccessMappingAttributes,
+    RoleAccessMappingAttributes,
     "id" | "role_id" | "access_id" | "createdAt" | "updatedAt"
   > {}

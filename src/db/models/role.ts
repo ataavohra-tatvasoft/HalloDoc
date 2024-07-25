@@ -5,16 +5,13 @@ import {
   Model,
   BelongsToMany,
   BelongsTo,
-  HasOne
+  HasOne,
 } from "sequelize-typescript";
-import { RoleAttributes, RoleCreationAttributes } from "../../interfaces/role";
-import Access from "./access";
-import RoleAccessMapping from "./role-access_mapping";
+import { RoleAttributes, RoleCreationAttributes } from "../../interfaces";
+import { Access } from "./access";
+import { RoleAccessMapping } from "./role-access_mapping";
 @Table({ timestamps: true, tableName: "role" })
-export default class Role extends Model<
-  RoleAttributes,
-  RoleCreationAttributes
-> {
+export class Role extends Model<RoleAttributes, RoleCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -30,7 +27,7 @@ export default class Role extends Model<
   role_name: string;
 
   @Column({
-    type: DataType.ENUM("all","admin","physician","patient"),
+    type: DataType.ENUM("all", "admin", "physician", "patient"),
     allowNull: false,
   })
   account_type: string;
@@ -41,5 +38,4 @@ export default class Role extends Model<
     otherKey: "access_id",
   })
   Access: Access[];
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

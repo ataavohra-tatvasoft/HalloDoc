@@ -1,14 +1,14 @@
-import { Table, Column, DataType, Model, BelongsTo } from "sequelize-typescript";
 import {
-  ShiftsAttributes,
-  ShiftsCreationAttributes,
-} from "../../interfaces/shifts";
-import User from "./user";
+  Table,
+  Column,
+  DataType,
+  Model,
+  BelongsTo,
+} from "sequelize-typescript";
+import { ShiftsAttributes, ShiftsCreationAttributes } from "../../interfaces";
+import { User } from "./user";
 @Table({ timestamps: true, tableName: "shifts" })
-export default class Shifts extends Model<
-  ShiftsAttributes,
-  ShiftsCreationAttributes
-> {
+export class Shifts extends Model<ShiftsAttributes, ShiftsCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -37,7 +37,7 @@ export default class Shifts extends Model<
   @Column({
     type: DataType.ENUM("approved", "pending"),
     allowNull: false,
-    defaultValue: "pending"
+    defaultValue: "pending",
   })
   status: string;
 
@@ -69,13 +69,11 @@ export default class Shifts extends Model<
     type: DataType.STRING,
     allowNull: true,
   })
-  repeat_days: string; 
+  repeat_days: string;
 
   @BelongsTo(() => User, {
     foreignKey: "user_id",
     targetKey: "user_id",
   })
   User: User;
-
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

@@ -6,9 +6,8 @@ import dotenv from "dotenv";
 import fileUpload from "express-fileupload";
 import connect_to_database from "./src/connections/database";
 import { errors } from "celebrate";
-// import multer from "multer";
 
-dotenv.config({ path: "config.env" });
+dotenv.config({ path: ".env" });
 
 /** Constants */
 const app: Express = express();
@@ -34,13 +33,13 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(routes);
-app.use(fileUpload({
-  limits: { fileSize: 5000000 }, 
-  useTempFiles: true 
-}));
+app.use(
+  fileUpload({
+    limits: { fileSize: 5000000 },
+    useTempFiles: true,
+  })
+);
 app.use(errors());
 
 app.listen(process.env.PORT);
 console.log("Application Started!!!");
-
-// "dev": "npx tsc & nodemon build/app.js"

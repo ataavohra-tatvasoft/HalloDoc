@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface RegionAttributes {
   region_id: number;
   region_name: string;

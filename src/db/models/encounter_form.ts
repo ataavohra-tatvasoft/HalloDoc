@@ -9,11 +9,11 @@ import {
 import {
   EncounterFormAttributes,
   EncounterFormCreationAttributes,
-} from "../../interfaces/encounter_form";
-import Request from "./request";
+} from "../../interfaces";
+import { RequestModel } from "./request";
 
 @Table({ timestamps: true, tableName: "encounter-form" })
-export default class EncounterForm extends Model<
+export class EncounterForm extends Model<
   EncounterFormAttributes,
   EncounterFormCreationAttributes
 > {
@@ -135,7 +135,6 @@ export default class EncounterForm extends Model<
   })
   blood_pressure_1: number;
 
-  
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
@@ -255,11 +254,9 @@ export default class EncounterForm extends Model<
   })
   is_finalize: string;
 
-  @BelongsTo(() => Request, {
+  @BelongsTo(() => RequestModel, {
     foreignKey: "request_id",
     targetKey: "request_id",
   })
-  Request: Request;
-
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
+  Request: RequestModel;
 }

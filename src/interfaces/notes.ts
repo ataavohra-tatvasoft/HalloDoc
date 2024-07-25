@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface NotesAttributes {
   request_id: number;
   note_id: number;

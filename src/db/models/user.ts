@@ -7,20 +7,17 @@ import {
   BelongsToMany,
   BelongsTo,
 } from "sequelize-typescript";
-import { UserAttributes, UserCreationAttributes } from "../../interfaces/user";
-import Shifts from "./shifts";
-import UserRegionMapping from "./user-region_mapping";
-import Region from "./region";
-import Role from "./role";
+import { UserAttributes, UserCreationAttributes } from "../../interfaces";
+import { Shifts } from "./shifts";
+import { UserRegionMapping } from "./user-region_mapping";
+import { Region } from "./region";
+import { Role } from "./role";
 
 @Table({
   timestamps: true,
   tableName: "user",
 })
-export default class User extends Model<
-  UserAttributes,
-  UserCreationAttributes
-> {
+export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -238,7 +235,7 @@ export default class User extends Model<
   signature_photo: string;
 
   @Column({
-    type: DataType.ENUM("scheduled", "un-scheduled","busy"),
+    type: DataType.ENUM("scheduled", "un-scheduled", "busy"),
     allowNull: true,
     defaultValue: null,
   })

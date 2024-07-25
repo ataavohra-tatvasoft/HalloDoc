@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface LogsAttributes {
   log_id: number;
   type_of_log: string;

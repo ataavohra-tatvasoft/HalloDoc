@@ -6,18 +6,16 @@ export type Controller = (
   next: NextFunction
 ) => Promise<any>;
 
-export type FormattedResponse<T> = 
-{ 
-  status: boolean; 
+export type FormattedResponse<T> = {
+  status: boolean;
   confirmation_no?: string;
   data: T[];
 };
 
-export type FormattedResponse_2<T> = 
-{ 
-  status: boolean; 
-  provider_on_call: T[],
-  provider_off_duty: T[],
+export type FormattedResponse_2<T> = {
+  status: boolean;
+  provider_on_call: T[];
+  provider_off_duty: T[];
 };
 
 export type VerifiedToken = {
@@ -36,5 +34,3 @@ export interface File {
   fieldname: string;
   path: string;
 }
-
-// export type FormattedRequest = { region_name: string };

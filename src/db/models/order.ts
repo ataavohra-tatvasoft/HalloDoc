@@ -1,17 +1,21 @@
-import { Table, Column, DataType, Model,BelongsTo, Sequelize } from "sequelize-typescript";
 import {
-  OrderAttributes,
-  OrderCreationAttributes,
-} from "../../interfaces/order";
-import Request from "./request";
-import Business from "./business-vendor";
+  Table,
+  Column,
+  DataType,
+  Model,
+  BelongsTo,
+  Sequelize,
+} from "sequelize-typescript";
+import { OrderAttributes, OrderCreationAttributes } from "../../interfaces";
+import { RequestModel } from "./request";
+import { Business } from "./business-vendor";
 
-@Table({ timestamps: true , tableName: "order" })
-export default class Order extends Model<OrderAttributes, OrderCreationAttributes> {
+@Table({ timestamps: true, tableName: "order" })
+export class Order extends Model<OrderAttributes, OrderCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey:true
+    primaryKey: true,
   })
   order_id: number;
 
@@ -46,16 +50,15 @@ export default class Order extends Model<OrderAttributes, OrderCreationAttribute
   })
   number_of_refill: number;
 
-  @BelongsTo(() => Request, {
+  @BelongsTo(() => RequestModel, {
     foreignKey: "request_id",
     targetKey: "request_id",
   })
-  Request: Request;
-  
+  Request: RequestModel;
+
   @BelongsTo(() => Business, {
     foreignKey: "business_id",
     targetKey: "business_id",
   })
   Business: Business;
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

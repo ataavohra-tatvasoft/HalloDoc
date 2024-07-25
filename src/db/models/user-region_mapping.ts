@@ -9,9 +9,9 @@ import {
 import {
   UserRegionMappingAttributes,
   UserRegionMappingCreationAttributes,
-} from "../../interfaces/user-region_mapping";
+} from "../../interfaces";
 @Table({ timestamps: true, tableName: "user-region-mapping" })
-export default class UserRegionMapping extends Model<
+export class UserRegionMapping extends Model<
   UserRegionMappingAttributes,
   UserRegionMappingCreationAttributes
 > {
@@ -28,13 +28,10 @@ export default class UserRegionMapping extends Model<
     allowNull: false,
   })
   user_id: number;
- 
+
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   region_id: number;
-
- 
-  // Omitted createdAt and updatedAt for brevity (already defined by timestamps: true)
 }

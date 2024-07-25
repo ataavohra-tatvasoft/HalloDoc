@@ -5,14 +5,11 @@ import {
   Model,
   BelongsTo,
 } from "sequelize-typescript";
-import {
-  NotesAttributes,
-  NotesCreationAttributes,
-} from "../../interfaces/notes";
-import Request from "./request";
+import { NotesAttributes, NotesCreationAttributes } from "../../interfaces";
+import { RequestModel } from "./request";
 
 @Table({ timestamps: true, tableName: "notes" })
-export default class Notes extends Model<NotesAttributes, NotesCreationAttributes> {
+export class Notes extends Model<NotesAttributes, NotesCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -58,10 +55,9 @@ export default class Notes extends Model<NotesAttributes, NotesCreationAttribute
   })
   type_of_note: string;
 
-  @BelongsTo(() => Request, {
+  @BelongsTo(() => RequestModel, {
     foreignKey: "request_id",
     targetKey: "request_id",
   })
-  Request: Request;
-
+  Request: RequestModel;
 }

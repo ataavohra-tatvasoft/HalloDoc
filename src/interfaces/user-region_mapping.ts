@@ -1,6 +1,4 @@
-import { any } from "joi";
 import { Optional } from "sequelize";
-
 export interface UserRegionMappingAttributes {
   id: number;
   user_id: number;
