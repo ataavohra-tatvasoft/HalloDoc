@@ -26,11 +26,14 @@
 
 ## Features:
 
-**Online Doctor Consultation:** Patients can connect with doctors virtually for consultations, reducing the need for physical visits.
-</br>
+- **Admin Dashboard:** Easily manage patient and physician records, filter and search requests.
 
-**Diagnostics Services:** The platform may integrate with third-party services to enable patients to access diagnostic tests and receive results securely. (Implementation details depend on integration feasibility).
-</br>
+- **Request Management:** Comprehensive controls for handling patient and provider requests.
+- **Appointment Scheduling:** Streamlined process for booking and managing appointments.
+
+- **Role Management:** Flexible role creation and assignment for user-specific access.
+
+- **Mobile Compatibility:** Optimized views for both desktop and mobile devices.
 
 ## User Roles:
 
