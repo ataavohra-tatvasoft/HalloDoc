@@ -148,7 +148,6 @@ export const contact_provider: Controller = async (req: Request, res: Response) 
       })
     }
     if (email && mobile_no) {
-      console.log('email and mobile')
       const mailContent = `
       <html>
       <p>Given below is a message from admin:</p>
@@ -230,7 +229,6 @@ export const contact_provider: Controller = async (req: Request, res: Response) 
       })
     }
     if (email) {
-      console.log('email')
       const mailContent = `
           <html>
           <p>Given below is a message from admin:</p>
@@ -285,7 +283,6 @@ export const contact_provider: Controller = async (req: Request, res: Response) 
       })
     }
     if (mobile_no) {
-      console.log('mobile')
       const account_sid = process.env.TWILIO_ACCOUNT_SID
       const auth_token = process.env.TWILIO_AUTH_TOKEN
       const client = twilio(account_sid, auth_token)
@@ -652,7 +649,6 @@ export const provider_profile_upload = async (req: Request, res: Response) => {
         },
         { where: { user_id } }
       )
-      console.log(updated_user)
       if (updated_user[0] === 1) {
         return res.status(200).json({ status: message_constants.US })
       } else {
@@ -808,7 +804,7 @@ export const provider_onboarding_view = async (req: Request, res: Response) => {
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()
@@ -853,7 +849,7 @@ export const provider_onboarding_view = async (req: Request, res: Response) => {
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()
@@ -898,7 +894,7 @@ export const provider_onboarding_view = async (req: Request, res: Response) => {
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()
@@ -943,7 +939,7 @@ export const provider_onboarding_view = async (req: Request, res: Response) => {
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()
@@ -988,7 +984,7 @@ export const provider_onboarding_view = async (req: Request, res: Response) => {
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()

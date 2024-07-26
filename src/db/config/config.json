@@ -1,7 +1,7 @@
 {
   "development": {
-    "username": "root",
-    "password": "QAZwsx*()123",
+    "username": "ataavohra",
+    "password": "password567",
     "database": "hallodoc",
     "host": "127.0.0.1",
     "dialect": "mysql"

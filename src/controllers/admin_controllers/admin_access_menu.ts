@@ -30,8 +30,6 @@ export const access_accountaccess: Controller = async (req: Request, res: Respon
       offset
     })
 
-    console.log(total_count)
-
     if (!roles) {
       return res.status(404).json({ error: message_constants.AcNF })
     }

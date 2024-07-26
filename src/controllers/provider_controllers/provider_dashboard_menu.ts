@@ -552,7 +552,6 @@ export const conclude_state_conclude_care_upload: Controller = async (
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' })
     }
-    console.log('Uploaded file details:', req.file)
     const file = req.file
     const request = await RequestModel.findOne({
       where: {
@@ -741,7 +740,7 @@ export const conclude_state_download_encounter_form: Controller = async (
     const generate_encounter_form_PDF = async (encounter_form: any) => {
       const doc = new pdfkit()
       const form_name = `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`
-      const form_path = path.join(__dirname, '../', '../', 'public', 'uploads', form_name)
+      const form_path = path.join(__dirname, '../', '../', '../', 'public', 'uploads', form_name)
 
       // Create a writable stream using fs.createWriteStream
       const writable_stream = fs.createWriteStream(form_path)
@@ -846,7 +845,9 @@ export const conclude_state_download_encounter_form: Controller = async (
         const form_name = `encounter_form_ ${encounter_form.Request.confirmation_no}.pdf`
 
         await generate_encounter_form_PDF(encounter_form)
-        return res.download(path.join(__dirname, '../', '../', 'public', 'uploads', form_name))
+        return res.download(
+          path.join(__dirname, '../', '../', '../', 'public', 'uploads', form_name)
+        )
       } else {
         return res.status(500).json({
           message: message_constants.EFNF

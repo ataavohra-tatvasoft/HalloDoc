@@ -356,7 +356,6 @@ export const provider_provider_profile_upload: Controller = async (req: Request,
         },
         { where: { user_id: provider_id } }
       )
-      console.log(updated_user)
 
       if (updated_user[0] === 1) {
         return res.status(200).json({ status: message_constants.US })
@@ -488,7 +487,7 @@ export const provider_myprofile_onboarding_view = async (req: Request, res: Resp
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()
@@ -533,7 +532,7 @@ export const provider_myprofile_onboarding_view = async (req: Request, res: Resp
 
       // Handle relative paths by joining with "uploads"
       if (!path.isAbsolute(file_path)) {
-        file_path = path.join(__dirname, '..', '..', 'public', 'uploads', file_path)
+        file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
       }
 
       const file_extension = file_path.split('.').pop()

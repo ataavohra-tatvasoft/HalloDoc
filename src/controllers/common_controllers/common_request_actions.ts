@@ -283,7 +283,7 @@ export const view_uploads_actions_download: Controller = async (req: Request, re
 
     // Handle relative paths by joining with "uploads"
     if (!path.isAbsolute(file_path)) {
-      file_path = path.join(__dirname, '..', '..', 'public', 'uploads', file_path)
+      file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', file_path)
     }
 
     const file_extension = file_path.split('.').pop()
@@ -411,7 +411,7 @@ export const view_uploads_download_all: Controller = async (req: Request, res: R
     }
 
     // Create the directory if it doesn't exist
-    const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads')
+    const uploadsDir = path.join(__dirname, '..', '..', '..', 'public', 'uploads')
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true })
     }
@@ -535,7 +535,7 @@ export const view_uploads_send_mail_refactored: Controller = async (
     }
 
     const zip_filename = `${confirmation_no}_documents.zip`
-    const zip_file_path = path.join(__dirname, '..', '..', 'public', 'uploads', zip_filename)
+    const zip_file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', zip_filename)
 
     // Create a zip file
     const output = fs.createWriteStream(zip_file_path)

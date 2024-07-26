@@ -621,7 +621,7 @@ export const view_uploads_send_mail: Controller = async (req: Request, res: Resp
     }
 
     const zip_filename = `${confirmation_no}_documents.zip`
-    const zip_file_path = path.join(__dirname, '..', '..', 'public', 'uploads', zip_filename)
+    const zip_file_path = path.join(__dirname, '..', '..', '..', 'public', 'uploads', zip_filename)
 
     // Create a zip file
     const output = fs.createWriteStream(zip_file_path)

@@ -10,7 +10,6 @@ module.exports = [
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
-      // ecmaVersion: 2015,
       ecmaVersion: 2020,
       sourceType: 'module',
       globals: {
@@ -40,7 +39,6 @@ module.exports = [
     rules: {
       'no-undef': 'error',
       'no-unused-vars': 'error',
-      // camelcase: ['error', { properties: 'always' }],
       semi: ['error', 'never'],
       'prettier/prettier': 'error'
     }

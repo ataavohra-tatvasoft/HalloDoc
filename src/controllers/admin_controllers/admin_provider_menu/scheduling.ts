@@ -559,12 +559,10 @@ export const edit_return_shift: Controller = async (req: Request, res: Response)
 
       await User.update({ on_call_status: 'un-scheduled' }, { where: { user_id: shift.user_id } })
 
-      console.log(shift_timeouts)
       const timeout_ids = shift_timeouts.get(shift.shift_id) || []
 
       // Clear each stored timeout ID
       for (const id of timeout_ids) {
-        console.log(id)
         // eslint-disable-next-line no-undef
         clearTimeout(id)
       }

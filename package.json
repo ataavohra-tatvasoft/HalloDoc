@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate": "npx sequelize-cli db:migrate --config src/db/config/config.json --migrations-path src/db/migrations",
-    "migrate:undo": "npx sequelize-cli db:migrate:undo --config src/db/config/config.json --migrations-path src/db/migrations",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo:all --config src/db/config/config.json --migrations-path src/db/migrations",
     "seed": "npx sequelize-cli db:seed:all --config src/db/config/config.json --seeders-path src/db/seeders",
     "seed:undo": "npx sequelize-cli db:seed:undo:all --config src/db/config/config.json --seeders-path src/db/seeders",
     "lint": "eslint .",

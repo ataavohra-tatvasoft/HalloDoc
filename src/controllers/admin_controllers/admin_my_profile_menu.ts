@@ -25,7 +25,6 @@ export const admin_profile_view: Controller = async (req: Request, res: Response
       status: true,
       data: []
     }
-    console.log(verified_token)
     const admin_id = verified_token.user_id
     const profile = await User.findOne({
       where: {
@@ -67,7 +66,6 @@ export const admin_profile_view: Controller = async (req: Request, res: Response
         role_id: profile.role_id
       }
     })
-    console.log(is_role)
     if (!is_role) {
       return res.status(500).json({
         message: message_constants.RoNF

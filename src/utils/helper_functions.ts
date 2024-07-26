@@ -22,7 +22,7 @@ export const shift_timeouts = new Map()
 
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '..', '..') + '\\src\\public\\uploads') // Adjust as needed
+    cb(null, path.join(__dirname, '..', '..') + '\\public\\uploads') // Adjust as needed
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-'
@@ -195,7 +195,6 @@ export const handle_request_state = async (
   page_size: string,
   additionalAttributes?: Array<string>
 ) => {
-  console.log(state)
   const page_number = Number(page) || 1
   const limit = Number(page_size) || 10
   const offset = (page_number - 1) * limit
